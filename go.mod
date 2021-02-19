@@ -1,4 +1,4 @@
-module moonrhythm/deploys
+module github.com/deploys-app/deploys
 
 go 1.16
 

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"moonrhythm/deploys/api"
-	"moonrhythm/deploys/api/client"
+	"github.com/deploys-app/deploys/api"
+	"github.com/deploys-app/deploys/api/client"
 )
 
 func main() {

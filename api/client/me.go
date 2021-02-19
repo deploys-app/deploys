@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 
-	"moonrhythm/deploys/api"
+	"github.com/deploys-app/deploys/api"
 )
 
 type meClient struct {

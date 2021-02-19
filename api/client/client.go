@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"strings"
 
-	"moonrhythm/deploys/api"
+	"github.com/deploys-app/deploys/api"
 )
 
 const endpoint = "https://api.deploys.app/"
