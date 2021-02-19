@@ -1,0 +1,38 @@
+package api
+
+import (
+	"github.com/acoshift/arpc"
+)
+
+var (
+	ErrUnauthorized                = arpc.NewError("api: unauthorized")
+	ErrForbidden                   = arpc.NewError("api: forbidden")
+	ErrLocationNotAvailable        = arpc.NewError("api: location not available")
+	ErrLocationNotSupport          = arpc.NewError("api: location not support")
+	ErrLocationNotAllowChange      = arpc.NewError("api: location not allow to change")
+	ErrSIDNotAvailable             = arpc.NewError("api: sid not available")
+	ErrRoleNotFound                = arpc.NewError("api: role not found")
+	ErrRoleSIDNotAvailable         = arpc.NewError("api: role sid not available")
+	ErrProjectNotFound             = arpc.NewError("api: project not found")
+	ErrBillingAccountNotFound      = arpc.NewError("api: billing account not found")
+	ErrBillingAccountNotActive     = arpc.NewError("api: billing account not active, please contact us via email to activate billing account")
+	ErrDeploymentNotFound          = arpc.NewError("api: deployment not found")
+	ErrCanNotDelete                = arpc.NewError("api: can not delete")
+	ErrCanNotPause                 = arpc.NewError("api: can not pause")
+	ErrCanNotResume                = arpc.NewError("api: can not resume")
+	ErrWorkloadIdentityNotFound    = arpc.NewError("api: workload identity not found")
+	ErrUserNotFound                = arpc.NewError("api: user not found")
+	ErrDomainNotAvailable          = arpc.NewError("api: domain not available")
+	ErrReplicasInvalid             = arpc.NewError("api: replicas invalid")
+	ErrCanMapOnlyService           = arpc.NewError("api: can not map to deployment other than service type")
+	ErrScheduleInvalid             = arpc.NewError("api: schedule invalid")
+	ErrTypeInvalid                 = arpc.NewError("api: type invalid")
+	ErrTypeNotAllowChange          = arpc.NewError("api: type not allow to change")
+	ErrDiskNotFound                = arpc.NewError("api: disk not found")
+	ErrDiskSizeMustScaleUp         = arpc.NewError("api: disk size must scale up")
+	ErrPullSecretNameNotAvailable  = arpc.NewError("api: pull secret name not available")
+	ErrPullSecretNotFound          = arpc.NewError("api: pull secret not found")
+	ErrServiceAccountNotFound      = arpc.NewError("api: service account not found")
+	ErrServiceAccountAlreadyExists = arpc.NewError("api: service account already exists")
+	ErrMaximumDeploymentReach      = arpc.NewError("api: maximum deployment reach")
+)
