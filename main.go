@@ -1,12 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
-	"os/exec"
-	"strings"
 	"time"
+
+	"golang.org/x/oauth2/google"
 
 	"github.com/deploys-app/deploys/api"
 	"github.com/deploys-app/deploys/api/client"
@@ -59,12 +60,17 @@ func main() {
 }
 
 func getDefaultToken() (string, error) {
-	cmd := exec.Command("gcloud", "auth", "print-access-token")
-	out, err := cmd.Output()
+	cred, err := google.FindDefaultCredentials(context.Background())
 	if err != nil {
 		return "", err
 	}
-	return strings.TrimSuffix(string(out), "\n"), nil
+
+	tk, err := cred.TokenSource.Token()
+	if err != nil {
+		return "", err
+	}
+
+	return tk.AccessToken, nil
 }
 
 func help() {

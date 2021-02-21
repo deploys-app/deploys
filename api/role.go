@@ -53,7 +53,6 @@ var permissions = []string{
 	"database.delete",
 	"serviceaccount.*",
 	"serviceaccount.create",
-	"serviceaccount.update",
 	"serviceaccount.list",
 	"serviceaccount.get",
 	"serviceaccount.delete",
