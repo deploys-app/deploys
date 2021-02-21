@@ -14,14 +14,16 @@ import (
 )
 
 type Deployment interface {
-	Deploy(ctx context.Context, m DeploymentDeploy) (*Empty, error)
-	List(ctx context.Context, m DeploymentList) (*DeploymentListResult, error)
-	Get(ctx context.Context, m DeploymentGet) (*DeploymentGetResult, error)
-	Resume(ctx context.Context, m DeploymentResume) (*Empty, error)
-	Pause(ctx context.Context, m DeploymentPause) (*Empty, error)
-	Rollback(ctx context.Context, m DeploymentRollback) (*Empty, error)
-	Delete(ctx context.Context, m DeploymentDelete) (*Empty, error)
-	MapDomain(ctx context.Context, m DeploymentMapDomain) (*Empty, error)
+	Deploy(ctx context.Context, m *DeploymentDeploy) (*Empty, error)
+	List(ctx context.Context, m *DeploymentList) (*DeploymentListResult, error)
+	Get(ctx context.Context, m *DeploymentGet) (*DeploymentGetResult, error)
+	Revisions(ctx context.Context, m *DeploymentRevisions) (*DeploymentRevisionsResult, error)
+	Resume(ctx context.Context, m *DeploymentResume) (*Empty, error)
+	Pause(ctx context.Context, m *DeploymentPause) (*Empty, error)
+	Rollback(ctx context.Context, m *DeploymentRollback) (*Empty, error)
+	Delete(ctx context.Context, m *DeploymentDelete) (*Empty, error)
+	MapDomain(ctx context.Context, m *DeploymentMapDomain) (*Empty, error)
+	Metrics(ctx context.Context, m *DeploymentMetrics) (*DeploymentMetricsResult, error)
 }
 
 type DeploymentType int
@@ -292,7 +294,7 @@ type DeploymentListResult struct {
 	Deployments []*DeploymentItem `json:"deployments" yaml:"deployments"`
 }
 
-func (m DeploymentListResult) Table() [][]string {
+func (m *DeploymentListResult) Table() [][]string {
 	table := [][]string{
 		{"NAME", "TYPE", "STATUS", "AGE"},
 	}
@@ -312,6 +314,8 @@ type DeploymentItem struct {
 	Location    string             `json:"location" yaml:"location"`
 	Name        string             `json:"name" yaml:"name"`
 	Type        DeploymentType     `json:"type" yaml:"type"`
+	Image       string             `json:"image" yaml:"image"`
+	Revision    int64              `json:"revision" yaml:"revision"`
 	Resources   DeploymentResource `json:"resources" yaml:"resources"`
 	MinReplicas int                `json:"minReplicas" yaml:"minReplicas"`
 	MaxReplicas int                `json:"maxReplicas" yaml:"maxReplicas"`
@@ -374,6 +378,27 @@ type DeploymentGetResult struct {
 	SuccessAt        time.Time          `json:"successAt" yaml:"successAt"`
 }
 
+type DeploymentRevisions struct {
+	Project string `json:"project"`
+	Name    string `json:"name"`
+}
+
+func (m *DeploymentRevisions) Valid() error {
+	m.Name = strings.TrimSpace(m.Name)
+
+	v := validator.New()
+
+	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
+	v.Mustf(utf8.RuneCountInString(m.Name) <= MaxNameLength, "name must have length less then %d characters", MaxNameLength)
+	v.Must(m.Project != "", "project required")
+
+	return WrapValidate(v)
+}
+
+type DeploymentRevisionsResult struct {
+	Items []*DeploymentItem `json:"items" yaml:"items"`
+}
+
 type DeploymentResume struct {
 	Project string `json:"project"`
 	Name    string `json:"name"`
@@ -428,8 +453,8 @@ func (m *DeploymentRollback) Valid() error {
 }
 
 type DeploymentDelete struct {
-	Project string
-	Name    string
+	Project string `json:"project"`
+	Name    string `json:"name"`
 }
 
 func (m *DeploymentDelete) Valid() error {
@@ -451,7 +476,7 @@ type DeploymentMapDomain struct {
 	Path    string `json:"path"`
 }
 
-func (m DeploymentMapDomain) Valid() error {
+func (m *DeploymentMapDomain) Valid() error {
 	m.Name = strings.TrimSpace(m.Name)
 
 	v := validator.New()
@@ -470,4 +495,74 @@ func (m DeploymentMapDomain) Valid() error {
 	}
 
 	return WrapValidate(v)
+}
+
+type DeploymentMetrics struct {
+	Project   string                     `json:"project" yaml:"project"`
+	Name      string                     `json:"name" yaml:"name"`
+	TimeRange DeploymentMetricsTimeRange `json:"timeRange" yaml:"timeRange"`
+}
+
+type DeploymentMetricsTimeRange string
+
+const (
+	DeploymentMetricsTimeRange1h     = "1h"
+	DeploymentMetricsTimeRange6h     = "6h"
+	DeploymentMetricsTimeRange12h    = "12h"
+	DeploymentMetricsTimeRange1d     = "1d"
+	DeploymentMetricsTimeRange1hagg  = "1hagg"
+	DeploymentMetricsTimeRange6hagg  = "6hagg"
+	DeploymentMetricsTimeRange12hagg = "12hagg"
+	DeploymentMetricsTimeRange1dagg  = "1dagg"
+	DeploymentMetricsTimeRange2dagg  = "2dagg"
+	DeploymentMetricsTimeRange7dagg  = "7dagg"
+	DeploymentMetricsTimeRange30dagg = "30dagg"
+)
+
+var allDeploymentMetricsTimeRange = []DeploymentMetricsTimeRange{
+	DeploymentMetricsTimeRange1h,
+	DeploymentMetricsTimeRange6h,
+	DeploymentMetricsTimeRange12h,
+	DeploymentMetricsTimeRange1d,
+	DeploymentMetricsTimeRange1hagg,
+	DeploymentMetricsTimeRange6hagg,
+	DeploymentMetricsTimeRange12hagg,
+	DeploymentMetricsTimeRange1dagg,
+	DeploymentMetricsTimeRange2dagg,
+	DeploymentMetricsTimeRange7dagg,
+	DeploymentMetricsTimeRange30dagg,
+}
+
+var validDeploymentMetricsTimeRange = func() map[DeploymentMetricsTimeRange]bool {
+	m := map[DeploymentMetricsTimeRange]bool{}
+	for _, t := range allDeploymentMetricsTimeRange {
+		m[t] = true
+	}
+	return m
+}()
+
+func (m *DeploymentMetrics) Valid() error {
+	m.Name = strings.TrimSpace(m.Name)
+
+	v := validator.New()
+
+	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
+	v.Mustf(utf8.RuneCountInString(m.Name) <= MaxNameLength, "name must have length less then %d characters", MaxNameLength)
+	v.Must(m.Project != "", "project required")
+	v.Must(validDeploymentMetricsTimeRange[m.TimeRange], "timeRange invalid")
+
+	return WrapValidate(v)
+}
+
+type DeploymentMetricsResult struct {
+	CPUUsage    []*DeploymentMetricsLine `json:"cpuUsage"`
+	MemoryUsage []*DeploymentMetricsLine `json:"memoryUsage"`
+	Memory      []*DeploymentMetricsLine `json:"memory"`
+	Requests    []*DeploymentMetricsLine `json:"requests"`
+	Egress      []*DeploymentMetricsLine `json:"egress"`
+}
+
+type DeploymentMetricsLine struct {
+	Name   string       `json:"name" yaml:"name"`
+	Points [][2]float64 `json:"points" yaml:"points"`
 }

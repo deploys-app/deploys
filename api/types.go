@@ -7,7 +7,7 @@ import (
 
 type Empty struct{}
 
-func (Empty) Table() [][]string {
+func (*Empty) Table() [][]string {
 	return [][]string{{"Operation success"}}
 }
 

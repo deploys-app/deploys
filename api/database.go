@@ -11,7 +11,7 @@ import (
 )
 
 type Database interface {
-	Create(context.Context, DatabaseCreate) (*Empty, error)
+	Create(context.Context, *DatabaseCreate) (*Empty, error)
 }
 
 type DatabaseCreate struct {

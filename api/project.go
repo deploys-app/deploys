@@ -11,17 +11,17 @@ import (
 )
 
 type Project interface {
-	Create(ctx context.Context, m ProjectCreate) (*Empty, error)
-	Get(ctx context.Context, m ProjectGet) (*ProjectGetResult, error)
-	List(ctx context.Context, m Empty) (*ProjectListResult, error)
-	Update(ctx context.Context, m ProjectUpdate) (*Empty, error)
-	Usage(ctx context.Context, m ProjectUsage) (*ProjectUsageResult, error)
+	Create(ctx context.Context, m *ProjectCreate) (*Empty, error)
+	Get(ctx context.Context, m *ProjectGet) (*ProjectGetResult, error)
+	List(ctx context.Context, m *Empty) (*ProjectListResult, error)
+	Update(ctx context.Context, m *ProjectUpdate) (*Empty, error)
+	Usage(ctx context.Context, m *ProjectUsage) (*ProjectUsageResult, error)
 }
 
 type ProjectCreate struct {
-	SID            string
-	Name           string
-	BillingAccount string
+	SID            string `json:"sid"`
+	Name           string `json:"name"`
+	BillingAccount string `json:"billingAccount"`
 }
 
 var (
@@ -89,7 +89,7 @@ type ProjectGetResult struct {
 	CreatedAt      time.Time `json:"createdAt" yaml:"createdAt"`
 }
 
-func (m ProjectGetResult) Table() [][]string {
+func (m *ProjectGetResult) Table() [][]string {
 	return [][]string{
 		{"PROJECT", "NAME", "AGE"},
 		{
@@ -104,7 +104,7 @@ type ProjectListResult struct {
 	Projects []*ProjectGetResult `json:"projects"`
 }
 
-func (m ProjectListResult) Table() [][]string {
+func (m *ProjectListResult) Table() [][]string {
 	table := [][]string{
 		{"PROJECT", "NAME", "AGE"},
 	}

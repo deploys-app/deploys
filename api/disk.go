@@ -11,17 +11,18 @@ import (
 )
 
 type Disk interface {
-	Create(ctx context.Context, m DiskCreate) (*Empty, error)
-	List(ctx context.Context, m DiskList) (*DiskListResult, error)
-	Update(ctx context.Context, m DiskUpdate) (*Empty, error)
-	Delete(ctx context.Context, m DiskDelete) (*Empty, error)
+	Create(ctx context.Context, m *DiskCreate) (*Empty, error)
+	Get(ctx context.Context, m *DiskGet) (*DiskItem, error)
+	List(ctx context.Context, m *DiskList) (*DiskListResult, error)
+	Update(ctx context.Context, m *DiskUpdate) (*Empty, error)
+	Delete(ctx context.Context, m *DiskDelete) (*Empty, error)
 }
 
 type DiskCreate struct {
-	Project  string
-	Location string
-	Name     string
-	Size     int64
+	Project  string `json:"project"`
+	Location string `json:"location"`
+	Name     string `json:"name"`
+	Size     int64  `json:"size"`
 }
 
 func (m *DiskCreate) Valid() error {
@@ -43,9 +44,9 @@ func (m *DiskCreate) Valid() error {
 }
 
 type DiskUpdate struct {
-	Project string
-	Name    string
-	Size    int64
+	Project string `json:"project"`
+	Name    string `json:"name"`
+	Size    int64  `json:"size"`
 }
 
 func (m *DiskUpdate) Valid() error {
@@ -61,6 +62,20 @@ func (m *DiskUpdate) Valid() error {
 	}
 	v.Must(m.Size >= 1, "minimum disk size 1 Gi")
 	v.Must(m.Size <= 20, "maximum disk size 20 Gi")
+
+	return WrapValidate(v)
+}
+
+type DiskGet struct {
+	Project string `json:"project" yaml:"project"`
+	Name    string `json:"name" yaml:"name"`
+}
+
+func (m *DiskGet) Valid() error {
+	v := validator.New()
+
+	v.Must(m.Project != "", "project required")
+	v.Must(m.Name != "", "name required")
 
 	return WrapValidate(v)
 }
@@ -83,16 +98,16 @@ type DiskListResult struct {
 }
 
 type DiskItem struct {
-	ID        int64
-	ProjectID int64
-	Location  string
-	Name      string
-	Size      int64
-	Status    Status
-	Action    string
-	CreatedAt time.Time
-	CreatedBy string
-	SuccessAt time.Time
+	ID        int64     `json:"id"`
+	ProjectID int64     `json:"projectId"`
+	Location  string    `json:"location"`
+	Name      string    `json:"name"`
+	Size      int64     `json:"size"`
+	Status    Status    `json:"status"`
+	Action    string    `json:"action"`
+	CreatedAt time.Time `json:"createdAt"`
+	CreatedBy string    `json:"createdBy"`
+	SuccessAt time.Time `json:"successAt"`
 }
 
 type DiskDelete struct {

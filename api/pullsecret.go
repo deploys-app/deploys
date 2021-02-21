@@ -11,9 +11,10 @@ import (
 )
 
 type PullSecret interface {
-	Create(ctx context.Context, m PullSecretCreate) (*Empty, error)
-	List(ctx context.Context, m PullSecretList) (*PullSecretListResult, error)
-	Delete(ctx context.Context, m PullSecretDelete) (*Empty, error)
+	Create(ctx context.Context, m *PullSecretCreate) (*Empty, error)
+	Get(ctx context.Context, m *PullSecretGet) (*PullSecretItem, error)
+	List(ctx context.Context, m *PullSecretList) (*PullSecretListResult, error)
+	Delete(ctx context.Context, m *PullSecretDelete) (*Empty, error)
 }
 
 type PullSecretCreate struct {
@@ -81,7 +82,7 @@ type PullSecretListResult struct {
 	PullSecrets []*PullSecretItem `json:"pullSecrets" yaml:"pullSecrets"`
 }
 
-func (m PullSecretListResult) Table() [][]string {
+func (m *PullSecretListResult) Table() [][]string {
 	table := [][]string{
 		{"NAME", "STATUS", "LOCATION", "AGE"},
 	}
@@ -98,9 +99,15 @@ func (m PullSecretListResult) Table() [][]string {
 
 type PullSecretItem struct {
 	Name      string    `json:"name" yaml:"name"`
+	Value     string    `json:"value" yaml:"value"`
 	Location  string    `json:"location" yaml:"location"`
 	Action    Action    `json:"action" yaml:"action"`
 	Status    Status    `json:"status" yaml:"status"`
 	CreatedAt time.Time `json:"createdAt" yaml:"createdAt"`
 	CreatedBy string    `json:"createdBy" yaml:"createdBy"`
+}
+
+type PullSecretGet struct {
+	Project string `json:"project" yaml:"project"`
+	Name    string `json:"name" yaml:"name"`
 }

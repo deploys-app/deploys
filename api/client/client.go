@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -21,6 +20,17 @@ type Error struct {
 
 func (err *Error) Error() string {
 	return err.Message
+}
+
+func (err *Error) apiError() error {
+	// try to convert error message to api error
+	// TODO: find a best way to handle this, error code ?
+	for _, e := range api.AllErrors {
+		if e.Error() == err.Message {
+			return e
+		}
+	}
+	return err
 }
 
 type invoker interface {
@@ -59,12 +69,24 @@ func (c *Client) Project() api.Project {
 	return projectClient{c}
 }
 
+func (c *Client) Billing() api.Billing {
+	return billingClient{c}
+}
+
+func (c *Client) ServiceAccount() api.ServiceAccount {
+	return serviceAccountClient{c}
+}
+
 func (c *Client) Role() api.Role {
 	return roleClient{c}
 }
 
 func (c *Client) Deployment() api.Deployment {
 	return deploymentClient{c}
+}
+
+func (c *Client) Route() api.Route {
+	return routeClient{c}
 }
 
 func (c *Client) Disk() api.Disk {
@@ -75,11 +97,19 @@ func (c *Client) PullSecret() api.PullSecret {
 	return pullSecretClient{c}
 }
 
+func (c *Client) WorkloadIdentity() api.WorkloadIdentity {
+	return workloadIdentityClient{c}
+}
+
 func (c *Client) Collector() api.Collector {
 	return collectorClient{c}
 }
 
 func (c *Client) invoke(ctx context.Context, api string, r interface{}, res interface{}) error {
+	if err := validRequest(r); err != nil {
+		return err
+	}
+
 	var reqBody bytes.Buffer
 	err := json.NewEncoder(&reqBody).Encode(r)
 	if err != nil {
@@ -104,7 +134,7 @@ func (c *Client) invoke(ctx context.Context, api string, r interface{}, res inte
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("not ok")
 	}
-	defer io.Copy(ioutil.Discard, resp.Body)
+	defer io.Copy(io.Discard, resp.Body)
 
 	var errMsg Error
 	var respBody struct {
@@ -121,7 +151,21 @@ func (c *Client) invoke(ctx context.Context, api string, r interface{}, res inte
 	}
 
 	if !respBody.OK {
-		return &errMsg
+		return errMsg.apiError()
 	}
+	return nil
+}
+
+func validRequest(r interface{}) error {
+	if r == nil {
+		return nil
+	}
+
+	if r, ok := r.(interface {
+		Valid() error
+	}); ok {
+		return r.Valid()
+	}
+
 	return nil
 }

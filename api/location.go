@@ -8,15 +8,15 @@ import (
 )
 
 type Location interface {
-	List(ctx context.Context, _ Empty) (*LocationListResult, error)
-	Get(ctx context.Context, m LocationGet) (*LocationItem, error)
+	List(ctx context.Context, _ *Empty) (*LocationListResult, error)
+	Get(ctx context.Context, m *LocationGet) (*LocationItem, error)
 }
 
 type LocationListResult struct {
 	Locations []*LocationItem `json:"locations"`
 }
 
-func (m LocationListResult) Table() [][]string {
+func (m *LocationListResult) Table() [][]string {
 	table := [][]string{
 		{"ID", "DOMAIN SUFFIX", "ENDPOINT", "CNAME"},
 	}

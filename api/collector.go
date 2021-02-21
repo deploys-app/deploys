@@ -5,17 +5,17 @@ import (
 )
 
 type Collector interface {
-	Location(ctx context.Context, m CollectorLocation) (*CollectorLocationResult, error)
-	SetProjectUsage(ctx context.Context, m CollectorSetProjectUsage) (*Empty, error)
-	SetDeploymentUsage(ctx context.Context, m CollectorSetDeploymentUsage) (*Empty, error)
+	Location(ctx context.Context, m *CollectorLocation) (*CollectorLocationResult, error)
+	SetProjectUsage(ctx context.Context, m *CollectorSetProjectUsage) (*Empty, error)
+	SetDeploymentUsage(ctx context.Context, m *CollectorSetDeploymentUsage) (*Empty, error)
 }
 
 type CollectorLocation struct {
-	Location string `json:"location"`
+	Location string `json:"location" yaml:"location"`
 }
 
 type CollectorLocationResult struct {
-	Projects []*CollectorProject `json:"projects"`
+	Projects []*CollectorProject `json:"projects" yaml:"projects"`
 }
 
 type CollectorProject struct {
@@ -23,27 +23,27 @@ type CollectorProject struct {
 }
 
 type CollectorSetProjectUsage struct {
-	Location  string                           `json:"location"`
-	ProjectID int64                            `json:"projectId"`
-	At        string                           `json:"at"`
-	Resources []*CollectorProjectUsageResource `json:"resources"`
+	Location  string                           `json:"location" yaml:"location"`
+	ProjectID int64                            `json:"projectId" yaml:"projectId"`
+	At        string                           `json:"at" yaml:"at"`
+	Resources []*CollectorProjectUsageResource `json:"resources" yaml:"resources"`
 }
 
 type CollectorProjectUsageResource struct {
-	Name  string `json:"name"`
-	Value string `json:"value"` // decimal
+	Name  string `json:"name" yaml:"name"`
+	Value string `json:"value" yaml:"value"` // decimal
 }
 
 type CollectorSetDeploymentUsage struct {
-	Location string                          `json:"location"`
-	List     []*CollectorDeploymentUsageItem `json:"list"`
+	Location string                          `json:"location" yaml:"location"`
+	List     []*CollectorDeploymentUsageItem `json:"list" yaml:"list"`
 }
 
 type CollectorDeploymentUsageItem struct {
-	ProjectID      int64   `json:"projectId"`
-	DeploymentName string  `json:"deploymentName"`
-	Pod            string  `json:"pod"`
-	Name           string  `json:"name"`
-	Value          float64 `json:"value"`
-	At             int64   `json:"at"`
+	ProjectID      int64   `json:"projectId" yaml:"projectId"`
+	DeploymentName string  `json:"deploymentName" yaml:"deploymentName"`
+	Pod            string  `json:"pod" yaml:"pod"`
+	Name           string  `json:"name" yaml:"name"`
+	Value          float64 `json:"value" yaml:"value"`
+	At             int64   `json:"at" yaml:"at"`
 }

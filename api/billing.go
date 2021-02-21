@@ -10,14 +10,14 @@ import (
 )
 
 type Billing interface {
-	Create(ctx context.Context, m BillingCreate) (*BillingCreateResult, error)
-	List(ctx context.Context, m Empty) (*BillingListResult, error)
-	Delete(ctx context.Context, m BillingDelete) (*Empty, error)
-	Get(ctx context.Context, m BillingGet) (*BillingItem, error)
-	Update(ctx context.Context, m BillingUpdate) (*Empty, error)
-	Report(ctx context.Context, m BillingReport) (*BillingReportResult, error)
-	SKUs(ctx context.Context, m Empty) (*BillingSKUs, error)
-	Project(ctx context.Context, m BillingProject) (*BillingProjectResult, error)
+	Create(ctx context.Context, m *BillingCreate) (*BillingCreateResult, error)
+	List(ctx context.Context, m *Empty) (*BillingListResult, error)
+	Delete(ctx context.Context, m *BillingDelete) (*Empty, error)
+	Get(ctx context.Context, m *BillingGet) (*BillingItem, error)
+	Update(ctx context.Context, m *BillingUpdate) (*Empty, error)
+	Report(ctx context.Context, m *BillingReport) (*BillingReportResult, error)
+	SKUs(ctx context.Context, m *Empty) (*BillingSKUs, error)
+	Project(ctx context.Context, m *BillingProject) (*BillingProjectResult, error)
 }
 
 type BillingCreate struct {
@@ -144,8 +144,8 @@ type BillingReportChartSeries struct {
 }
 
 type BillingReportChart struct {
-	Categories []string
-	Series     []*BillingReportChartSeries
+	Categories []string                    `json:"categories" yaml:"categories"`
+	Series     []*BillingReportChartSeries `json:"series" yaml:"series"`
 }
 
 type ReportProjectListItem struct {

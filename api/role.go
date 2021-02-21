@@ -25,6 +25,11 @@ var permissions = []string{
 	"deployment.get",
 	"deployment.delete",
 	"deployment.domainmapping",
+	"route.*",
+	"route.create",
+	"route.list",
+	"route.get",
+	"route.delete",
 	"pullsecret.*",
 	"pullsecret.create",
 	"pullsecret.list",
@@ -64,23 +69,24 @@ func Permissions() []string {
 }
 
 type Role interface {
-	Create(ctx context.Context, m RoleCreate) (*Empty, error)
-	Get(ctx context.Context, m RoleGet) (*RoleGetResult, error)
-	List(ctx context.Context, m RoleList) (*RoleListResult, error)
-	Delete(ctx context.Context, m RoleDelete) (*Empty, error)
-	Grant(ctx context.Context, m RoleGrant) (*Empty, error)
-	Revoke(ctx context.Context, m RoleRevoke) (*Empty, error)
-	Users(ctx context.Context, m RoleUsers) (*RoleUsersResult, error)
+	Create(ctx context.Context, m *RoleCreate) (*Empty, error)
+	Get(ctx context.Context, m *RoleGet) (*RoleGetResult, error)
+	List(ctx context.Context, m *RoleList) (*RoleListResult, error)
+	Delete(ctx context.Context, m *RoleDelete) (*Empty, error)
+	Grant(ctx context.Context, m *RoleGrant) (*Empty, error)
+	Revoke(ctx context.Context, m *RoleRevoke) (*Empty, error)
+	Users(ctx context.Context, m *RoleUsers) (*RoleUsersResult, error)
+	Bind(ctx context.Context, m *RoleBind) (*Empty, error)
 }
 
 type RoleCreate struct {
-	Project     string // project sid
-	Role        string // role sid
-	Name        string // role name (free text)
-	Permissions []string
+	Project     string   `json:"project"` // project sid
+	Role        string   `json:"role"`    // role sid
+	Name        string   `json:"name"`    // role name (free text)
+	Permissions []string `json:"permissions"`
 }
 
-func (m RoleCreate) Valid() error {
+func (m *RoleCreate) Valid() error {
 	m.Role = strings.TrimSpace(m.Role)
 	m.Name = strings.TrimSpace(m.Name)
 
@@ -103,19 +109,19 @@ func (m RoleCreate) Valid() error {
 }
 
 type RoleGet struct {
-	Project string // project sid
-	Role    string // role sid
+	Project string `json:"project"` // project sid
+	Role    string `json:"role"`    // role sid
 }
 
 type RoleGetResult struct {
-	Role        string // role sid
-	Project     string // project sid
-	Name        string // role name
-	Permissions []string
-	CreatedAt   time.Time
+	Role        string    `json:"role"`    // role sid
+	Project     string    `json:"project"` // project sid
+	Name        string    `json:"name"`    // role name
+	Permissions []string  `json:"permissions"`
+	CreatedAt   time.Time `json:"createdAt"`
 }
 
-func (m RoleGetResult) Table() [][]string {
+func (m *RoleGetResult) Table() [][]string {
 	table := [][]string{
 		{"ROLE", "NAME", "AGE"},
 		{
@@ -136,7 +142,7 @@ type RoleListResult struct {
 	Roles   []*RoleListItem `json:"roles" yaml:"roles"`
 }
 
-func (m RoleListResult) Table() [][]string {
+func (m *RoleListResult) Table() [][]string {
 	table := [][]string{
 		{"ROLE", "NAME", "AGE"},
 	}
@@ -236,7 +242,7 @@ type RoleUsers struct {
 	Project string `json:"project"` // project sid
 }
 
-func (m RoleUsers) Valid() error {
+func (m *RoleUsers) Valid() error {
 	if m.Project == "" {
 		return fmt.Errorf("project required")
 	}
@@ -249,7 +255,7 @@ type RoleUsersResult struct {
 	Users   []*RoleUsersItem `json:"users" yaml:"users"`
 }
 
-func (m RoleUsersResult) Table() [][]string {
+func (m *RoleUsersResult) Table() [][]string {
 	table := [][]string{
 		{"EMAIL", "ROLE"},
 	}
@@ -267,4 +273,10 @@ func (m RoleUsersResult) Table() [][]string {
 type RoleUsersItem struct {
 	Email string   `json:"email" yaml:"email"`
 	Roles []string `json:"roles" yaml:"roles"`
+}
+
+type RoleBind struct {
+	Project string   `json:"project"`
+	Email   string   `json:"email"`
+	Roles   []string `json:"roles"`
 }

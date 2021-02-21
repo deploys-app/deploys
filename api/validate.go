@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/moonrhythm/validator"
 )
@@ -32,4 +33,9 @@ func WrapValidate(v *validator.Validator) error {
 		return &ValidateError{err.(*validator.Error)}
 	}
 	return nil
+}
+
+func IsValidateError(err error) bool {
+	var e *ValidateError
+	return errors.As(err, &e)
 }

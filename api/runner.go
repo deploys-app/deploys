@@ -130,7 +130,7 @@ func (rn Runner) me(args ...string) error {
 		return fmt.Errorf("invalid command")
 	case "get":
 		f.Parse(args[1:])
-		resp, err = s.Get(context.Background(), Empty{})
+		resp, err = s.Get(context.Background(), &Empty{})
 	}
 	if err != nil {
 		return err
@@ -157,12 +157,12 @@ func (rn Runner) location(args ...string) error {
 		return fmt.Errorf("invalid command")
 	case "list":
 		f.Parse(args[1:])
-		resp, err = s.List(context.Background(), Empty{})
+		resp, err = s.List(context.Background(), &Empty{})
 	case "get":
 		var req LocationGet
 		f.StringVar(&req.ID, "id", "", "location id")
 		f.Parse(args[1:])
-		resp, err = s.Get(context.Background(), req)
+		resp, err = s.Get(context.Background(), &req)
 	}
 	if err != nil {
 		return err
@@ -188,12 +188,12 @@ func (rn Runner) project(args ...string) error {
 	default:
 		return fmt.Errorf("invalid command")
 	case "list":
-		resp, err = s.List(context.Background(), Empty{})
+		resp, err = s.List(context.Background(), &Empty{})
 	case "get":
 		var req ProjectGet
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.Parse(args[1:])
-		resp, err = s.Get(context.Background(), req)
+		resp, err = s.Get(context.Background(), &req)
 	}
 	if err != nil {
 		return err
@@ -222,18 +222,18 @@ func (rn Runner) role(args ...string) error {
 		var req RoleList
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.Parse(args[1:])
-		resp, err = s.List(context.Background(), req)
+		resp, err = s.List(context.Background(), &req)
 	case "get":
 		var req RoleGet
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Project, "role", "", "role id")
 		f.Parse(args[1:])
-		resp, err = s.Get(context.Background(), req)
+		resp, err = s.Get(context.Background(), &req)
 	case "users":
 		var req RoleUsers
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.Parse(args[1:])
-		resp, err = s.Users(context.Background(), req)
+		resp, err = s.Users(context.Background(), &req)
 	}
 	if err != nil {
 		return err
@@ -262,20 +262,20 @@ func (rn Runner) deployment(args ...string) error {
 		var req DeploymentList
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.Parse(args[1:])
-		resp, err = s.List(context.Background(), req)
+		resp, err = s.List(context.Background(), &req)
 	case "get":
 		var req DeploymentGet
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Name, "name", "", "deployment name")
 		f.IntVar(&req.Revision, "revision", 0, "deployment revision")
 		f.Parse(args[1:])
-		resp, err = s.Get(context.Background(), req)
+		resp, err = s.Get(context.Background(), &req)
 	case "delete":
 		var req DeploymentDelete
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Name, "name", "", "deployment name")
 		f.Parse(args[1:])
-		resp, err = s.Delete(context.Background(), req)
+		resp, err = s.Delete(context.Background(), &req)
 	case "set":
 		return rn.deploymentSet(args[1:]...)
 	}
@@ -312,7 +312,7 @@ func (rn Runner) deploymentSet(args ...string) error {
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Image, "image", "", "deployment image")
 		f.Parse(args[2:])
-		resp, err = s.Deploy(context.Background(), req)
+		resp, err = s.Deploy(context.Background(), &req)
 	}
 	if err != nil {
 		return err
@@ -349,7 +349,7 @@ func (rn Runner) pullSecret(args ...string) error {
 		var req PullSecretList
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.Parse(args[1:])
-		resp, err = s.List(context.Background(), req)
+		resp, err = s.List(context.Background(), &req)
 	}
 	if err != nil {
 		return err

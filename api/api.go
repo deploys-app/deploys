@@ -6,6 +6,7 @@ type API interface {
 	Project() Project
 	Role() Role
 	Deployment() Deployment
+	Route() Route
 	Disk() Disk
 	PullSecret() PullSecret
 	Collector() Collector

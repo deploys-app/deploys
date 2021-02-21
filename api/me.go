@@ -6,8 +6,9 @@ import (
 )
 
 type Me interface {
-	Get(ctx context.Context, _ Empty) (*MeItem, error)
-	UploadKYCDocument(ctx context.Context, m MeUploadKYCDocument) (*MeUploadKYCDocumentResult, error)
+	Get(ctx context.Context, _ *Empty) (*MeItem, error)
+	Authorized(ctx context.Context, m *MeAuthorized) (*MeAuthorizedResult, error)
+	UploadKYCDocument(ctx context.Context, m *MeUploadKYCDocument) (*MeUploadKYCDocumentResult, error)
 }
 
 type MeItem struct {
@@ -15,13 +16,22 @@ type MeItem struct {
 	KYC   bool   `json:"kyc" yaml:"kyc"`
 }
 
-func (m MeItem) Table() [][]string {
+func (m *MeItem) Table() [][]string {
 	return [][]string{
 		{"EMAIL"},
 		{
 			m.Email,
 		},
 	}
+}
+
+type MeAuthorized struct {
+	ProjectID   int64    `json:"projectId"`
+	Permissions []string `json:"permissions"`
+}
+
+type MeAuthorizedResult struct {
+	Authorized bool `json:"authorized"`
 }
 
 type MeUploadKYCDocument struct {

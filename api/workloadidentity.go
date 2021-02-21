@@ -12,10 +12,10 @@ import (
 )
 
 type WorkloadIdentity interface {
-	Create(ctx context.Context, m WorkloadIdentityCreate) (*Empty, error)
-	Get(ctx context.Context, m WorkloadIdentityGet) (*WorkloadIdentityGetResult, error)
-	List(ctx context.Context, m WorkloadIdentityList) (*WorkloadIdentityListResult, error)
-	Delete(ctx context.Context, m WorkloadIdentityDelete) (*Empty, error)
+	Create(ctx context.Context, m *WorkloadIdentityCreate) (*Empty, error)
+	Get(ctx context.Context, m *WorkloadIdentityGet) (*WorkloadIdentityItem, error)
+	List(ctx context.Context, m *WorkloadIdentityList) (*WorkloadIdentityListResult, error)
+	Delete(ctx context.Context, m *WorkloadIdentityDelete) (*Empty, error)
 }
 
 type WorkloadIdentityCreate struct {
@@ -59,22 +59,6 @@ func (m *WorkloadIdentityGet) Valid() error {
 	v.Must(m.ProjectID > 0, "project id required")
 
 	return WrapValidate(v)
-}
-
-type WorkloadIdentityGetResult struct {
-	ID         int64     `json:"id" yaml:"id"`
-	ProjectID  int64     `json:"projectId" yaml:"projectId"`
-	LocationID string    `json:"location" yaml:"location"`
-	Name       string    `json:"name" yaml:"name"`
-	GSA        string    `json:"gsa" yaml:"gsa"`
-	Status     Status    `json:"status" yaml:"status"`
-	Action     Action    `json:"action" yaml:"action"`
-	CreatedAt  time.Time `json:"createdAt" yaml:"createdAt"`
-	CreatedBy  string    `json:"createdBy" yaml:"createdBy"`
-}
-
-func (m *WorkloadIdentityGetResult) ResourceID() string {
-	return fmt.Sprintf("%s-%d", m.Name, m.ProjectID)
 }
 
 type WorkloadIdentityDelete struct {
@@ -126,5 +110,5 @@ func (m *WorkloadIdentityItem) ResourceID() string {
 }
 
 type WorkloadIdentityListResult struct {
-	List []*WorkloadIdentityItem
+	List []*WorkloadIdentityItem `json:"list" yaml:"list"`
 }

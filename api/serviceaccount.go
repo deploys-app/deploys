@@ -10,13 +10,13 @@ import (
 )
 
 type ServiceAccount interface {
-	Create(ctx context.Context, m ServiceAccountCreate) (*Empty, error)
-	Get(ctx context.Context, m ServiceAccountGet) (*ServiceAccountGetResult, error)
-	List(ctx context.Context, m ServiceAccountList) (*ServiceAccountListResult, error)
-	Update(ctx context.Context, m ServiceAccountUpdate) (*Empty, error)
-	Delete(ctx context.Context, m ServiceAccountDelete) (*Empty, error)
-	CreateKey(ctx context.Context, m ServiceAccountCreateKey) (*Empty, error)
-	DeleteKey(ctx context.Context, m ServiceAccountDeleteKey) (*Empty, error)
+	Create(ctx context.Context, m *ServiceAccountCreate) (*Empty, error)
+	Get(ctx context.Context, m *ServiceAccountGet) (*ServiceAccountGetResult, error)
+	List(ctx context.Context, m *ServiceAccountList) (*ServiceAccountListResult, error)
+	Update(ctx context.Context, m *ServiceAccountUpdate) (*Empty, error)
+	Delete(ctx context.Context, m *ServiceAccountDelete) (*Empty, error)
+	CreateKey(ctx context.Context, m *ServiceAccountCreateKey) (*Empty, error)
+	DeleteKey(ctx context.Context, m *ServiceAccountDeleteKey) (*Empty, error)
 }
 
 type ServiceAccountCreate struct {
