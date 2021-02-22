@@ -24,7 +24,7 @@ var (
 	ErrUserNotFound                = newError("api: user not found")
 	ErrDomainNotAvailable          = newError("api: domain not available")
 	ErrReplicasInvalid             = newError("api: replicas invalid")
-	ErrCanMapOnlyService           = newError("api: can not map to deployment other than service type")
+	ErrCanMapOnlyWebService        = newError("api: can not map to deployment other than web service type")
 	ErrScheduleInvalid             = newError("api: schedule invalid")
 	ErrTypeInvalid                 = newError("api: type invalid")
 	ErrTypeNotAllowChange          = newError("api: type not allow to change")
@@ -35,6 +35,7 @@ var (
 	ErrServiceAccountNotFound      = newError("api: service account not found")
 	ErrServiceAccountAlreadyExists = newError("api: service account already exists")
 	ErrMaximumDeploymentReach      = newError("api: maximum deployment reach")
+	ErrRouteNotFound               = newError("api: route not found")
 )
 
 var AllErrors []error

@@ -66,13 +66,12 @@ func (m *RouteList) Valid() error {
 	v := validator.New()
 
 	v.Must(m.Project != "", "project required")
-	v.Must(m.Location != "", "location required")
 
 	return WrapValidate(v)
 }
 
 type RouteListResult struct {
-	Routes []*RouteItem `json:"routes" yaml:"routes"`
+	Items []*RouteItem `json:"routes" yaml:"routes"`
 }
 
 type RouteItem struct {

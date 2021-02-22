@@ -33,7 +33,7 @@ func (m *LocationListResult) Table() [][]string {
 
 type LocationItem struct {
 	ID                string           `json:"id"`
-	DomainSuffix      string           `json:"domain_suffix"`
+	DomainSuffix      string           `json:"domainSuffix"`
 	Endpoint          string           `json:"endpoint"`
 	CName             string           `json:"cname"`
 	FreeTier          bool             `json:"freeTier"`
