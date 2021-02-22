@@ -9,7 +9,6 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/asaskevich/govalidator"
 	"github.com/moonrhythm/validator"
 )
 
@@ -22,7 +21,6 @@ type Deployment interface {
 	Pause(ctx context.Context, m *DeploymentPause) (*Empty, error)
 	Rollback(ctx context.Context, m *DeploymentRollback) (*Empty, error)
 	Delete(ctx context.Context, m *DeploymentDelete) (*Empty, error)
-	MapDomain(ctx context.Context, m *DeploymentMapDomain) (*Empty, error)
 	Metrics(ctx context.Context, m *DeploymentMetrics) (*DeploymentMetricsResult, error)
 }
 
@@ -465,34 +463,6 @@ func (m *DeploymentDelete) Valid() error {
 	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
 	v.Mustf(utf8.RuneCountInString(m.Name) <= MaxNameLength, "name must have length less then %d characters", MaxNameLength)
 	v.Must(m.Project != "", "project required")
-
-	return WrapValidate(v)
-}
-
-type DeploymentMapDomain struct {
-	Project string `json:"project"` // project sid
-	Name    string `json:"name"`    // deployment name
-	Domain  string `json:"domain"`  // domain, empty = unmap
-	Path    string `json:"path"`
-}
-
-func (m *DeploymentMapDomain) Valid() error {
-	m.Name = strings.TrimSpace(m.Name)
-
-	v := validator.New()
-
-	v.Must(m.Project != "", "project required")
-	v.Must(utf8.ValidString(m.Name), "name invalid")
-	cnt := utf8.RuneCountInString(m.Name)
-	v.Must(cnt >= 4 && cnt <= 64, "name must have length between 4-64 characters")
-
-	if m.Domain != "" {
-		v.Must(govalidator.IsDNSName(m.Domain), "domain invalid")
-		v.Must(!strings.HasSuffix(m.Domain, ".deploys.app"), "domain invalid")
-	}
-	if m.Path != "" {
-		v.Must(strings.HasPrefix(m.Path, "/"), "path must start with /")
-	}
 
 	return WrapValidate(v)
 }

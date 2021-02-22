@@ -82,15 +82,6 @@ func (c deploymentClient) Delete(ctx context.Context, m *api.DeploymentDelete) (
 	return &res, nil
 }
 
-func (c deploymentClient) MapDomain(ctx context.Context, m *api.DeploymentMapDomain) (*api.Empty, error) {
-	var res api.Empty
-	err := c.inv.invoke(ctx, "deployment.mapDomain", m, &res)
-	if err != nil {
-		return nil, err
-	}
-	return &res, nil
-}
-
 func (c deploymentClient) Metrics(ctx context.Context, m *api.DeploymentMetrics) (*api.DeploymentMetricsResult, error) {
 	var res api.DeploymentMetricsResult
 	err := c.inv.invoke(ctx, "deployment.metrics", m, &res)

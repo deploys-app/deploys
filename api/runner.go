@@ -102,6 +102,8 @@ func (rn Runner) Run(args ...string) error {
 		return rn.role(args[1:]...)
 	case "deployment":
 		return rn.deployment(args[1:]...)
+	case "route":
+		return rn.route(args[1:]...)
 	case "disk":
 		return rn.disk(args[1:]...)
 	case "pullsecret":
@@ -278,6 +280,61 @@ func (rn Runner) deployment(args ...string) error {
 		resp, err = s.Delete(context.Background(), &req)
 	case "set":
 		return rn.deploymentSet(args[1:]...)
+	}
+	if err != nil {
+		return err
+	}
+	return rn.print(resp)
+}
+
+func (rn Runner) route(args ...string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("invalid command")
+	}
+
+	s := rn.API.Route()
+
+	var (
+		resp interface{}
+		err  error
+	)
+
+	f := flag.NewFlagSet("", flag.ExitOnError)
+	rn.registerFlags(f)
+	switch args[0] {
+	default:
+		return fmt.Errorf("invalid command")
+	case "list":
+		var req RouteList
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Location, "location", "", "location")
+		f.Parse(args[1:])
+		resp, err = s.List(context.Background(), &req)
+	case "get":
+		var req RouteGet
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Domain, "domain", "", "domain")
+		f.StringVar(&req.Path, "path", "", "path")
+		f.Parse(args[1:])
+		resp, err = s.Get(context.Background(), &req)
+	case "create":
+		var req RouteCreate
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Domain, "domain", "", "domain")
+		f.StringVar(&req.Path, "path", "", "path")
+		f.StringVar(&req.Deployment, "deployment", "", "deployment name")
+		f.Parse(args[1:])
+		resp, err = s.Create(context.Background(), &req)
+	case "delete":
+		var req RouteDelete
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Domain, "domain", "", "domain")
+		f.StringVar(&req.Path, "path", "", "path")
+		f.Parse(args[1:])
+		resp, err = s.Delete(context.Background(), &req)
 	}
 	if err != nil {
 		return err

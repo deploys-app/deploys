@@ -71,7 +71,22 @@ func (m *RouteList) Valid() error {
 }
 
 type RouteListResult struct {
-	Items []*RouteItem `json:"routes" yaml:"routes"`
+	Items []*RouteItem `json:"items" yaml:"items"`
+}
+
+func (m *RouteListResult) Table() [][]string {
+	table := [][]string{
+		{"DOMAIN", "PATH", "DEPLOYMENT", "LOCATION"},
+	}
+	for _, x := range m.Items {
+		table = append(table, []string{
+			x.Domain,
+			x.Path,
+			x.Deployment,
+			x.Location,
+		})
+	}
+	return table
 }
 
 type RouteItem struct {
@@ -79,6 +94,19 @@ type RouteItem struct {
 	Domain     string `json:"domain" yaml:"domain"`
 	Path       string `json:"path" yaml:"path"`
 	Deployment string `json:"deployment" yaml:"deployment"`
+}
+
+func (m *RouteItem) Table() [][]string {
+	table := [][]string{
+		{"DOMAIN", "PATH", "DEPLOYMENT", "LOCATION"},
+		{
+			m.Domain,
+			m.Path,
+			m.Deployment,
+			m.Location,
+		},
+	}
+	return table
 }
 
 type RouteDelete struct {

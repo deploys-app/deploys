@@ -39,7 +39,7 @@ func (c roleClient) List(ctx context.Context, m *api.RoleList) (*api.RoleListRes
 
 func (c roleClient) Delete(ctx context.Context, m *api.RoleDelete) (*api.Empty, error) {
 	var res api.Empty
-	err := c.inv.invoke(ctx, "role.list", m, &res)
+	err := c.inv.invoke(ctx, "role.delete", m, &res)
 	if err != nil {
 		return nil, err
 	}
