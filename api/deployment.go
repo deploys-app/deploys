@@ -15,7 +15,7 @@ import (
 type Deployment interface {
 	Deploy(ctx context.Context, m *DeploymentDeploy) (*Empty, error)
 	List(ctx context.Context, m *DeploymentList) (*DeploymentListResult, error)
-	Get(ctx context.Context, m *DeploymentGet) (*DeploymentGetResult, error)
+	Get(ctx context.Context, m *DeploymentGet) (*DeploymentItem, error)
 	Revisions(ctx context.Context, m *DeploymentRevisions) (*DeploymentRevisionsResult, error)
 	Resume(ctx context.Context, m *DeploymentResume) (*Empty, error)
 	Pause(ctx context.Context, m *DeploymentPause) (*Empty, error)
@@ -308,42 +308,6 @@ func (m *DeploymentListResult) Table() [][]string {
 }
 
 type DeploymentItem struct {
-	Project     string             `json:"project" yaml:"project"`
-	Location    string             `json:"location" yaml:"location"`
-	Name        string             `json:"name" yaml:"name"`
-	Type        DeploymentType     `json:"type" yaml:"type"`
-	Image       string             `json:"image" yaml:"image"`
-	Revision    int64              `json:"revision" yaml:"revision"`
-	Resources   DeploymentResource `json:"resources" yaml:"resources"`
-	MinReplicas int                `json:"minReplicas" yaml:"minReplicas"`
-	MaxReplicas int                `json:"maxReplicas" yaml:"maxReplicas"`
-	Status      Status             `json:"status" yaml:"status"`
-	Action      DeploymentAction   `json:"action" yaml:"action"`
-	CreatedAt   time.Time          `json:"createdAt" yaml:"createdAt"`
-	CreatedBy   string             `json:"createdBy" yaml:"createdBy"`
-	SuccessAt   time.Time          `json:"successAt" yaml:"successAt"`
-}
-
-type DeploymentGet struct {
-	Project  string `json:"project"`
-	Name     string `json:"name"`
-	Revision int    `json:"revision"` // 0 = latest
-}
-
-func (m *DeploymentGet) Valid() error {
-	m.Name = strings.TrimSpace(m.Name)
-
-	v := validator.New()
-
-	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
-	v.Mustf(utf8.RuneCountInString(m.Name) <= MaxNameLength, "name must have length less then %d characters", MaxNameLength)
-	v.Must(m.Project != "", "project required")
-	v.Must(m.Revision >= 0, "invalid revision")
-
-	return WrapValidate(v)
-}
-
-type DeploymentGetResult struct {
 	Project          string             `json:"project" yaml:"project"`
 	Location         string             `json:"location" yaml:"location"`
 	Name             string             `json:"name" yaml:"name"`
@@ -374,6 +338,25 @@ type DeploymentGetResult struct {
 	CreatedAt        time.Time          `json:"createdAt" yaml:"createdAt"`
 	CreatedBy        string             `json:"createdBy" yaml:"createdBy"`
 	SuccessAt        time.Time          `json:"successAt" yaml:"successAt"`
+}
+
+type DeploymentGet struct {
+	Project  string `json:"project"`
+	Name     string `json:"name"`
+	Revision int    `json:"revision"` // 0 = latest
+}
+
+func (m *DeploymentGet) Valid() error {
+	m.Name = strings.TrimSpace(m.Name)
+
+	v := validator.New()
+
+	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
+	v.Mustf(utf8.RuneCountInString(m.Name) <= MaxNameLength, "name must have length less then %d characters", MaxNameLength)
+	v.Must(m.Project != "", "project required")
+	v.Must(m.Revision >= 0, "invalid revision")
+
+	return WrapValidate(v)
 }
 
 type DeploymentRevisions struct {

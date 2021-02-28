@@ -28,8 +28,8 @@ func (c deploymentClient) List(ctx context.Context, m *api.DeploymentList) (*api
 	return &res, nil
 }
 
-func (c deploymentClient) Get(ctx context.Context, m *api.DeploymentGet) (*api.DeploymentGetResult, error) {
-	var res api.DeploymentGetResult
+func (c deploymentClient) Get(ctx context.Context, m *api.DeploymentGet) (*api.DeploymentItem, error) {
+	var res api.DeploymentItem
 	err := c.inv.invoke(ctx, "deployment.get", m, &res)
 	if err != nil {
 		return nil, err
