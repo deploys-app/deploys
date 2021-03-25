@@ -7,6 +7,7 @@ require (
 	github.com/acoshift/arpc v1.2.0
 	github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dustin/go-humanize v1.0.0
 	github.com/google/go-cmp v0.5.3 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/moonrhythm/validator v1.2.0

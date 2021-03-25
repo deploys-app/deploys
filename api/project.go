@@ -7,12 +7,13 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/dustin/go-humanize"
 	"github.com/moonrhythm/validator"
 )
 
 type Project interface {
 	Create(ctx context.Context, m *ProjectCreate) (*Empty, error)
-	Get(ctx context.Context, m *ProjectGet) (*ProjectGetResult, error)
+	Get(ctx context.Context, m *ProjectGet) (*ProjectItem, error)
 	List(ctx context.Context, m *Empty) (*ProjectListResult, error)
 	Update(ctx context.Context, m *ProjectUpdate) (*Empty, error)
 	Usage(ctx context.Context, m *ProjectUsage) (*ProjectUsageResult, error)
@@ -81,7 +82,7 @@ type ProjectGet struct {
 	Project string `json:"project"`
 }
 
-type ProjectGetResult struct {
+type ProjectItem struct {
 	ID             int64     `json:"id" yaml:"id"`
 	Project        string    `json:"project" yaml:"project"`
 	Name           string    `json:"name" yaml:"name"`
@@ -89,7 +90,7 @@ type ProjectGetResult struct {
 	CreatedAt      time.Time `json:"createdAt" yaml:"createdAt"`
 }
 
-func (m *ProjectGetResult) Table() [][]string {
+func (m *ProjectItem) Table() [][]string {
 	return [][]string{
 		{"PROJECT", "NAME", "AGE"},
 		{
@@ -101,7 +102,7 @@ func (m *ProjectGetResult) Table() [][]string {
 }
 
 type ProjectListResult struct {
-	Projects []*ProjectGetResult `json:"projects"`
+	Projects []*ProjectItem `json:"projects" yaml:"projects"`
 }
 
 func (m *ProjectListResult) Table() [][]string {
@@ -123,10 +124,23 @@ type ProjectUsage struct {
 }
 
 type ProjectUsageResult struct {
-	CPUUsage float64 `json:"cpuUsage"`
-	CPU      float64 `json:"cpu"`
-	Memory   float64 `json:"memory"`
-	Egress   float64 `json:"egress"`
-	Disk     float64 `json:"disk"`
-	Replica  float64 `json:"replica"`
+	CPUUsage float64 `json:"cpuUsage" yaml:"cpuUsage"`
+	CPU      float64 `json:"cpu" yaml:"cpu"`
+	Memory   float64 `json:"memory" yaml:"memory"`
+	Egress   float64 `json:"egress" yaml:"egress"`
+	Disk     float64 `json:"disk" yaml:"disk"`
+	Replica  float64 `json:"replica" yaml:"replica"`
+}
+
+func (m *ProjectUsageResult) Table() [][]string {
+	table := [][]string{
+		{"RESOURCE", "USAGE"},
+		{"CPUUsage", humanize.CommafWithDigits(m.CPUUsage, 2)},
+		{"CPU", humanize.CommafWithDigits(m.CPU, 2)},
+		{"Memory", humanize.CommafWithDigits(m.Memory, 2)},
+		{"Egress", humanize.CommafWithDigits(m.Egress, 2)},
+		{"Disk", humanize.CommafWithDigits(m.Disk, 2)},
+		{"Replica", humanize.CommafWithDigits(m.Replica, 2)},
+	}
+	return table
 }

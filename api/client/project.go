@@ -28,8 +28,8 @@ func (c projectClient) Update(ctx context.Context, m *api.ProjectUpdate) (*api.E
 	return &res, nil
 }
 
-func (c projectClient) Get(ctx context.Context, m *api.ProjectGet) (*api.ProjectGetResult, error) {
-	var res api.ProjectGetResult
+func (c projectClient) Get(ctx context.Context, m *api.ProjectGet) (*api.ProjectItem, error) {
+	var res api.ProjectItem
 	err := c.inv.invoke(ctx, "project.get", m, &res)
 	if err != nil {
 		return nil, err

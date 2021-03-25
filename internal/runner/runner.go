@@ -1,4 +1,4 @@
-package api
+package runner
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"gopkg.in/yaml.v2"
+	"github.com/deploys-app/deploys/api"
 )
 
 type tablePrinter interface {
@@ -16,7 +17,7 @@ type tablePrinter interface {
 }
 
 type Runner struct {
-	API        API
+	API        api.API
 	Output     *os.File
 	OutputMode string
 }
@@ -132,7 +133,7 @@ func (rn Runner) me(args ...string) error {
 		return fmt.Errorf("invalid command")
 	case "get":
 		f.Parse(args[1:])
-		resp, err = s.Get(context.Background(), &Empty{})
+		resp, err = s.Get(context.Background(), &api.Empty{})
 	}
 	if err != nil {
 		return err
@@ -159,9 +160,9 @@ func (rn Runner) location(args ...string) error {
 		return fmt.Errorf("invalid command")
 	case "list":
 		f.Parse(args[1:])
-		resp, err = s.List(context.Background(), &Empty{})
+		resp, err = s.List(context.Background(), &api.Empty{})
 	case "get":
-		var req LocationGet
+		var req api.LocationGet
 		f.StringVar(&req.ID, "id", "", "location id")
 		f.Parse(args[1:])
 		resp, err = s.Get(context.Background(), &req)
@@ -190,12 +191,18 @@ func (rn Runner) project(args ...string) error {
 	default:
 		return fmt.Errorf("invalid command")
 	case "list":
-		resp, err = s.List(context.Background(), &Empty{})
+		f.Parse(args[1:])
+		resp, err = s.List(context.Background(), &api.Empty{})
 	case "get":
-		var req ProjectGet
+		var req api.ProjectGet
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.Parse(args[1:])
 		resp, err = s.Get(context.Background(), &req)
+	case "usage":
+		var req api.ProjectUsage
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.Parse(args[1:])
+		resp, err = s.Usage(context.Background(), &req)
 	}
 	if err != nil {
 		return err
@@ -221,18 +228,18 @@ func (rn Runner) role(args ...string) error {
 	default:
 		return fmt.Errorf("invalid command")
 	case "list":
-		var req RoleList
+		var req api.RoleList
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.Parse(args[1:])
 		resp, err = s.List(context.Background(), &req)
 	case "get":
-		var req RoleGet
+		var req api.RoleGet
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Project, "role", "", "role id")
 		f.Parse(args[1:])
 		resp, err = s.Get(context.Background(), &req)
 	case "users":
-		var req RoleUsers
+		var req api.RoleUsers
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.Parse(args[1:])
 		resp, err = s.Users(context.Background(), &req)
@@ -261,19 +268,19 @@ func (rn Runner) deployment(args ...string) error {
 	default:
 		return fmt.Errorf("invalid command")
 	case "list":
-		var req DeploymentList
+		var req api.DeploymentList
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.Parse(args[1:])
 		resp, err = s.List(context.Background(), &req)
 	case "get":
-		var req DeploymentGet
+		var req api.DeploymentGet
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Name, "name", "", "deployment name")
 		f.IntVar(&req.Revision, "revision", 0, "deployment revision")
 		f.Parse(args[1:])
 		resp, err = s.Get(context.Background(), &req)
 	case "delete":
-		var req DeploymentDelete
+		var req api.DeploymentDelete
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Name, "name", "", "deployment name")
 		f.Parse(args[1:])
@@ -305,13 +312,13 @@ func (rn Runner) route(args ...string) error {
 	default:
 		return fmt.Errorf("invalid command")
 	case "list":
-		var req RouteList
+		var req api.RouteList
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Location, "location", "", "location")
 		f.Parse(args[1:])
 		resp, err = s.List(context.Background(), &req)
 	case "get":
-		var req RouteGet
+		var req api.RouteGet
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Location, "location", "", "location")
 		f.StringVar(&req.Domain, "domain", "", "domain")
@@ -319,7 +326,7 @@ func (rn Runner) route(args ...string) error {
 		f.Parse(args[1:])
 		resp, err = s.Get(context.Background(), &req)
 	case "create":
-		var req RouteCreate
+		var req api.RouteCreate
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Location, "location", "", "location")
 		f.StringVar(&req.Domain, "domain", "", "domain")
@@ -328,7 +335,7 @@ func (rn Runner) route(args ...string) error {
 		f.Parse(args[1:])
 		resp, err = s.Create(context.Background(), &req)
 	case "delete":
-		var req RouteDelete
+		var req api.RouteDelete
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Location, "location", "", "location")
 		f.StringVar(&req.Domain, "domain", "", "domain")
@@ -364,7 +371,7 @@ func (rn Runner) deploymentSet(args ...string) error {
 			return fmt.Errorf("deployment name requied")
 		}
 
-		var req DeploymentDeploy
+		var req api.DeploymentDeploy
 		req.Name = args[1]
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Image, "image", "", "deployment image")
@@ -403,7 +410,7 @@ func (rn Runner) pullSecret(args ...string) error {
 	default:
 		return fmt.Errorf("invalid command")
 	case "list":
-		var req PullSecretList
+		var req api.PullSecretList
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.Parse(args[1:])
 		resp, err = s.List(context.Background(), &req)

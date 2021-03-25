@@ -9,8 +9,8 @@ import (
 
 	"golang.org/x/oauth2/google"
 
-	"github.com/deploys-app/deploys/api"
 	"github.com/deploys-app/deploys/api/client"
+	"github.com/deploys-app/deploys/internal/runner"
 )
 
 func main() {
@@ -47,7 +47,7 @@ func main() {
 		}
 	}
 
-	rn := api.Runner{
+	rn := runner.Runner{
 		API:    apiClient,
 		Output: os.Stdout,
 	}

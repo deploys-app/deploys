@@ -239,8 +239,7 @@ func (m *DeploymentDeploy) Valid() error {
 	}
 
 	// validate disk
-	if m.Disk != nil {
-		v.Mustf(m.Disk.Name != "", "disk name required")
+	if m.Disk != nil && m.Disk.Name != "" {
 		v.Mustf(m.Disk.MountPath != "", "disk mount path required")
 		if m.Disk.SubPath != "" {
 			v.Mustf(!filepath.IsAbs(m.Disk.SubPath), "disk sub path must be absolute path")
@@ -330,6 +329,8 @@ type DeploymentItem struct {
 	URL              string             `json:"url" yaml:"url"`
 	LogURL           string             `json:"logUrl" yaml:"logUrl"`
 	EventURL         string             `json:"eventUrl" yaml:"eventUrl"`
+	PodsURL          string             `json:"podsUrl" yaml:"podsUrl"`
+	StatusURL        string             `json:"statusUrl" yaml:"statusUrl"`
 	Address          string             `json:"address" yaml:"address"`
 	InternalAddress  string             `json:"internalAddress" yaml:"internalAddress"`
 	Status           Status             `json:"status" yaml:"status"`
