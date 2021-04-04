@@ -235,7 +235,9 @@ func (m *DeploymentDeploy) Valid() error {
 
 	// feature not support autoscaling
 	if m.MinReplicas != nil && m.MaxReplicas != nil && *m.MinReplicas != *m.MaxReplicas {
-		v.Mustf(m.Disk == nil, "using disk not support auto-scaling")
+		if m.Disk != nil {
+			v.Mustf(m.Disk.Name == "", "using disk not support auto-scaling")
+		}
 	}
 
 	// validate disk
