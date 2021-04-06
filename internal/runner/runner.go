@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"gopkg.in/yaml.v2"
+
 	"github.com/deploys-app/deploys/api"
 )
 
@@ -198,6 +199,11 @@ func (rn Runner) project(args ...string) error {
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.Parse(args[1:])
 		resp, err = s.Get(context.Background(), &req)
+	case "delete":
+		var req api.ProjectDelete
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.Parse(args[1:])
+		resp, err = s.Delete(context.Background(), &req)
 	case "usage":
 		var req api.ProjectUsage
 		f.StringVar(&req.Project, "project", "", "project id")

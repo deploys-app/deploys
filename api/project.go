@@ -16,6 +16,7 @@ type Project interface {
 	Get(ctx context.Context, m *ProjectGet) (*ProjectItem, error)
 	List(ctx context.Context, m *Empty) (*ProjectListResult, error)
 	Update(ctx context.Context, m *ProjectUpdate) (*Empty, error)
+	Delete(ctx context.Context, m *ProjectDelete) (*Empty, error)
 	Usage(ctx context.Context, m *ProjectUsage) (*ProjectUsageResult, error)
 }
 
@@ -117,6 +118,10 @@ func (m *ProjectListResult) Table() [][]string {
 		})
 	}
 	return table
+}
+
+type ProjectDelete struct {
+	Project string `json:"project"`
 }
 
 type ProjectUsage struct {

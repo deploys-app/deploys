@@ -46,6 +46,15 @@ func (c projectClient) List(ctx context.Context, m *api.Empty) (*api.ProjectList
 	return &res, nil
 }
 
+func (c projectClient) Delete(ctx context.Context, m *api.ProjectDelete) (*api.Empty, error) {
+	var res api.Empty
+	err := c.inv.invoke(ctx, "project.delete", m, &res)
+	if err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
 func (c projectClient) Usage(ctx context.Context, m *api.ProjectUsage) (*api.ProjectUsageResult, error) {
 	var res api.ProjectUsageResult
 	err := c.inv.invoke(ctx, "project.usage", m, &res)
