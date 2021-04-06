@@ -25,7 +25,6 @@ type BillingCreate struct {
 	TaxID      string `json:"taxId" yaml:"taxId"`
 	TaxName    string `json:"taxName" yaml:"taxName"`
 	TaxAddress string `json:"taxAddress" yaml:"taxAddress"`
-	Phone      string `json:"phone" yaml:"phone"`
 }
 
 func (m *BillingCreate) Valid() error {
@@ -33,7 +32,6 @@ func (m *BillingCreate) Valid() error {
 	m.TaxID = strings.TrimSpace(m.TaxID)
 	m.TaxName = strings.TrimSpace(m.TaxName)
 	m.TaxAddress = strings.TrimSpace(m.TaxAddress)
-	m.Phone = strings.TrimSpace(m.Phone)
 
 	v := validator.New()
 
@@ -90,7 +88,6 @@ type BillingItem struct {
 	TaxID      string `json:"taxId" yaml:"taxId"`
 	TaxName    string `json:"taxName" yaml:"taxName"`
 	TaxAddress string `json:"taxAddress" yaml:"taxAddress"`
-	Phone      string `json:"phone" yaml:"phone"`
 }
 
 type BillingUpdate struct {
@@ -99,7 +96,6 @@ type BillingUpdate struct {
 	TaxID      string `json:"taxId" yaml:"taxId"`
 	TaxName    string `json:"taxName" yaml:"taxName"`
 	TaxAddress string `json:"taxAddress" yaml:"taxAddress"`
-	Phone      string `json:"phone" yaml:"phone"`
 }
 
 func (m *BillingUpdate) Valid() error {
@@ -107,7 +103,6 @@ func (m *BillingUpdate) Valid() error {
 	m.TaxID = strings.TrimSpace(m.TaxID)
 	m.TaxName = strings.TrimSpace(m.TaxName)
 	m.TaxAddress = strings.TrimSpace(m.TaxAddress)
-	m.Phone = strings.TrimSpace(m.Phone)
 
 	v := validator.New()
 
