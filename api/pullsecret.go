@@ -44,8 +44,9 @@ func (m *PullSecretCreate) Valid() error {
 }
 
 type PullSecretDelete struct {
-	Project string `json:"project" yaml:"project"`
-	Name    string `json:"name" yaml:"name"`
+	Location string `json:"location" yaml:"location"`
+	Project  string `json:"project" yaml:"project"`
+	Name     string `json:"name" yaml:"name"`
 }
 
 func (m *PullSecretDelete) Valid() error {
@@ -53,6 +54,7 @@ func (m *PullSecretDelete) Valid() error {
 
 	v := validator.New()
 
+	v.Must(m.Location != "", "location required")
 	v.Must(m.Project != "", "project required")
 	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
 	{
@@ -108,6 +110,17 @@ type PullSecretItem struct {
 }
 
 type PullSecretGet struct {
-	Project string `json:"project" yaml:"project"`
-	Name    string `json:"name" yaml:"name"`
+	Location string `json:"location" yaml:"location"`
+	Project  string `json:"project" yaml:"project"`
+	Name     string `json:"name" yaml:"name"`
+}
+
+func (m *PullSecretGet) Valid() error {
+	v := validator.New()
+
+	v.Must(m.Location != "", "location required")
+	v.Must(m.Project != "", "project required")
+	v.Must(m.Name != "", "name required")
+
+	return WrapValidate(v)
 }

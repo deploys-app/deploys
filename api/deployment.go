@@ -354,17 +354,18 @@ func (m *DeploymentGet) Valid() error {
 
 	v := validator.New()
 
+	v.Must(m.Project != "", "project required")
 	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
 	v.Mustf(utf8.RuneCountInString(m.Name) <= MaxNameLength, "name must have length less then %d characters", MaxNameLength)
-	v.Must(m.Project != "", "project required")
 	v.Must(m.Revision >= 0, "invalid revision")
 
 	return WrapValidate(v)
 }
 
 type DeploymentRevisions struct {
-	Project string `json:"project"`
-	Name    string `json:"name"`
+	Location string `json:"location"`
+	Project  string `json:"project"`
+	Name     string `json:"name"`
 }
 
 func (m *DeploymentRevisions) Valid() error {
@@ -372,9 +373,10 @@ func (m *DeploymentRevisions) Valid() error {
 
 	v := validator.New()
 
+	v.Must(m.Location != "", "location required")
+	v.Must(m.Project != "", "project required")
 	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
 	v.Mustf(utf8.RuneCountInString(m.Name) <= MaxNameLength, "name must have length less then %d characters", MaxNameLength)
-	v.Must(m.Project != "", "project required")
 
 	return WrapValidate(v)
 }
@@ -384,8 +386,9 @@ type DeploymentRevisionsResult struct {
 }
 
 type DeploymentResume struct {
-	Project string `json:"project"`
-	Name    string `json:"name"`
+	Location string `json:"location"`
+	Project  string `json:"project"`
+	Name     string `json:"name"`
 }
 
 func (m *DeploymentResume) Valid() error {
@@ -393,16 +396,18 @@ func (m *DeploymentResume) Valid() error {
 
 	v := validator.New()
 
+	v.Must(m.Location != "", "location required")
+	v.Must(m.Project != "", "project required")
 	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
 	v.Mustf(utf8.RuneCountInString(m.Name) <= MaxNameLength, "name must have length less then %d characters", MaxNameLength)
-	v.Must(m.Project != "", "project required")
 
 	return WrapValidate(v)
 }
 
 type DeploymentPause struct {
-	Project string `json:"project"`
-	Name    string `json:"name"`
+	Location string `json:"location"`
+	Project  string `json:"project"`
+	Name     string `json:"name"`
 }
 
 func (m *DeploymentPause) Valid() error {
@@ -410,9 +415,10 @@ func (m *DeploymentPause) Valid() error {
 
 	v := validator.New()
 
+	v.Must(m.Location != "", "location required")
+	v.Must(m.Project != "", "project required")
 	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
 	v.Mustf(utf8.RuneCountInString(m.Name) <= MaxNameLength, "name must have length less then %d characters", MaxNameLength)
-	v.Must(m.Project != "", "project required")
 
 	return WrapValidate(v)
 }
@@ -437,8 +443,9 @@ func (m *DeploymentRollback) Valid() error {
 }
 
 type DeploymentDelete struct {
-	Project string `json:"project"`
-	Name    string `json:"name"`
+	Location string `json:"location"`
+	Project  string `json:"project"`
+	Name     string `json:"name"`
 }
 
 func (m *DeploymentDelete) Valid() error {
@@ -446,14 +453,16 @@ func (m *DeploymentDelete) Valid() error {
 
 	v := validator.New()
 
+	v.Must(m.Location != "", "location required")
+	v.Must(m.Project != "", "project required")
 	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
 	v.Mustf(utf8.RuneCountInString(m.Name) <= MaxNameLength, "name must have length less then %d characters", MaxNameLength)
-	v.Must(m.Project != "", "project required")
 
 	return WrapValidate(v)
 }
 
 type DeploymentMetrics struct {
+	Location  string                     `json:"location" yaml:"location"`
 	Project   string                     `json:"project" yaml:"project"`
 	Name      string                     `json:"name" yaml:"name"`
 	TimeRange DeploymentMetricsTimeRange `json:"timeRange" yaml:"timeRange"`

@@ -161,7 +161,7 @@ func (rn Runner) location(args ...string) error {
 		return fmt.Errorf("invalid command")
 	case "list":
 		f.Parse(args[1:])
-		resp, err = s.List(context.Background(), &api.Empty{})
+		resp, err = s.List(context.Background(), &api.LocationList{})
 	case "get":
 		var req api.LocationGet
 		f.StringVar(&req.ID, "id", "", "location id")

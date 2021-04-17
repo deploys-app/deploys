@@ -10,7 +10,7 @@ type locationClient struct {
 	inv invoker
 }
 
-func (c locationClient) List(ctx context.Context, m *api.Empty) (*api.LocationListResult, error) {
+func (c locationClient) List(ctx context.Context, m *api.LocationList) (*api.LocationListResult, error) {
 	var res api.LocationListResult
 	err := c.inv.invoke(ctx, "location.list", m, &res)
 	if err != nil {

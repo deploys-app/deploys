@@ -8,8 +8,12 @@ import (
 )
 
 type Location interface {
-	List(ctx context.Context, _ *Empty) (*LocationListResult, error)
+	List(ctx context.Context, _ *LocationList) (*LocationListResult, error)
 	Get(ctx context.Context, m *LocationGet) (*LocationItem, error)
+}
+
+type LocationList struct {
+	Project string `json:"project"` // optional
 }
 
 type LocationListResult struct {

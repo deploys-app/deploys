@@ -19,10 +19,10 @@ type WorkloadIdentity interface {
 }
 
 type WorkloadIdentityCreate struct {
-	ProjectID int64  `json:"projectId" yaml:"projectId"`
-	Location  string `json:"location" yaml:"location"`
-	Name      string `json:"name" yaml:"name"`
-	GSA       string `json:"gsa" yaml:"gsa"`
+	Location string `json:"location" yaml:"location"`
+	Project  string `json:"project" yaml:"project"`
+	Name     string `json:"name" yaml:"name"`
+	GSA      string `json:"gsa" yaml:"gsa"`
 }
 
 func (m *WorkloadIdentityCreate) Valid() error {
@@ -30,12 +30,13 @@ func (m *WorkloadIdentityCreate) Valid() error {
 	m.GSA = strings.TrimSpace(m.GSA)
 
 	v := validator.New()
+	v.Must(m.Location != "", "location required")
+	v.Must(m.Project != "", "project required")
 	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
 	{
 		cnt := utf8.RuneCountInString(m.Name)
 		v.Mustf(cnt >= MinNameLength && cnt <= MaxNameLength, "name must have length between %d-%d characters", MinNameLength, MaxNameLength)
 	}
-	v.Must(m.ProjectID > 0, "project id required")
 	v.Must(m.GSA == "" || govalidator.IsEmail(m.GSA), "gsa must be an email")
 	v.Must(strings.HasSuffix(m.GSA, ".iam.gserviceaccount.com"), "gsa must end with '.iam.gserviceaccount.com'")
 
@@ -43,66 +44,70 @@ func (m *WorkloadIdentityCreate) Valid() error {
 }
 
 type WorkloadIdentityGet struct {
-	ProjectID int64  `json:"projectId" yaml:"projectId"`
-	Name      string `json:"name" yaml:"name"`
+	Location string `json:"location" yaml:"location"`
+	Project  string `json:"project" yaml:"project"`
+	Name     string `json:"name" yaml:"name"`
 }
 
 func (m *WorkloadIdentityGet) Valid() error {
 	m.Name = strings.TrimSpace(m.Name)
 
 	v := validator.New()
+	v.Must(m.Location != "", "location required")
+	v.Must(m.Project != "", "project required")
 	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
 	{
 		cnt := utf8.RuneCountInString(m.Name)
 		v.Mustf(cnt >= MinNameLength && cnt <= MaxNameLength, "name must have length between %d-%d characters", MinNameLength, MaxNameLength)
 	}
-	v.Must(m.ProjectID > 0, "project id required")
 
 	return WrapValidate(v)
 }
 
 type WorkloadIdentityDelete struct {
-	ProjectID int64  `json:"projectId" yaml:"projectId"`
-	Name      string `json:"name" yaml:"name"`
+	Location string `json:"location" yaml:"location"`
+	Project  string `json:"project" yaml:"project"`
+	Name     string `json:"name" yaml:"name"`
 }
 
 func (m *WorkloadIdentityDelete) Valid() error {
 	m.Name = strings.TrimSpace(m.Name)
 
 	v := validator.New()
+	v.Must(m.Location != "", "location required")
+	v.Must(m.Project != "", "project required")
 	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
 	{
 		cnt := utf8.RuneCountInString(m.Name)
 		v.Mustf(cnt >= MinNameLength && cnt <= MaxNameLength, "name must have length between %d-%d characters", MinNameLength, MaxNameLength)
 	}
-	v.Must(m.ProjectID > 0, "project id required")
 
 	return WrapValidate(v)
 }
 
 type WorkloadIdentityList struct {
-	ProjectID int64  `json:"projectId" yaml:"projectId"`
-	Location  string `json:"location" yaml:"location"`
+	Project  string `json:"project" yaml:"project"`
+	Location string `json:"location" yaml:"location"`
 }
 
 func (m *WorkloadIdentityList) Valid() error {
 	v := validator.New()
 
-	v.Must(m.ProjectID > 0, "project id required")
+	v.Must(m.Project != "", "project required")
 
 	return WrapValidate(v)
 }
 
 type WorkloadIdentityItem struct {
-	ID         int64     `json:"id" yaml:"id"`
-	ProjectID  int64     `json:"projectId" yaml:"projectId"`
-	LocationID string    `json:"locationId" yaml:"locationId"`
-	Name       string    `json:"name" yaml:"name"`
-	GSA        string    `json:"gsa" yaml:"gsa"`
-	Status     Status    `json:"status" yaml:"status"`
-	Action     Action    `json:"action" yaml:"action"`
-	CreatedAt  time.Time `json:"createdAt" yaml:"createdAt"`
-	CreatedBy  string    `json:"createdBy" yaml:"createdBy"`
+	ID        int64     `json:"id" yaml:"id"`
+	ProjectID int64     `json:"projectId" yaml:"projectId"`
+	Location  string    `json:"location" yaml:"location"`
+	Name      string    `json:"name" yaml:"name"`
+	GSA       string    `json:"gsa" yaml:"gsa"`
+	Status    Status    `json:"status" yaml:"status"`
+	Action    Action    `json:"action" yaml:"action"`
+	CreatedAt time.Time `json:"createdAt" yaml:"createdAt"`
+	CreatedBy string    `json:"createdBy" yaml:"createdBy"`
 }
 
 func (m *WorkloadIdentityItem) ResourceID() string {
