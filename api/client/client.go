@@ -132,7 +132,7 @@ func (c *Client) invoke(ctx context.Context, api string, r interface{}, res inte
 		return err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("not ok")
+		return fmt.Errorf("api return not ok; statusCode=%d", resp.StatusCode)
 	}
 	defer io.Copy(io.Discard, resp.Body)
 

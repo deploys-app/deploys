@@ -19,10 +19,10 @@ type Disk interface {
 }
 
 type DiskCreate struct {
-	Project  string `json:"project"`
-	Location string `json:"location"`
-	Name     string `json:"name"`
-	Size     int64  `json:"size"`
+	Location string `json:"location" yaml:"location"`
+	Project  string `json:"project" yaml:"project"`
+	Name     string `json:"name" yaml:"name"`
+	Size     int64  `json:"size" yaml:"size"`
 }
 
 func (m *DiskCreate) Valid() error {
@@ -30,8 +30,8 @@ func (m *DiskCreate) Valid() error {
 
 	v := validator.New()
 
-	v.Must(m.Project != "", "project required")
 	v.Must(m.Location != "", "location required")
+	v.Must(m.Project != "", "project required")
 	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
 	{
 		cnt := utf8.RuneCountInString(m.Name)
@@ -44,9 +44,10 @@ func (m *DiskCreate) Valid() error {
 }
 
 type DiskUpdate struct {
-	Project string `json:"project"`
-	Name    string `json:"name"`
-	Size    int64  `json:"size"`
+	Location string `json:"location" yaml:"location"`
+	Project  string `json:"project" yaml:"project"`
+	Name     string `json:"name" yaml:"name"`
+	Size     int64  `json:"size" yaml:"size"`
 }
 
 func (m *DiskUpdate) Valid() error {
@@ -54,6 +55,7 @@ func (m *DiskUpdate) Valid() error {
 
 	v := validator.New()
 
+	v.Must(m.Location != "", "location required")
 	v.Must(m.Project != "", "project required")
 	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
 	{
@@ -67,13 +69,15 @@ func (m *DiskUpdate) Valid() error {
 }
 
 type DiskGet struct {
-	Project string `json:"project" yaml:"project"`
-	Name    string `json:"name" yaml:"name"`
+	Location string `json:"location" yaml:"location"`
+	Project  string `json:"project" yaml:"project"`
+	Name     string `json:"name" yaml:"name"`
 }
 
 func (m *DiskGet) Valid() error {
 	v := validator.New()
 
+	v.Must(m.Location != "", "location required")
 	v.Must(m.Project != "", "project required")
 	v.Must(m.Name != "", "name required")
 
@@ -81,8 +85,8 @@ func (m *DiskGet) Valid() error {
 }
 
 type DiskList struct {
+	Location string `json:"location" yaml:"location"` // optional
 	Project  string `json:"project" yaml:"project"`
-	Location string `json:"location" yaml:"location"`
 }
 
 func (m *DiskList) Valid() error {
@@ -111,8 +115,9 @@ type DiskItem struct {
 }
 
 type DiskDelete struct {
-	Project string
-	Name    string
+	Location string `json:"location" yaml:"location"`
+	Project  string `json:"project" yaml:"project"`
+	Name     string `json:"name" yaml:"name"`
 }
 
 func (m *DiskDelete) Valid() error {
@@ -120,11 +125,12 @@ func (m *DiskDelete) Valid() error {
 
 	v := validator.New()
 
+	v.Must(m.Location != "", "location required")
+	v.Must(m.Project != "", "project required")
 	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
 	if cnt := utf8.RuneCountInString(m.Name); cnt > MaxNameLength {
 		return fmt.Errorf("name invalid")
 	}
-	v.Must(m.Project != "", "project required")
 
 	return WrapValidate(v)
 }

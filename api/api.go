@@ -1,7 +1,8 @@
 package api
 
-type API interface {
+type Interface interface {
 	Me() Me
+	Billing() Billing
 	Location() Location
 	Project() Project
 	Role() Role
@@ -9,5 +10,7 @@ type API interface {
 	Route() Route
 	Disk() Disk
 	PullSecret() PullSecret
+	WorkloadIdentity() WorkloadIdentity
+	ServiceAccount() ServiceAccount
 	Collector() Collector
 }

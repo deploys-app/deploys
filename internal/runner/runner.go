@@ -18,7 +18,7 @@ type tablePrinter interface {
 }
 
 type Runner struct {
-	API        api.API
+	API        api.Interface
 	Output     *os.File
 	OutputMode string
 }

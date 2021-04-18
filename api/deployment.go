@@ -212,8 +212,14 @@ func (m *DeploymentDeploy) Valid() error {
 	m.Image = strings.ReplaceAll(m.Image, " ", "") // remove all space in image
 	// m.Image = strings.ToLower(m.Image) // image tag can be lowercase
 
+	// TODO: autofill location until all user migrate
+	if m.Location == "" {
+		m.Location = "gke.cluster-rcf2"
+	}
+
 	v := validator.New()
 
+	v.Must(m.Location != "", "location required")
 	v.Must(m.Project != "", "project required")
 	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
 	{
@@ -278,7 +284,8 @@ func (m *DeploymentDeploy) Valid() error {
 }
 
 type DeploymentList struct {
-	Project string `json:"project"`
+	Location string `json:"location" yaml:"location"` // optional
+	Project  string `json:"project" yaml:"project"`
 }
 
 func (m *DeploymentList) Valid() error {
@@ -344,16 +351,23 @@ type DeploymentItem struct {
 }
 
 type DeploymentGet struct {
-	Project  string `json:"project"`
-	Name     string `json:"name"`
-	Revision int    `json:"revision"` // 0 = latest
+	Location string `json:"location" yaml:"location"`
+	Project  string `json:"project" yaml:"project"`
+	Name     string `json:"name" yaml:"name"`
+	Revision int    `json:"revision" yaml:"revision"` // 0 = latest
 }
 
 func (m *DeploymentGet) Valid() error {
 	m.Name = strings.TrimSpace(m.Name)
 
+	// TODO: autofill location until all user migrate
+	if m.Location == "" {
+		m.Location = "gke.cluster-rcf2"
+	}
+
 	v := validator.New()
 
+	v.Must(m.Location != "", "location required")
 	v.Must(m.Project != "", "project required")
 	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
 	v.Mustf(utf8.RuneCountInString(m.Name) <= MaxNameLength, "name must have length less then %d characters", MaxNameLength)
@@ -363,9 +377,9 @@ func (m *DeploymentGet) Valid() error {
 }
 
 type DeploymentRevisions struct {
-	Location string `json:"location"`
-	Project  string `json:"project"`
-	Name     string `json:"name"`
+	Location string `json:"location" yaml:"location"`
+	Project  string `json:"project" yaml:"project"`
+	Name     string `json:"name" yaml:"name"`
 }
 
 func (m *DeploymentRevisions) Valid() error {
@@ -386,9 +400,9 @@ type DeploymentRevisionsResult struct {
 }
 
 type DeploymentResume struct {
-	Location string `json:"location"`
-	Project  string `json:"project"`
-	Name     string `json:"name"`
+	Location string `json:"location" yaml:"location"`
+	Project  string `json:"project" yaml:"project"`
+	Name     string `json:"name" yaml:"name"`
 }
 
 func (m *DeploymentResume) Valid() error {
@@ -405,9 +419,9 @@ func (m *DeploymentResume) Valid() error {
 }
 
 type DeploymentPause struct {
-	Location string `json:"location"`
-	Project  string `json:"project"`
-	Name     string `json:"name"`
+	Location string `json:"location" yaml:"location"`
+	Project  string `json:"project" yaml:"project"`
+	Name     string `json:"name" yaml:"name"`
 }
 
 func (m *DeploymentPause) Valid() error {
@@ -424,9 +438,10 @@ func (m *DeploymentPause) Valid() error {
 }
 
 type DeploymentRollback struct {
-	Project  string `json:"project"`
-	Name     string `json:"name"`
-	Revision int    `json:"revision"`
+	Location string `json:"location" yaml:"location"`
+	Project  string `json:"project" yaml:"project"`
+	Name     string `json:"name" yaml:"name"`
+	Revision int    `json:"revision" yaml:"revision"`
 }
 
 func (m *DeploymentRollback) Valid() error {
@@ -434,18 +449,19 @@ func (m *DeploymentRollback) Valid() error {
 
 	v := validator.New()
 
+	v.Must(m.Location != "", "location required")
+	v.Must(m.Project != "", "project required")
 	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
 	v.Mustf(utf8.RuneCountInString(m.Name) <= MaxNameLength, "name must have length less then %d characters", MaxNameLength)
-	v.Must(m.Project != "", "project required")
 	v.Must(m.Revision >= 1, "invalid revision")
 
 	return WrapValidate(v)
 }
 
 type DeploymentDelete struct {
-	Location string `json:"location"`
-	Project  string `json:"project"`
-	Name     string `json:"name"`
+	Location string `json:"location" yaml:"location"`
+	Project  string `json:"project" yaml:"project"`
+	Name     string `json:"name" yaml:"name"`
 }
 
 func (m *DeploymentDelete) Valid() error {
@@ -459,13 +475,6 @@ func (m *DeploymentDelete) Valid() error {
 	v.Mustf(utf8.RuneCountInString(m.Name) <= MaxNameLength, "name must have length less then %d characters", MaxNameLength)
 
 	return WrapValidate(v)
-}
-
-type DeploymentMetrics struct {
-	Location  string                     `json:"location" yaml:"location"`
-	Project   string                     `json:"project" yaml:"project"`
-	Name      string                     `json:"name" yaml:"name"`
-	TimeRange DeploymentMetricsTimeRange `json:"timeRange" yaml:"timeRange"`
 }
 
 type DeploymentMetricsTimeRange string
@@ -506,11 +515,19 @@ var validDeploymentMetricsTimeRange = func() map[DeploymentMetricsTimeRange]bool
 	return m
 }()
 
+type DeploymentMetrics struct {
+	Location  string                     `json:"location" yaml:"location"`
+	Project   string                     `json:"project" yaml:"project"`
+	Name      string                     `json:"name" yaml:"name"`
+	TimeRange DeploymentMetricsTimeRange `json:"timeRange" yaml:"timeRange"`
+}
+
 func (m *DeploymentMetrics) Valid() error {
 	m.Name = strings.TrimSpace(m.Name)
 
 	v := validator.New()
 
+	v.Must(m.Location != "", "location required")
 	v.Must(ReValidName.MatchString(m.Name), "name invalid "+ReValidNameStr)
 	v.Mustf(utf8.RuneCountInString(m.Name) <= MaxNameLength, "name must have length less then %d characters", MaxNameLength)
 	v.Must(m.Project != "", "project required")
@@ -520,11 +537,11 @@ func (m *DeploymentMetrics) Valid() error {
 }
 
 type DeploymentMetricsResult struct {
-	CPUUsage    []*DeploymentMetricsLine `json:"cpuUsage"`
-	MemoryUsage []*DeploymentMetricsLine `json:"memoryUsage"`
-	Memory      []*DeploymentMetricsLine `json:"memory"`
-	Requests    []*DeploymentMetricsLine `json:"requests"`
-	Egress      []*DeploymentMetricsLine `json:"egress"`
+	CPUUsage    []*DeploymentMetricsLine `json:"cpuUsage" yaml:"cpuUsage"`
+	MemoryUsage []*DeploymentMetricsLine `json:"memoryUsage" yaml:"memoryUsage"`
+	Memory      []*DeploymentMetricsLine `json:"memory" yaml:"memory"`
+	Requests    []*DeploymentMetricsLine `json:"requests" yaml:"requests"`
+	Egress      []*DeploymentMetricsLine `json:"egress" yaml:"egress"`
 }
 
 type DeploymentMetricsLine struct {
