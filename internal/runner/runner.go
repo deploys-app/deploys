@@ -160,8 +160,10 @@ func (rn Runner) location(args ...string) error {
 	default:
 		return fmt.Errorf("invalid command")
 	case "list":
+		var req api.LocationList
+		f.StringVar(&req.Project, "project", "", "project id")
 		f.Parse(args[1:])
-		resp, err = s.List(context.Background(), &api.LocationList{})
+		resp, err = s.List(context.Background(), &req)
 	case "get":
 		var req api.LocationGet
 		f.StringVar(&req.ID, "id", "", "location id")
@@ -275,11 +277,13 @@ func (rn Runner) deployment(args ...string) error {
 		return fmt.Errorf("invalid command")
 	case "list":
 		var req api.DeploymentList
+		f.StringVar(&req.Location, "location", "", "location")
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.Parse(args[1:])
 		resp, err = s.List(context.Background(), &req)
 	case "get":
 		var req api.DeploymentGet
+		f.StringVar(&req.Location, "location", "", "location")
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Name, "name", "", "deployment name")
 		f.IntVar(&req.Revision, "revision", 0, "deployment revision")
@@ -287,6 +291,7 @@ func (rn Runner) deployment(args ...string) error {
 		resp, err = s.Get(context.Background(), &req)
 	case "delete":
 		var req api.DeploymentDelete
+		f.StringVar(&req.Location, "location", "", "location")
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Name, "name", "", "deployment name")
 		f.Parse(args[1:])
@@ -379,6 +384,7 @@ func (rn Runner) deploymentSet(args ...string) error {
 
 		var req api.DeploymentDeploy
 		req.Name = args[1]
+		f.StringVar(&req.Location, "location", "", "location")
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Image, "image", "", "deployment image")
 		f.Parse(args[2:])
@@ -417,9 +423,24 @@ func (rn Runner) pullSecret(args ...string) error {
 		return fmt.Errorf("invalid command")
 	case "list":
 		var req api.PullSecretList
+		f.StringVar(&req.Location, "location", "", "location")
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.Parse(args[1:])
 		resp, err = s.List(context.Background(), &req)
+	case "get":
+		var req api.PullSecretGet
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Name, "name", "", "name")
+		f.Parse(args[1:])
+		resp, err = s.Get(context.Background(), &req)
+	case "delete":
+		var req api.PullSecretDelete
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Name, "name", "", "name")
+		f.Parse(args[1:])
+		resp, err = s.Delete(context.Background(), &req)
 	}
 	if err != nil {
 		return err

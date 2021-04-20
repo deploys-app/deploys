@@ -91,7 +91,7 @@ func (m *PullSecretListResult) Table() [][]string {
 	for _, x := range m.PullSecrets {
 		table = append(table, []string{
 			x.Name,
-			x.Status.String(),
+			x.Status.Text(),
 			x.Location,
 			age(x.CreatedAt),
 		})

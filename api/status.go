@@ -1,5 +1,9 @@
 package api
 
+import (
+	"encoding/json"
+)
+
 type Status int
 
 const (
@@ -8,21 +12,76 @@ const (
 	Error
 	Cancelled
 	ErrorPendingCleanupResource // TODO: remove ?
+	StatusNone
 )
 
-func (s Status) String() string {
-	switch s {
-	case Pending:
-		return "Pending"
-	case Success:
-		return "Success"
-	case Error:
-		return "Error"
-	case Cancelled:
-		return "Cancelled"
-	case ErrorPendingCleanupResource:
-		return "Error"
-	default:
-		return ""
+var allStatus = []Status{
+	Pending,
+	Success,
+	Error,
+	Cancelled,
+	ErrorPendingCleanupResource,
+	StatusNone,
+}
+
+var statusString = map[Status]string{
+	Pending:                     "pending",
+	Success:                     "success",
+	Error:                       "error",
+	Cancelled:                   "cancelled",
+	ErrorPendingCleanupResource: "error",
+}
+
+var statusText = map[Status]string{
+	Pending:                     "Pending",
+	Success:                     "Success",
+	Error:                       "Error",
+	Cancelled:                   "Cancelled",
+	ErrorPendingCleanupResource: "Error",
+}
+
+func parseStatus(s string) Status {
+	for _, x := range allStatus {
+		if x.String() == s {
+			return x
+		}
 	}
+	return StatusNone
+}
+
+func (s Status) String() string {
+	return statusString[s]
+}
+
+func (s Status) Text() string {
+	return statusText[s]
+}
+
+func (s Status) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.String())
+}
+
+func (s *Status) UnmarshalJSON(b []byte) error {
+	var t string
+	err := json.Unmarshal(b, &t)
+	if err != nil {
+		return err
+	}
+
+	*s = parseStatus(t)
+	return nil
+}
+
+func (s Status) MarshalYAML() (interface{}, error) {
+	return s.String(), nil
+}
+
+func (s *Status) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var t string
+	err := unmarshal(&t)
+	if err != nil {
+		return err
+	}
+	*s = parseStatus(t)
+	return nil
 }

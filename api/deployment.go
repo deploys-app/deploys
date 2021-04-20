@@ -308,7 +308,7 @@ func (m *DeploymentListResult) Table() [][]string {
 		table = append(table, []string{
 			x.Name,
 			x.Type.String(),
-			x.Status.String(),
+			x.Status.Text(),
 			age(x.CreatedAt),
 		})
 	}
