@@ -170,6 +170,28 @@ func (t DeploymentType) HasInternalTCPAddress() bool {
 	}
 }
 
+type DeploymentProtocol string
+
+const (
+	DeploymentProtocolHTTP  = "http"
+	DeploymentProtocolHTTPS = "https"
+	DeploymentProtocolH2C   = "h2c"
+)
+
+var allDeploymentProtocol = []DeploymentProtocol{
+	DeploymentProtocolHTTP,
+	DeploymentProtocolHTTPS,
+	DeploymentProtocolH2C,
+}
+
+var validDeploymentProtocol = func() map[DeploymentProtocol]bool {
+	m := map[DeploymentProtocol]bool{}
+	for _, t := range allDeploymentProtocol {
+		m[t] = true
+	}
+	return m
+}()
+
 type ResourceItem struct {
 	// CPU    string `json:"cpu" yaml:"cpu"`
 	Memory string `json:"memory" yaml:"memory"`
@@ -181,24 +203,26 @@ type DeploymentResource struct {
 }
 
 type DeploymentDeploy struct {
-	Project          string              `json:"project"`
-	Location         string              `json:"location"`
-	Name             string              `json:"name"`
-	Image            string              `json:"image"`
-	MinReplicas      *int                `json:"minReplicas"`
-	MaxReplicas      *int                `json:"maxReplicas"`
-	Type             DeploymentType      `json:"type"`
-	Port             *int                `json:"port"`
-	Env              map[string]string   `json:"env"`       // override all env
-	AddEnv           map[string]string   `json:"addEnv"`    // add env to old revision env
-	RemoveEnv        []string            `json:"removeEnv"` // remove env from old revision env
-	Command          []string            `json:"command"`
-	Args             []string            `json:"args"`
-	WorkloadIdentity *string             `json:"workloadIdentity"` // workload identity name
-	PullSecret       *string             `json:"pullSecret"`       // pull secret name
-	Disk             *DeploymentDisk     `json:"disk"`             // type=Stateful
-	Schedule         *string             `json:"schedule"`         // type=CronJob
-	Resources        *DeploymentResource `json:"resources"`
+	Project          string              `json:"project" yaml:"project""`
+	Location         string              `json:"location" yaml:"location"`
+	Name             string              `json:"name" yaml:"name"`
+	Image            string              `json:"image" yaml:"image"`
+	MinReplicas      *int                `json:"minReplicas" yaml:"minReplicas"`
+	MaxReplicas      *int                `json:"maxReplicas" yaml:"maxReplicas"`
+	Type             DeploymentType      `json:"type" yaml:"type"`
+	Port             *int                `json:"port" yaml:"port"`
+	Protocol         *DeploymentProtocol `json:"protocol" yaml:"protocol"`   // protocol for WebService
+	Env              map[string]string   `json:"env" yaml:"env"`             // override all env
+	AddEnv           map[string]string   `json:"addEnv" yaml:"addEnv"`       // add env to old revision env
+	RemoveEnv        []string            `json:"removeEnv" yaml:"removeEnv"` // remove env from old revision env
+	Command          []string            `json:"command" yaml:"command"`
+	Args             []string            `json:"args" yaml:"args"`
+	WorkloadIdentity *string             `json:"workloadIdentity" yaml:"workloadIdentity"` // workload identity name
+	PullSecret       *string             `json:"pullSecret" yaml:"pullSecret"`             // pull secret name
+	Disk             *DeploymentDisk     `json:"disk" yaml:"disk"`                         // type=Stateful
+	Schedule         *string             `json:"schedule" yaml:"schedule"`                 // type=CronJob
+	Resources        *DeploymentResource `json:"resources" yaml:"resources"`
+	MountData        map[string]string   `json:"mountData" yaml:"mountData"`
 }
 
 type DeploymentDisk struct {
@@ -254,6 +278,16 @@ func (m *DeploymentDeploy) Valid() error {
 		}
 	}
 
+	// validate mount data
+	var totalDataSize int
+	for path, data := range m.MountData {
+		l := len(data)
+		v.Must(strings.HasPrefix(path, "/"), "mountData must be absolute path")
+		v.Must(l < 10*1024, "mountData value must less than 10KiB")
+		totalDataSize += l
+	}
+	v.Must(totalDataSize < 500*1024, "mountData all values must less than 500KiB")
+
 	// validate type
 	if !m.Type.IsZero() {
 		v.Must(m.Type.Valid(), "invalid type")
@@ -263,17 +297,25 @@ func (m *DeploymentDeploy) Valid() error {
 			if v.Must(m.Port != nil, "port required") {
 				v.Must(*m.Port > 0, "invalid port")
 			}
+			if m.Protocol != nil {
+				v.Must(validDeploymentProtocol[*m.Protocol], "invalid protocol")
+			}
+		case DeploymentTypeWorker:
+			v.Must(m.Protocol == nil || *m.Protocol == "", "Worker not support custom protocol")
 		case DeploymentTypeCronJob:
+			v.Must(m.Protocol == nil || *m.Protocol == "", "CronJob not support custom protocol")
 			if m.Schedule != nil {
 				if v.Must(*m.Schedule != "", "schedule required") {
 					v.Must(ReValidSchedule.MatchString(*m.Schedule), "schedule invalid")
 				}
 			}
 		case DeploymentTypeTCPService:
+			v.Must(m.Protocol == nil || *m.Protocol == "", "TCPService not support custom protocol")
 			if v.Must(m.Port != nil, "port required") {
 				v.Must(*m.Port > 0, "invalid port")
 			}
 		case DeploymentTypeInternalTCPService:
+			v.Must(m.Protocol == nil || *m.Protocol == "", "InternalTCPService not support custom protocol")
 			if v.Must(m.Port != nil, "port required") {
 				v.Must(*m.Port > 0, "invalid port")
 			}
@@ -328,10 +370,12 @@ type DeploymentItem struct {
 	WorkloadIdentity string             `json:"workloadIdentity" yaml:"workloadIdentity"`
 	PullSecret       string             `json:"pullSecret" yaml:"pullSecret"`
 	Disk             *DeploymentDisk    `json:"disk" yaml:"disk"`
+	MountData        map[string]string  `json:"mountData" yaml:"mountData"`
 	MinReplicas      int                `json:"minReplicas" yaml:"minReplicas"`
 	MaxReplicas      int                `json:"maxReplicas" yaml:"maxReplicas"`
 	Schedule         string             `json:"schedule" yaml:"schedule"`
 	Port             int                `json:"port" yaml:"port"`
+	Protocol         DeploymentProtocol `json:"protocol" yaml:"protocol"`
 	NodePort         int                `json:"nodePort" yaml:"nodePort"`
 	Annotations      map[string]string  `json:"annotations" yaml:"annotations"`
 	Resources        DeploymentResource `json:"resources" yaml:"resources"`
