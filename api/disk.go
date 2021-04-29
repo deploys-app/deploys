@@ -102,16 +102,16 @@ type DiskListResult struct {
 }
 
 type DiskItem struct {
-	ID        int64     `json:"id"`
-	ProjectID int64     `json:"projectId"`
-	Location  string    `json:"location"`
-	Name      string    `json:"name"`
-	Size      int64     `json:"size"`
-	Status    Status    `json:"status"`
-	Action    string    `json:"action"`
-	CreatedAt time.Time `json:"createdAt"`
-	CreatedBy string    `json:"createdBy"`
-	SuccessAt time.Time `json:"successAt"`
+	ID        int64     `json:"id" yaml:"id"`
+	ProjectID int64     `json:"projectId" yaml:"projectId"`
+	Location  string    `json:"location" yaml:"location"`
+	Name      string    `json:"name" yaml:"name"`
+	Size      int64     `json:"size" yaml:"size"`
+	Status    Status    `json:"status" yaml:"status"`
+	Action    string    `json:"action" yaml:"action"`
+	CreatedAt time.Time `json:"createdAt" yaml:"createdAt"`
+	CreatedBy string    `json:"createdBy" yaml:"createdBy"`
+	SuccessAt time.Time `json:"successAt" yaml:"successAt"`
 }
 
 type DiskDelete struct {

@@ -8,16 +8,16 @@ import (
 )
 
 type Location interface {
-	List(ctx context.Context, _ *LocationList) (*LocationListResult, error)
+	List(ctx context.Context, m *LocationList) (*LocationListResult, error)
 	Get(ctx context.Context, m *LocationGet) (*LocationItem, error)
 }
 
 type LocationList struct {
-	Project string `json:"project"` // optional
+	Project string `json:"project" yaml:"project"` // optional
 }
 
 type LocationListResult struct {
-	Locations []*LocationItem `json:"locations"`
+	Locations []*LocationItem `json:"locations" yaml:"locations"`
 }
 
 func (m *LocationListResult) Table() [][]string {
@@ -36,24 +36,37 @@ func (m *LocationListResult) Table() [][]string {
 }
 
 type LocationItem struct {
-	ID                string           `json:"id"`
-	DomainSuffix      string           `json:"domainSuffix"`
-	Endpoint          string           `json:"endpoint"`
-	CName             string           `json:"cname"`
-	FreeTier          bool             `json:"freeTier"`
-	CPUAllocatable    []string         `json:"cpuAllocatable"`
-	MemoryAllocatable []string         `json:"memoryAllocatable"`
-	Features          LocationFeatures `json:"features"`
-	CreatedAt         time.Time        `json:"createdAt"`
+	ID                string           `json:"id" yaml:"id"`
+	DomainSuffix      string           `json:"domainSuffix" yaml:"domainSuffix"`
+	Endpoint          string           `json:"endpoint" yaml:"endpoint"`
+	CName             string           `json:"cname" yaml:"cname"`
+	FreeTier          bool             `json:"freeTier" yaml:"freeTier"`
+	CPUAllocatable    []string         `json:"cpuAllocatable" yaml:"cpuAllocatable"`
+	MemoryAllocatable []string         `json:"memoryAllocatable" yaml:"memoryAllocatable"`
+	Features          LocationFeatures `json:"features" yaml:"features"`
+	CreatedAt         time.Time        `json:"createdAt" yaml:"createdAt"`
+}
+
+func (m *LocationItem) Table() [][]string {
+	table := [][]string{
+		{"ID", "DOMAIN SUFFIX", "ENDPOINT", "CNAME"},
+		{
+			m.ID,
+			m.DomainSuffix,
+			m.Endpoint,
+			m.CName,
+		},
+	}
+	return table
 }
 
 type LocationFeatures struct {
-	WorkloadIdentity bool      `json:"workloadIdentity,omitempty"`
-	Disk             *struct{} `json:"disk,omitempty"`
+	WorkloadIdentity bool      `json:"workloadIdentity,omitempty" yaml:"workloadIdentity"`
+	Disk             *struct{} `json:"disk,omitempty" yaml:"disk"`
 }
 
 type LocationGet struct {
-	ID string `json:"id"`
+	ID string `json:"id" yaml:"id"`
 }
 
 func (m *LocationGet) Valid() error {

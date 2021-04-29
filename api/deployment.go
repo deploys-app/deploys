@@ -226,9 +226,9 @@ type DeploymentDeploy struct {
 }
 
 type DeploymentDisk struct {
-	Name      string `json:"name"`
-	MountPath string `json:"mountPath"`
-	SubPath   string `json:"subPath"`
+	Name      string `json:"name" yaml:"name"`
+	MountPath string `json:"mountPath" yaml:"mountPath"`
+	SubPath   string `json:"subPath" yaml:"subPath"`
 }
 
 func (m *DeploymentDeploy) Valid() error {

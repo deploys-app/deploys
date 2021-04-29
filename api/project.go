@@ -21,9 +21,9 @@ type Project interface {
 }
 
 type ProjectCreate struct {
-	SID            string `json:"sid"`
-	Name           string `json:"name"`
-	BillingAccount string `json:"billingAccount"`
+	SID            string `json:"sid" yaml:"sid"`
+	Name           string `json:"name" yaml:"name"`
+	BillingAccount string `json:"billingAccount" yaml:"billingAccount"`
 }
 
 var (
@@ -80,7 +80,7 @@ func (m *ProjectUpdate) Valid() error {
 }
 
 type ProjectGet struct {
-	Project string `json:"project"`
+	Project string `json:"project" yaml:"project"`
 }
 
 type ProjectItem struct {
@@ -121,11 +121,11 @@ func (m *ProjectListResult) Table() [][]string {
 }
 
 type ProjectDelete struct {
-	Project string `json:"project"`
+	Project string `json:"project" yaml:"project"`
 }
 
 type ProjectUsage struct {
-	Project string `json:"project"`
+	Project string `json:"project" yaml:"project"`
 }
 
 type ProjectUsageResult struct {

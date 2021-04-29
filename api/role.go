@@ -78,10 +78,10 @@ type Role interface {
 }
 
 type RoleCreate struct {
-	Project     string   `json:"project"` // project sid
-	Role        string   `json:"role"`    // role sid
-	Name        string   `json:"name"`    // role name (free text)
-	Permissions []string `json:"permissions"`
+	Project     string   `json:"project" yaml:"project"` // project sid
+	Role        string   `json:"role" yaml:"role"`       // role sid
+	Name        string   `json:"name" yaml:"name"`       // role name (free text)
+	Permissions []string `json:"permissions" yaml:"permissions"`
 }
 
 func (m *RoleCreate) Valid() error {
@@ -107,16 +107,16 @@ func (m *RoleCreate) Valid() error {
 }
 
 type RoleGet struct {
-	Project string `json:"project"` // project sid
-	Role    string `json:"role"`    // role sid
+	Project string `json:"project" yaml:"project"` // project sid
+	Role    string `json:"role" yaml:"role"`       // role sid
 }
 
 type RoleGetResult struct {
-	Role        string    `json:"role"`    // role sid
-	Project     string    `json:"project"` // project sid
-	Name        string    `json:"name"`    // role name
-	Permissions []string  `json:"permissions"`
-	CreatedAt   time.Time `json:"createdAt"`
+	Role        string    `json:"role" yaml:"role"`       // role sid
+	Project     string    `json:"project" yaml:"project"` // project sid
+	Name        string    `json:"name" yaml:"name"`       // role name
+	Permissions []string  `json:"permissions" yaml:"permissions"`
+	CreatedAt   time.Time `json:"createdAt" yaml:"createdAt"`
 }
 
 func (m *RoleGetResult) Table() [][]string {
@@ -163,8 +163,8 @@ type RoleListItem struct {
 }
 
 type RoleDelete struct {
-	Project string `json:"project"`
-	Role    string `json:"role"`
+	Project string `json:"project" yaml:"project"`
+	Role    string `json:"role" yaml:"role"`
 }
 
 func (m *RoleDelete) Valid() error {
@@ -177,9 +177,9 @@ func (m *RoleDelete) Valid() error {
 }
 
 type RoleGrant struct {
-	Project string `json:"project"` // project sid
-	Role    string `json:"role"`    // role sid
-	Email   string `json:"email"`   // user email
+	Project string `json:"project" yaml:"project"` // project sid
+	Role    string `json:"role" yaml:"role"`       // role sid
+	Email   string `json:"email" yaml:"email"`     // user email
 }
 
 func (m *RoleGrant) Valid() error {
@@ -207,9 +207,9 @@ func (m *RoleGrant) Valid() error {
 }
 
 type RoleRevoke struct {
-	Project string `json:"project"` // project sid
-	Role    string `json:"role"`    // role sid
-	Email   string `json:"email"`   // user email
+	Project string `json:"project" yaml:"project"` // project sid
+	Role    string `json:"role" yaml:"role"`       // role sid
+	Email   string `json:"email" yaml:"email"`     // user email
 }
 
 func (m *RoleRevoke) Valid() error {
@@ -237,7 +237,7 @@ func (m *RoleRevoke) Valid() error {
 }
 
 type RoleUsers struct {
-	Project string `json:"project"` // project sid
+	Project string `json:"project" yaml:"project"` // project sid
 }
 
 func (m *RoleUsers) Valid() error {

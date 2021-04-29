@@ -157,17 +157,17 @@ type BillingReportResult struct {
 }
 
 type BillingSKUs struct {
-	CPUUsage float64 `json:"cpuUsage"`
-	CPU      float64 `json:"cpu"`
-	Memory   float64 `json:"memory"`
-	Egress   float64 `json:"egress"`
-	Disk     float64 `json:"disk"`
+	CPUUsage float64 `json:"cpuUsage" yaml:"cpuUsage"`
+	CPU      float64 `json:"cpu" yaml:"cpu"`
+	Memory   float64 `json:"memory" yaml:"memory"`
+	Egress   float64 `json:"egress" yaml:"egress"`
+	Disk     float64 `json:"disk" yaml:"disk"`
 }
 
 type BillingProject struct {
-	Project string `json:"project"`
+	Project string `json:"project" yaml:"project"`
 }
 
 type BillingProjectResult struct {
-	Price float64 `json:"price"`
+	Price float64 `json:"price" yaml:"price"`
 }

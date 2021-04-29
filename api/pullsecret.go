@@ -109,6 +109,19 @@ type PullSecretItem struct {
 	CreatedBy string    `json:"createdBy" yaml:"createdBy"`
 }
 
+func (m *PullSecretItem) Table() [][]string {
+	table := [][]string{
+		{"NAME", "STATUS", "LOCATION", "AGE"},
+		{
+			m.Name,
+			m.Status.Text(),
+			m.Location,
+			age(m.CreatedAt),
+		},
+	}
+	return table
+}
+
 type PullSecretGet struct {
 	Location string `json:"location" yaml:"location"`
 	Project  string `json:"project" yaml:"project"`

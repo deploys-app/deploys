@@ -1,23 +1,13 @@
 package api
 
+//go:generate stringer -type=Action -linecomment
 type Action int
 
 const (
-	_ Action = iota
-	Create
-	Delete
+	_      Action = iota
+	Create        // create
+	Delete        // delete
 )
-
-func (a Action) String() string {
-	switch a {
-	case Create:
-		return "create"
-	case Delete:
-		return "delete"
-	default:
-		return ""
-	}
-}
 
 type DeploymentAction int
 

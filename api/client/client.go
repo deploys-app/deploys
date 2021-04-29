@@ -105,6 +105,10 @@ func (c *Client) Collector() api.Collector {
 	return collectorClient{c}
 }
 
+func (c *Client) Deployer() api.Deployer {
+	return deployerClient{c}
+}
+
 func (c *Client) invoke(ctx context.Context, api string, r interface{}, res interface{}) error {
 	if err := validRequest(r); err != nil {
 		return err

@@ -13,4 +13,5 @@ type Interface interface {
 	WorkloadIdentity() WorkloadIdentity
 	ServiceAccount() ServiceAccount
 	Collector() Collector
+	Deployer() Deployer
 }

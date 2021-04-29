@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 	"unicode/utf8"
 
 	"gopkg.in/yaml.v2"
@@ -102,14 +103,16 @@ func (rn Runner) Run(args ...string) error {
 		return rn.project(args[1:]...)
 	case "role":
 		return rn.role(args[1:]...)
-	case "deployment":
+	case "deployment", "deploy":
 		return rn.deployment(args[1:]...)
 	case "route":
 		return rn.route(args[1:]...)
 	case "disk":
 		return rn.disk(args[1:]...)
-	case "pullsecret":
+	case "pullsecret", "ps":
 		return rn.pullSecret(args[1:]...)
+	case "serviceaccount", "sa":
+		return rn.serviceAccount(args[1:]...)
 	case "collector":
 		return rn.collector(args[1:]...)
 	}
@@ -135,6 +138,16 @@ func (rn Runner) me(args ...string) error {
 	case "get":
 		f.Parse(args[1:])
 		resp, err = s.Get(context.Background(), &api.Empty{})
+	case "authorized":
+		var (
+			req         api.MeAuthorized
+			permissions string
+		)
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&permissions, "permissions", "", "permissions (comma separated values)")
+		f.Parse(args[1:])
+		req.Permissions = strings.Split(permissions, ",")
+		resp, err = s.Authorized(context.Background(), &req)
 	}
 	if err != nil {
 		return err
@@ -193,6 +206,13 @@ func (rn Runner) project(args ...string) error {
 	switch args[0] {
 	default:
 		return fmt.Errorf("invalid command")
+	case "create":
+		var req api.ProjectCreate
+		f.StringVar(&req.SID, "id", "", "project id")
+		f.StringVar(&req.Name, "name", "", "project name")
+		f.StringVar(&req.BillingAccount, "billingaccount", "", "billing account id")
+		f.Parse(args[1:])
+		resp, err = s.Create(context.Background(), &req)
 	case "list":
 		f.Parse(args[1:])
 		resp, err = s.List(context.Background(), &api.Empty{})
@@ -201,6 +221,25 @@ func (rn Runner) project(args ...string) error {
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.Parse(args[1:])
 		resp, err = s.Get(context.Background(), &req)
+	case "update":
+		var (
+			req            api.ProjectUpdate
+			name           string
+			billingAccount string
+		)
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&name, "name", "", "project name")
+		f.StringVar(&billingAccount, "billingaccount", "", "billing account id")
+		f.Parse(args[1:])
+
+		if name != "" {
+			req.Name = &name
+		}
+		if billingAccount != "" {
+			req.BillingAccount = &billingAccount
+		}
+
+		resp, err = s.Update(context.Background(), &req)
 	case "delete":
 		var req api.ProjectDelete
 		f.StringVar(&req.Project, "project", "", "project id")
@@ -421,6 +460,14 @@ func (rn Runner) pullSecret(args ...string) error {
 	switch args[0] {
 	default:
 		return fmt.Errorf("invalid command")
+	case "create":
+		var req api.PullSecretCreate
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Name, "name", "", "name")
+		f.StringVar(&req.Value, "value", "", "value")
+		f.Parse(args[1:])
+		resp, err = s.Create(context.Background(), &req)
 	case "list":
 		var req api.PullSecretList
 		f.StringVar(&req.Location, "location", "", "location")
@@ -441,6 +488,76 @@ func (rn Runner) pullSecret(args ...string) error {
 		f.StringVar(&req.Name, "name", "", "name")
 		f.Parse(args[1:])
 		resp, err = s.Delete(context.Background(), &req)
+	}
+	if err != nil {
+		return err
+	}
+	return rn.print(resp)
+}
+
+func (rn Runner) serviceAccount(args ...string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("invalid command")
+	}
+
+	s := rn.API.ServiceAccount()
+
+	var (
+		resp interface{}
+		err  error
+	)
+
+	f := flag.NewFlagSet("", flag.ExitOnError)
+	rn.registerFlags(f)
+	switch args[0] {
+	default:
+		return fmt.Errorf("invalid command")
+	case "create":
+		var req api.ServiceAccountCreate
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.SID, "id", "", "service account id")
+		f.StringVar(&req.Name, "name", "", "name")
+		f.StringVar(&req.Description, "description", "", "description")
+		f.Parse(args[1:])
+		resp, err = s.Create(context.Background(), &req)
+	case "list":
+		var req api.ServiceAccountList
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.Parse(args[1:])
+		resp, err = s.List(context.Background(), &req)
+	case "get":
+		var req api.ServiceAccountGet
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.ID, "id", "", "service account id")
+		f.Parse(args[1:])
+		resp, err = s.Get(context.Background(), &req)
+	case "update":
+		var req api.ServiceAccountUpdate
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.SID, "id", "", "service account id")
+		f.StringVar(&req.Name, "name", "", "name")
+		f.StringVar(&req.Description, "description", "", "description")
+		f.Parse(args[1:])
+		resp, err = s.Update(context.Background(), &req)
+	case "delete":
+		var req api.ServiceAccountDelete
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.ID, "id", "", "service account id")
+		f.Parse(args[1:])
+		resp, err = s.Delete(context.Background(), &req)
+	case "createkey":
+		var req api.ServiceAccountCreateKey
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.ID, "id", "", "service account id")
+		f.Parse(args[1:])
+		resp, err = s.CreateKey(context.Background(), &req)
+	case "deletekey":
+		var req api.ServiceAccountDeleteKey
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.ID, "id", "", "service account id")
+		f.StringVar(&req.Secret, "secret", "", "secret")
+		f.Parse(args[1:])
+		resp, err = s.DeleteKey(context.Background(), &req)
 	}
 	if err != nil {
 		return err

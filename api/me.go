@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"mime/multipart"
+	"strconv"
 )
 
 type Me interface {
@@ -26,13 +27,22 @@ func (m *MeItem) Table() [][]string {
 }
 
 type MeAuthorized struct {
-	ProjectID   int64    `json:"projectId"`
-	Project     string   `json:"project"`
-	Permissions []string `json:"permissions"`
+	ProjectID   int64    `json:"projectId" yaml:"projectId"`
+	Project     string   `json:"project" yaml:"project"`
+	Permissions []string `json:"permissions" yaml:"permissions"`
 }
 
 type MeAuthorizedResult struct {
 	Authorized bool `json:"authorized"`
+}
+
+func (m *MeAuthorizedResult) Table() [][]string {
+	return [][]string{
+		{"AUTHORIZED"},
+		{
+			strconv.FormatBool(m.Authorized),
+		},
+	}
 }
 
 type MeUploadKYCDocument struct {

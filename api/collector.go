@@ -19,7 +19,7 @@ type CollectorLocationResult struct {
 }
 
 type CollectorProject struct {
-	ID int64 `json:"id"`
+	ID int64 `json:"id" yaml:"id"`
 }
 
 type CollectorSetProjectUsage struct {

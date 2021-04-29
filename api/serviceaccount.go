@@ -116,6 +116,21 @@ type ServiceAccountListResult struct {
 	ServiceAccounts []*ServiceAccountListItem `json:"serviceAccounts" yaml:"serviceAccounts"`
 }
 
+func (m *ServiceAccountListResult) Table() [][]string {
+	table := [][]string{
+		{"ID", "EMAIL", "NAME", "AGE"},
+	}
+	for _, x := range m.ServiceAccounts {
+		table = append(table, []string{
+			x.SID,
+			x.Email,
+			x.Name,
+			age(x.CreatedAt),
+		})
+	}
+	return table
+}
+
 type ServiceAccountGet struct {
 	Project string `json:"project" yaml:"project"`
 	ID      string `json:"id" yaml:"id"`
@@ -139,6 +154,19 @@ type ServiceAccountGetResult struct {
 	CreatedAt   time.Time            `json:"createdAt" yaml:"createdAt"`
 	CreatedBy   string               `json:"createdBy" yaml:"createdBy"`
 	Keys        []*ServiceAccountKey `json:"keys" yaml:"keys"`
+}
+
+func (m *ServiceAccountGetResult) Table() [][]string {
+	table := [][]string{
+		{"ID", "EMAIL", "NAME", "AGE"},
+		{
+			m.SID,
+			m.Email,
+			m.Name,
+			age(m.CreatedAt),
+		},
+	}
+	return table
 }
 
 type ServiceAccountKey struct {
