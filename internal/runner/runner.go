@@ -111,6 +111,8 @@ func (rn Runner) Run(args ...string) error {
 		return rn.disk(args[1:]...)
 	case "pullsecret", "ps":
 		return rn.pullSecret(args[1:]...)
+	case "workloadidentity", "wi":
+		return rn.workloadIdentity(args[1:]...)
 	case "serviceaccount", "sa":
 		return rn.serviceAccount(args[1:]...)
 	case "collector":
@@ -274,6 +276,18 @@ func (rn Runner) role(args ...string) error {
 	switch args[0] {
 	default:
 		return fmt.Errorf("invalid command")
+	case "create":
+		var (
+			req         api.RoleCreate
+			permissions string
+		)
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Role, "role", "", "role id")
+		f.StringVar(&req.Name, "name", "", "role name")
+		f.StringVar(&permissions, "permissions", "", "permissions")
+		f.Parse(args[1:])
+		req.Permissions = strings.Split(permissions, ",")
+		resp, err = s.Create(context.Background(), &req)
 	case "list":
 		var req api.RoleList
 		f.StringVar(&req.Project, "project", "", "project id")
@@ -282,14 +296,45 @@ func (rn Runner) role(args ...string) error {
 	case "get":
 		var req api.RoleGet
 		f.StringVar(&req.Project, "project", "", "project id")
-		f.StringVar(&req.Project, "role", "", "role id")
+		f.StringVar(&req.Role, "role", "", "role id")
 		f.Parse(args[1:])
 		resp, err = s.Get(context.Background(), &req)
+	case "delete":
+		var req api.RoleDelete
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Role, "role", "", "role id")
+		f.Parse(args[1:])
+		resp, err = s.Delete(context.Background(), &req)
+	case "grant":
+		var req api.RoleGrant
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Role, "role", "", "role id")
+		f.StringVar(&req.Email, "email", "", "email")
+		f.Parse(args[1:])
+		resp, err = s.Grant(context.Background(), &req)
+	case "revoke":
+		var req api.RoleRevoke
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Role, "role", "", "role id")
+		f.StringVar(&req.Email, "email", "", "email")
+		f.Parse(args[1:])
+		resp, err = s.Revoke(context.Background(), &req)
 	case "users":
 		var req api.RoleUsers
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.Parse(args[1:])
 		resp, err = s.Users(context.Background(), &req)
+	case "bind":
+		var (
+			req   api.RoleBind
+			roles string
+		)
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Email, "email", "", "email")
+		f.StringVar(&roles, "roles", "", "roles")
+		f.Parse(args[1:])
+		req.Roles = strings.Split(roles, ",")
+		resp, err = s.Bind(context.Background(), &req)
 	}
 	if err != nil {
 		return err
@@ -440,7 +485,59 @@ func (rn Runner) disk(args ...string) error {
 		return fmt.Errorf("invalid command")
 	}
 
-	return nil
+	s := rn.API.Disk()
+
+	var (
+		resp interface{}
+		err  error
+	)
+
+	f := flag.NewFlagSet("", flag.ExitOnError)
+	rn.registerFlags(f)
+	switch args[0] {
+	default:
+		return fmt.Errorf("invalid command")
+	case "create":
+		var req api.DiskCreate
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Name, "name", "", "disk name")
+		f.Int64Var(&req.Size, "size", 1, "disk size (Gi)")
+		f.Parse(args[1:])
+		resp, err = s.Create(context.Background(), &req)
+	case "get":
+		var req api.DiskGet
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Name, "name", "", "disk name")
+		f.Parse(args[1:])
+		resp, err = s.Get(context.Background(), &req)
+	case "list":
+		var req api.DiskList
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Location, "location", "", "location")
+		f.Parse(args[1:])
+		resp, err = s.List(context.Background(), &req)
+	case "update":
+		var req api.DiskUpdate
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Name, "name", "", "disk name")
+		f.Int64Var(&req.Size, "size", 0, "disk size (Gi)")
+		f.Parse(args[1:])
+		resp, err = s.Update(context.Background(), &req)
+	case "delete":
+		var req api.DiskDelete
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Name, "name", "", "disk name")
+		f.Parse(args[1:])
+		resp, err = s.Delete(context.Background(), &req)
+	}
+	if err != nil {
+		return err
+	}
+	return rn.print(resp)
 }
 
 func (rn Runner) pullSecret(args ...string) error {
@@ -486,6 +583,58 @@ func (rn Runner) pullSecret(args ...string) error {
 		f.StringVar(&req.Location, "location", "", "location")
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Name, "name", "", "name")
+		f.Parse(args[1:])
+		resp, err = s.Delete(context.Background(), &req)
+	}
+	if err != nil {
+		return err
+	}
+	return rn.print(resp)
+}
+
+func (rn Runner) workloadIdentity(args ...string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("invalid command")
+	}
+
+	s := rn.API.WorkloadIdentity()
+
+	var (
+		resp interface{}
+		err  error
+	)
+
+	f := flag.NewFlagSet("", flag.ExitOnError)
+	rn.registerFlags(f)
+	switch args[0] {
+	default:
+		return fmt.Errorf("invalid command")
+	case "create":
+		var req api.WorkloadIdentityCreate
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Name, "name", "", "workload identity name")
+		f.StringVar(&req.GSA, "gsa", "", "google service account")
+		f.Parse(args[1:])
+		resp, err = s.Create(context.Background(), &req)
+	case "get":
+		var req api.WorkloadIdentityGet
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Name, "name", "", "workload identity name")
+		f.Parse(args[1:])
+		resp, err = s.Get(context.Background(), &req)
+	case "list":
+		var req api.WorkloadIdentityList
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Location, "location", "", "location")
+		f.Parse(args[1:])
+		resp, err = s.List(context.Background(), &req)
+	case "delete":
+		var req api.WorkloadIdentityDelete
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Name, "name", "", "workload identity name")
 		f.Parse(args[1:])
 		resp, err = s.Delete(context.Background(), &req)
 	}

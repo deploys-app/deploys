@@ -114,6 +114,34 @@ func (m *WorkloadIdentityItem) ResourceID() string {
 	return fmt.Sprintf("%s-%d", m.Name, m.ProjectID)
 }
 
+func (m *WorkloadIdentityItem) Table() [][]string {
+	table := [][]string{
+		{"NAME", "GSA", "LOCATION", "AGE"},
+		{
+			m.Name,
+			m.GSA,
+			m.Location,
+			age(m.CreatedAt),
+		},
+	}
+	return table
+}
+
 type WorkloadIdentityListResult struct {
 	List []*WorkloadIdentityItem `json:"list" yaml:"list"`
+}
+
+func (m *WorkloadIdentityListResult) Table() [][]string {
+	table := [][]string{
+		{"NAME", "GSA", "LOCATION", "AGE"},
+	}
+	for _, x := range m.List {
+		table = append(table, []string{
+			x.Name,
+			x.GSA,
+			x.Location,
+			age(x.CreatedAt),
+		})
+	}
+	return table
 }

@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -68,8 +67,8 @@ func Permissions() []string {
 
 type Role interface {
 	Create(ctx context.Context, m *RoleCreate) (*Empty, error)
-	Get(ctx context.Context, m *RoleGet) (*RoleGetResult, error)
 	List(ctx context.Context, m *RoleList) (*RoleListResult, error)
+	Get(ctx context.Context, m *RoleGet) (*RoleGetResult, error)
 	Delete(ctx context.Context, m *RoleDelete) (*Empty, error)
 	Grant(ctx context.Context, m *RoleGrant) (*Empty, error)
 	Revoke(ctx context.Context, m *RoleRevoke) (*Empty, error)
@@ -185,25 +184,16 @@ type RoleGrant struct {
 func (m *RoleGrant) Valid() error {
 	m.Email = strings.TrimSpace(m.Email)
 
-	if m.Project == "" {
-		return fmt.Errorf("project required")
-	}
+	v := validator.New()
 
-	if !ReValidSID.MatchString(m.Role) {
-		return fmt.Errorf("role invalid")
-	}
-	if cnt := utf8.RuneCountInString(m.Role); cnt < 6 || cnt > 20 {
-		return fmt.Errorf("role must have length between 6-20 characters")
-	}
+	v.Must(m.Project != "", "project required")
+	v.Must(ReValidSID.MatchString(m.Role), "role invalid")
+	cnt := utf8.RuneCountInString(m.Role)
+	v.Must(cnt >= 6 && cnt <= 20, "role must have length between 6-20 characters")
+	v.Must(m.Email != "", "email required")
+	v.Must(govalidator.IsEmail(m.Email), "email invalid")
 
-	if m.Email == "" {
-		return fmt.Errorf("email required")
-	}
-	if !govalidator.IsEmail(m.Email) {
-		return fmt.Errorf("email invalid")
-	}
-
-	return nil
+	return WrapValidate(v)
 }
 
 type RoleRevoke struct {
@@ -215,25 +205,16 @@ type RoleRevoke struct {
 func (m *RoleRevoke) Valid() error {
 	m.Email = strings.TrimSpace(m.Email)
 
-	if m.Project == "" {
-		return fmt.Errorf("project required")
-	}
+	v := validator.New()
 
-	if !ReValidSID.MatchString(m.Role) {
-		return fmt.Errorf("role invalid")
-	}
-	if cnt := utf8.RuneCountInString(m.Role); cnt < 6 || cnt > 20 {
-		return fmt.Errorf("role must have length between 6-20 characters")
-	}
+	v.Must(m.Project != "", "project required")
+	v.Must(ReValidSID.MatchString(m.Role), "role invalid")
+	cnt := utf8.RuneCountInString(m.Role)
+	v.Must(cnt >= 6 && cnt <= 20, "role must have length between 6-20 characters")
+	v.Must(m.Email != "", "email required")
+	v.Must(govalidator.IsEmail(m.Email), "email invalid")
 
-	if m.Email == "" {
-		return fmt.Errorf("email required")
-	}
-	if !govalidator.IsEmail(m.Email) {
-		return fmt.Errorf("email invalid")
-	}
-
-	return nil
+	return WrapValidate(v)
 }
 
 type RoleUsers struct {
@@ -241,11 +222,11 @@ type RoleUsers struct {
 }
 
 func (m *RoleUsers) Valid() error {
-	if m.Project == "" {
-		return fmt.Errorf("project required")
-	}
+	v := validator.New()
 
-	return nil
+	v.Must(m.Project != "", "project required")
+
+	return WrapValidate(v)
 }
 
 type RoleUsersResult struct {
@@ -274,7 +255,7 @@ type RoleUsersItem struct {
 }
 
 type RoleBind struct {
-	Project string   `json:"project"`
-	Email   string   `json:"email"`
-	Roles   []string `json:"roles"`
+	Project string   `json:"project" yaml:"project"`
+	Email   string   `json:"email" yaml:"email"`
+	Roles   []string `json:"roles" yaml:"roles"`
 }

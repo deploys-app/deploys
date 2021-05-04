@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -98,7 +99,22 @@ func (m *DiskList) Valid() error {
 }
 
 type DiskListResult struct {
-	List []*DiskItem
+	List []*DiskItem `json:"list" yaml:"list"`
+}
+
+func (m *DiskListResult) Table() [][]string {
+	table := [][]string{
+		{"NAME", "SIZE", "LOCATION", "AGE"},
+	}
+	for _, x := range m.List {
+		table = append(table, []string{
+			x.Name,
+			strconv.FormatInt(x.Size, 10) + "Gi",
+			x.Location,
+			age(x.CreatedAt),
+		})
+	}
+	return table
 }
 
 type DiskItem struct {
@@ -112,6 +128,19 @@ type DiskItem struct {
 	CreatedAt time.Time `json:"createdAt" yaml:"createdAt"`
 	CreatedBy string    `json:"createdBy" yaml:"createdBy"`
 	SuccessAt time.Time `json:"successAt" yaml:"successAt"`
+}
+
+func (m *DiskItem) Table() [][]string {
+	table := [][]string{
+		{"NAME", "SIZE", "LOCATION", "AGE"},
+		{
+			m.Name,
+			strconv.FormatInt(m.Size, 10) + "Gi",
+			m.Location,
+			age(m.CreatedAt),
+		},
+	}
+	return table
 }
 
 type DiskDelete struct {
