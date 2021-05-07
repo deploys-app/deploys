@@ -103,7 +103,7 @@ func (rn Runner) Run(args ...string) error {
 		return rn.project(args[1:]...)
 	case "role":
 		return rn.role(args[1:]...)
-	case "deployment", "deploy":
+	case "deployment", "deploy", "d":
 		return rn.deployment(args[1:]...)
 	case "route":
 		return rn.route(args[1:]...)
@@ -380,6 +380,24 @@ func (rn Runner) deployment(args ...string) error {
 		f.StringVar(&req.Name, "name", "", "deployment name")
 		f.Parse(args[1:])
 		resp, err = s.Delete(context.Background(), &req)
+	case "deploy":
+		var (
+			req  api.DeploymentDeploy
+			typ  string
+			port int
+		)
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Name, "name", "", "deployment name")
+		f.StringVar(&req.Image, "image", "", "docker image")
+		f.StringVar(&typ, "type", "", "deployment type")
+		f.IntVar(&port, "port", 0, "port")
+		f.Parse(args[1:])
+		req.Type = api.ParseDeploymentTypeString(typ)
+		if port > 0 {
+			req.Port = &port
+		}
+		resp, err = s.Deploy(context.Background(), &req)
 	case "set":
 		return rn.deploymentSet(args[1:]...)
 	}
