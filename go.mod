@@ -12,7 +12,7 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/moonrhythm/validator v1.2.0
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
-	golang.org/x/net v0.0.0-20210420072503-d25e30425868 // indirect
+	golang.org/x/net v0.0.0-20210525063256-abc453219eb5 // indirect
 	golang.org/x/oauth2 v0.0.0-20210413134643-5e61552d6c78
 	gopkg.in/check.v1 v1.0.0-20200902074654-038fdea0a05b // indirect
 	gopkg.in/yaml.v2 v2.4.0

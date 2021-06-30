@@ -17,12 +17,12 @@ var (
 
 // global
 const (
-	MinNameLength = 4
+	MinNameLength = 3
 	MaxNameLength = 27
 )
 
 // Deployments
 const (
 	DeploymentMinReplicas = 1
-	DeploymentMaxReplicas = 6
+	DeploymentMaxReplicas = 8
 )
