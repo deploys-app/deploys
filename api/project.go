@@ -40,7 +40,7 @@ func (m *ProjectCreate) Valid() error {
 	if v.Must(m.SID != "", "sid required") {
 		v.Mustf(ReValidSID.MatchString(m.SID), "sid invalid %s", ReValidSIDStr)
 		cnt := utf8.RuneCountInString(m.SID)
-		v.Must(cnt >= 6 && cnt <= 20, "sid must have length between 6-20 characters")
+		v.Must(cnt >= 6 && cnt <= 32, "sid must have length between 6-32 characters")
 	}
 
 	v.Must(utf8.ValidString(m.Name), "name invalid")
