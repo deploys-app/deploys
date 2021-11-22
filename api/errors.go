@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/acoshift/arpc"
+	"github.com/acoshift/arpc/v2"
 )
 
 var (

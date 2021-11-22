@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"regexp"
 
 	"github.com/moonrhythm/validator"
 )
@@ -38,4 +39,17 @@ func WrapValidate(v *validator.Validator) error {
 func IsValidateError(err error) bool {
 	var e *ValidateError
 	return errors.As(err, &e)
+}
+
+// helper
+
+var reEnvName = regexp.MustCompile(`[-._a-zA-Z][-._a-zA-Z0-9]*`)
+
+func validEnvName(env map[string]string) bool {
+	for k := range env {
+		if !reEnvName.MatchString(k) {
+			return false
+		}
+	}
+	return true
 }

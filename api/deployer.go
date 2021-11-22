@@ -49,6 +49,7 @@ type DeploymentSpec struct {
 	Schedule             string
 	Annotations          map[string]string
 	CPU                  string
+	CPULimit             string
 	Memory               string
 	PullSecretName       string
 	DiskName             string

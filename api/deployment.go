@@ -203,7 +203,7 @@ type DeploymentResource struct {
 }
 
 type DeploymentDeploy struct {
-	Project          string              `json:"project" yaml:"project""`
+	Project          string              `json:"project" yaml:"project"`
 	Location         string              `json:"location" yaml:"location"`
 	Name             string              `json:"name" yaml:"name"`
 	Image            string              `json:"image" yaml:"image"`
@@ -322,6 +322,9 @@ func (m *DeploymentDeploy) Valid() error {
 		}
 	}
 
+	v.Must(validEnvName(m.Env), "invalid env name")
+	v.Must(validEnvName(m.AddEnv), "invalid env name")
+
 	return WrapValidate(v)
 }
 
@@ -380,6 +383,7 @@ type DeploymentItem struct {
 	Annotations      map[string]string  `json:"annotations" yaml:"annotations"`
 	Resources        DeploymentResource `json:"resources" yaml:"resources"`
 	URL              string             `json:"url" yaml:"url"`
+	InternalURL      string             `json:"internalUrl" yaml:"internalUrl"`
 	LogURL           string             `json:"logUrl" yaml:"logUrl"`
 	EventURL         string             `json:"eventUrl" yaml:"eventUrl"`
 	PodsURL          string             `json:"podsUrl" yaml:"podsUrl"`
