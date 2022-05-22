@@ -162,6 +162,7 @@ type BillingSKUs struct {
 	Memory   float64 `json:"memory" yaml:"memory"`
 	Egress   float64 `json:"egress" yaml:"egress"`
 	Disk     float64 `json:"disk" yaml:"disk"`
+	Replica  float64 `json:"replica" yaml:"replica"`
 }
 
 type BillingProject struct {

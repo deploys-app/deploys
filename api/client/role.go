@@ -81,3 +81,12 @@ func (c roleClient) Bind(ctx context.Context, m *api.RoleBind) (*api.Empty, erro
 	}
 	return &res, nil
 }
+
+func (c roleClient) Permissions(ctx context.Context, m *api.Empty) ([]string, error) {
+	var res []string
+	err := c.inv.invoke(ctx, "role.permissions", m, &res)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}

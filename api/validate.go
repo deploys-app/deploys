@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"regexp"
+	"strings"
 
 	"github.com/moonrhythm/validator"
 )
@@ -52,4 +53,21 @@ func validEnvName(env map[string]string) bool {
 		}
 	}
 	return true
+}
+
+func validImage(image string) bool {
+	if strings.HasSuffix(image, "@") {
+		return false
+	}
+
+	return true
+}
+
+func validRouteTarget(target string) bool {
+	for _, x := range routeTargetPrefix {
+		if strings.HasPrefix(target, x) {
+			return true
+		}
+	}
+	return false
 }

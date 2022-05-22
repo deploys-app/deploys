@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	ReValidNameStr     = `^[a-z][a-z0-9\-]*[^\-]$`
+	ReValidNameStr     = `^[a-z][a-z0-9\-]*[a-z0-9]$`
 	ReValidScheduleStr = `^((((\*(/\d+)?)|(\d+((-\d+)|(/\d+))?)),?)+\s?){5}$`
 )
 
@@ -24,5 +24,5 @@ const (
 // Deployments
 const (
 	DeploymentMinReplicas = 1
-	DeploymentMaxReplicas = 8
+	DeploymentMaxReplicas = 20
 )

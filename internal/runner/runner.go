@@ -439,14 +439,22 @@ func (rn Runner) route(args ...string) error {
 		f.Parse(args[1:])
 		resp, err = s.Get(context.Background(), &req)
 	case "create":
-		var req api.RouteCreate
+		var (
+			req        api.RouteCreateV2
+			deployment string
+		)
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Location, "location", "", "location")
 		f.StringVar(&req.Domain, "domain", "", "domain")
 		f.StringVar(&req.Path, "path", "", "path")
-		f.StringVar(&req.Deployment, "deployment", "", "deployment name")
+		f.StringVar(&req.Target, "target", "", "target (for v2)")
+		f.StringVar(&deployment, "deployment", "", "deployment name (for v1)")
 		f.Parse(args[1:])
-		resp, err = s.Create(context.Background(), &req)
+
+		if req.Target == "" && deployment != "" {
+			req.Target = "deployment://" + deployment
+		}
+		resp, err = s.CreateV2(context.Background(), &req)
 	case "delete":
 		var req api.RouteDelete
 		f.StringVar(&req.Project, "project", "", "project id")

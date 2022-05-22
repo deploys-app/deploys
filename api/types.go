@@ -2,10 +2,20 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 	"time"
+
+	"github.com/acoshift/arpc/v2"
 )
 
 type Empty struct{}
+
+func (*Empty) UnmarshalRequest(r *http.Request) error {
+	if r.Method != http.MethodGet {
+		return arpc.ErrUnsupported
+	}
+	return nil
+}
 
 func (*Empty) Table() [][]string {
 	return [][]string{{"Operation success"}}

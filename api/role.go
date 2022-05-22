@@ -12,6 +12,9 @@ import (
 
 var permissions = []string{
 	"*",
+	"project.*",
+	"project.get",
+	"project.delete",
 	"role.*",
 	"role.create",
 	"role.list",
@@ -74,6 +77,7 @@ type Role interface {
 	Revoke(ctx context.Context, m *RoleRevoke) (*Empty, error)
 	Users(ctx context.Context, m *RoleUsers) (*RoleUsersResult, error)
 	Bind(ctx context.Context, m *RoleBind) (*Empty, error)
+	Permissions(ctx context.Context, _ *Empty) ([]string, error)
 }
 
 type RoleCreate struct {

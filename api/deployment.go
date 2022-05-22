@@ -250,7 +250,10 @@ func (m *DeploymentDeploy) Valid() error {
 		cnt := utf8.RuneCountInString(m.Name)
 		v.Mustf(cnt >= MinNameLength && cnt <= MaxNameLength, "name must have length between %d-%d characters", MinNameLength, MaxNameLength)
 	}
-	v.Must(m.Image != "", "image required")
+
+	if v.Must(m.Image != "", "image required") {
+		v.Must(validImage(m.Image), "invalid image")
+	}
 
 	// validate replicas if provided
 	if m.MinReplicas != nil {
