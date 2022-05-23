@@ -156,16 +156,17 @@ type RouteItem struct {
 	Location   string `json:"location" yaml:"location"`
 	Domain     string `json:"domain" yaml:"domain"`
 	Path       string `json:"path" yaml:"path"`
+	Target     string `json:"target" yaml:"target"`
 	Deployment string `json:"deployment" yaml:"deployment"`
 }
 
 func (m *RouteItem) Table() [][]string {
 	table := [][]string{
-		{"DOMAIN", "PATH", "DEPLOYMENT", "LOCATION"},
+		{"DOMAIN", "PATH", "TARGET", "LOCATION"},
 		{
 			m.Domain,
 			m.Path,
-			m.Deployment,
+			m.Target,
 			m.Location,
 		},
 	}
