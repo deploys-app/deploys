@@ -27,7 +27,6 @@ type Route interface {
 	CreateV2(ctx context.Context, m *RouteCreateV2) (*Empty, error)
 	Get(ctx context.Context, m *RouteGet) (*RouteItem, error)
 	List(ctx context.Context, m *RouteList) (*RouteListResult, error)
-	ListV2(ctx context.Context, m *RouteList) (*RouteListV2Result, error)
 	Delete(ctx context.Context, m *RouteDelete) (*Empty, error)
 }
 
@@ -107,30 +106,6 @@ func (m *RouteList) Valid() error {
 	v.Must(m.Project != "", "project required")
 
 	return WrapValidate(v)
-}
-
-type RouteListV2Result []*RouteItemV2
-
-func (m RouteListV2Result) Table() [][]string {
-	table := [][]string{
-		{"DOMAIN", "PATH", "TARGET", "LOCATION"},
-	}
-	for _, x := range m {
-		table = append(table, []string{
-			x.Domain,
-			x.Path,
-			x.Target,
-			x.Location,
-		})
-	}
-	return table
-}
-
-type RouteItemV2 struct {
-	Location string `json:"location" yaml:"location"`
-	Domain   string `json:"domain" yaml:"domain"`
-	Path     string `json:"path" yaml:"path"`
-	Target   string `json:"target" yaml:"target"`
 }
 
 type RouteListResult struct {

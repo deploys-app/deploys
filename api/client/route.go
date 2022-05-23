@@ -46,15 +46,6 @@ func (c routeClient) List(ctx context.Context, m *api.RouteList) (*api.RouteList
 	return &res, nil
 }
 
-func (c routeClient) ListV2(ctx context.Context, m *api.RouteList) (*api.RouteListV2Result, error) {
-	var res api.RouteListV2Result
-	err := c.inv.invoke(ctx, "route.listV2", m, &res)
-	if err != nil {
-		return nil, err
-	}
-	return &res, nil
-}
-
 func (c routeClient) Delete(ctx context.Context, m *api.RouteDelete) (*api.Empty, error) {
 	var res api.Empty
 	err := c.inv.invoke(ctx, "route.delete", m, &res)
