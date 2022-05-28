@@ -92,6 +92,7 @@ type DeployerCommandDeploymentDeploySpec struct {
 	MaxReplicas          int                `json:"maxReplicas"`
 	Port                 int                `json:"port"`
 	Protocol             DeploymentProtocol `json:"protocol"`
+	Internal             bool               `json:"internal"`
 	Schedule             string             `json:"schedule"`
 	Annotations          map[string]string  `json:"annotations"`
 	CPU                  string             `json:"cpu"`

@@ -212,6 +212,7 @@ type DeploymentDeploy struct {
 	Type             DeploymentType      `json:"type" yaml:"type"`
 	Port             *int                `json:"port" yaml:"port"`
 	Protocol         *DeploymentProtocol `json:"protocol" yaml:"protocol"`   // protocol for WebService
+	Internal         *bool               `json:"internal" yaml:"internal"`   // run WebService as internal service
 	Env              map[string]string   `json:"env" yaml:"env"`             // override all env
 	AddEnv           map[string]string   `json:"addEnv" yaml:"addEnv"`       // add env to old revision env
 	RemoveEnv        []string            `json:"removeEnv" yaml:"removeEnv"` // remove env from old revision env
@@ -234,7 +235,6 @@ type DeploymentDisk struct {
 func (m *DeploymentDeploy) Valid() error {
 	m.Name = strings.TrimSpace(m.Name)
 	m.Image = strings.ReplaceAll(m.Image, " ", "") // remove all space in image
-	// m.Image = strings.ToLower(m.Image) // image tag can be lowercase
 
 	// TODO: autofill location until all user migrate
 	if m.Location == "" {
@@ -382,6 +382,7 @@ type DeploymentItem struct {
 	Schedule         string             `json:"schedule" yaml:"schedule"`
 	Port             int                `json:"port" yaml:"port"`
 	Protocol         DeploymentProtocol `json:"protocol" yaml:"protocol"`
+	Internal         bool               `json:"internal" yaml:"internal"`
 	NodePort         int                `json:"nodePort" yaml:"nodePort"`
 	Annotations      map[string]string  `json:"annotations" yaml:"annotations"`
 	Resources        DeploymentResource `json:"resources" yaml:"resources"`
