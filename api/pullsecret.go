@@ -81,6 +81,7 @@ func (m *PullSecretList) Valid() error {
 type PullSecretListResult struct {
 	Project     string            `json:"project" yaml:"project"`
 	Location    string            `json:"location" yaml:"location"`
+	Items       []*PullSecretItem `json:"items" yaml:"items"`
 	PullSecrets []*PullSecretItem `json:"pullSecrets" yaml:"pullSecrets"`
 }
 
@@ -88,7 +89,7 @@ func (m *PullSecretListResult) Table() [][]string {
 	table := [][]string{
 		{"NAME", "STATUS", "LOCATION", "AGE"},
 	}
-	for _, x := range m.PullSecrets {
+	for _, x := range m.Items {
 		table = append(table, []string{
 			x.Name,
 			x.Status.Text(),

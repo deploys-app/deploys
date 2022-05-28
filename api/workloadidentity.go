@@ -128,14 +128,15 @@ func (m *WorkloadIdentityItem) Table() [][]string {
 }
 
 type WorkloadIdentityListResult struct {
-	List []*WorkloadIdentityItem `json:"list" yaml:"list"`
+	Items []*WorkloadIdentityItem `json:"items" yaml:"items"`
+	List  []*WorkloadIdentityItem `json:"list" yaml:"list"` // TODO: deprecated
 }
 
 func (m *WorkloadIdentityListResult) Table() [][]string {
 	table := [][]string{
 		{"NAME", "GSA", "LOCATION", "AGE"},
 	}
-	for _, x := range m.List {
+	for _, x := range m.Items {
 		table = append(table, []string{
 			x.Name,
 			x.GSA,

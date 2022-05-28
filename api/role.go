@@ -140,14 +140,15 @@ type RoleList struct {
 
 type RoleListResult struct {
 	Project string          `json:"project" yaml:"project"`
-	Roles   []*RoleListItem `json:"roles" yaml:"roles"`
+	Items   []*RoleListItem `json:"items" yaml:"items"`
+	Roles   []*RoleListItem `json:"roles" yaml:"roles"` // TODO: deprecated
 }
 
 func (m *RoleListResult) Table() [][]string {
 	table := [][]string{
 		{"ROLE", "NAME", "AGE"},
 	}
-	for _, x := range m.Roles {
+	for _, x := range m.Items {
 		table = append(table, []string{
 			x.Role,
 			x.Name,
@@ -235,6 +236,7 @@ func (m *RoleUsers) Valid() error {
 
 type RoleUsersResult struct {
 	Project string           `json:"project" yaml:"project"`
+	Items   []*RoleUsersItem `json:"items" yaml:"items"`
 	Users   []*RoleUsersItem `json:"users" yaml:"users"`
 }
 
@@ -242,7 +244,7 @@ func (m *RoleUsersResult) Table() [][]string {
 	table := [][]string{
 		{"EMAIL", "ROLE"},
 	}
-	for _, u := range m.Users {
+	for _, u := range m.Items {
 		for _, r := range u.Roles {
 			table = append(table, []string{
 				u.Email,

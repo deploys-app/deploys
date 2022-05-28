@@ -113,14 +113,15 @@ type ServiceAccountListItem struct {
 
 type ServiceAccountListResult struct {
 	Project         string                    `json:"project" yaml:"project"`
-	ServiceAccounts []*ServiceAccountListItem `json:"serviceAccounts" yaml:"serviceAccounts"`
+	Items           []*ServiceAccountListItem `json:"items" yaml:"items"`
+	ServiceAccounts []*ServiceAccountListItem `json:"serviceAccounts" yaml:"serviceAccounts"` // TODO: deprecated
 }
 
 func (m *ServiceAccountListResult) Table() [][]string {
 	table := [][]string{
 		{"ID", "EMAIL", "NAME", "AGE"},
 	}
-	for _, x := range m.ServiceAccounts {
+	for _, x := range m.Items {
 		table = append(table, []string{
 			x.SID,
 			x.Email,

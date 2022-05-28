@@ -99,14 +99,15 @@ func (m *DiskList) Valid() error {
 }
 
 type DiskListResult struct {
-	List []*DiskItem `json:"list" yaml:"list"`
+	Items []*DiskItem `json:"items" yaml:"items"`
+	List  []*DiskItem `json:"list" yaml:"list"`
 }
 
 func (m *DiskListResult) Table() [][]string {
 	table := [][]string{
 		{"NAME", "SIZE", "LOCATION", "AGE"},
 	}
-	for _, x := range m.List {
+	for _, x := range m.Items {
 		table = append(table, []string{
 			x.Name,
 			strconv.FormatInt(x.Size, 10) + "Gi",

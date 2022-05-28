@@ -17,6 +17,7 @@ type LocationList struct {
 }
 
 type LocationListResult struct {
+	Items     []*LocationItem `json:"items" yaml:"items"`
 	Locations []*LocationItem `json:"locations" yaml:"locations"`
 }
 
@@ -24,7 +25,7 @@ func (m *LocationListResult) Table() [][]string {
 	table := [][]string{
 		{"ID", "DOMAIN SUFFIX", "ENDPOINT", "CNAME"},
 	}
-	for _, x := range m.Locations {
+	for _, x := range m.Items {
 		table = append(table, []string{
 			x.ID,
 			x.DomainSuffix,

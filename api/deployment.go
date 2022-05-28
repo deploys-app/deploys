@@ -345,6 +345,7 @@ func (m *DeploymentList) Valid() error {
 }
 
 type DeploymentListResult struct {
+	Items       []*DeploymentItem `json:"items" yaml:"items"`
 	Deployments []*DeploymentItem `json:"deployments" yaml:"deployments"`
 }
 
@@ -352,7 +353,7 @@ func (m *DeploymentListResult) Table() [][]string {
 	table := [][]string{
 		{"NAME", "TYPE", "STATUS", "AGE"},
 	}
-	for _, x := range m.Deployments {
+	for _, x := range m.Items {
 		table = append(table, []string{
 			x.Name,
 			x.Type.String(),
