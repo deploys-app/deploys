@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/asaskevich/govalidator"
 	"github.com/moonrhythm/validator"
@@ -16,9 +17,10 @@ type Domain interface {
 }
 
 type DomainCreate struct {
-	Project  string `json:"project" yaml:"project"`
-	Location string `json:"location" yaml:"location"`
-	Domain   string `json:"domain" yaml:"domain"`
+	Project  string     `json:"project" yaml:"project"`
+	Location string     `json:"location" yaml:"location"`
+	Domain   string     `json:"domain" yaml:"domain"`
+	Plan     DomainPlan `json:"plan" yaml:"plan"`
 }
 
 func (m *DomainCreate) Valid() error {
@@ -79,9 +81,15 @@ func (m *DomainListResult) Table() [][]string {
 }
 
 type DomainItem struct {
-	Project  string `json:"project" yaml:"project"`
-	Location string `json:"location" yaml:"location"`
-	Domain   string `json:"domain" yaml:"domain"`
+	Project      string             `json:"project" yaml:"project"`
+	Location     string             `json:"location" yaml:"location"`
+	Domain       string             `json:"domain" yaml:"domain"`
+	Plan         DomainPlan         `json:"plan" yaml:"plan"`
+	Verification DomainVerification `json:"verification" yaml:"verification"`
+	CreatedAt    time.Time          `json:"createdAt" yaml:"createdAt"`
+}
+
+type DomainVerification struct {
 }
 
 type DomainDelete struct {

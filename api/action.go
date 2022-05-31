@@ -1,5 +1,9 @@
 package api
 
+import (
+	"encoding/json"
+)
+
 //go:generate stringer -type=Action -linecomment
 type Action int
 
@@ -9,24 +13,24 @@ const (
 	Delete        // delete
 )
 
-type DeploymentAction int
+func (a Action) MarshalJSON() ([]byte, error) {
+	return json.Marshal(a.String())
+}
 
-const (
-	_ DeploymentAction = iota
-	DeploymentActionDeploy
-	DeploymentActionDelete
-	DeploymentActionPause
-)
-
-func (a DeploymentAction) String() string {
-	switch a {
-	case DeploymentActionDeploy:
-		return "deploy"
-	case DeploymentActionDelete:
-		return "delete"
-	case DeploymentActionPause:
-		return "pause"
-	default:
-		return ""
+func (a *Action) UnmarshalJSON(b []byte) error {
+	var s string
+	err := json.Unmarshal(b, &s)
+	if err != nil {
+		return err
 	}
+
+	*a = Action(0)
+
+	for _, x := range []Action{Create, Delete} {
+		if x.String() == s {
+			*a = x
+			return nil
+		}
+	}
+	return nil
 }
