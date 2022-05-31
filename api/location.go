@@ -17,8 +17,7 @@ type LocationList struct {
 }
 
 type LocationListResult struct {
-	Items     []*LocationItem `json:"items" yaml:"items"`
-	Locations []*LocationItem `json:"locations" yaml:"locations"`
+	Items []*LocationItem `json:"items" yaml:"items"`
 }
 
 func (m *LocationListResult) Table() [][]string {

@@ -7,6 +7,7 @@ type Interface interface {
 	Project() Project
 	Role() Role
 	Deployment() Deployment
+	Domain() Domain
 	Route() Route
 	Disk() Disk
 	PullSecret() PullSecret

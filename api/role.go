@@ -141,7 +141,6 @@ type RoleList struct {
 type RoleListResult struct {
 	Project string          `json:"project" yaml:"project"`
 	Items   []*RoleListItem `json:"items" yaml:"items"`
-	Roles   []*RoleListItem `json:"roles" yaml:"roles"` // TODO: deprecated
 }
 
 func (m *RoleListResult) Table() [][]string {

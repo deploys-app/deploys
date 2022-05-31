@@ -345,8 +345,7 @@ func (m *DeploymentList) Valid() error {
 }
 
 type DeploymentListResult struct {
-	Items       []*DeploymentItem `json:"items" yaml:"items"`
-	Deployments []*DeploymentItem `json:"deployments" yaml:"deployments"`
+	Items []*DeploymentItem `json:"items" yaml:"items"`
 }
 
 func (m *DeploymentListResult) Table() [][]string {

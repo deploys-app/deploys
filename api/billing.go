@@ -54,8 +54,7 @@ type BillingCreateResult struct {
 }
 
 type BillingListResult struct {
-	Items    []*BillingItem `json:"items" yaml:"items"`
-	Billings []*BillingItem `json:"billings" yaml:"billings"`
+	Items []*BillingItem `json:"items" yaml:"items"`
 }
 
 type BillingDelete struct {

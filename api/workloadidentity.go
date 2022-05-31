@@ -129,7 +129,6 @@ func (m *WorkloadIdentityItem) Table() [][]string {
 
 type WorkloadIdentityListResult struct {
 	Items []*WorkloadIdentityItem `json:"items" yaml:"items"`
-	List  []*WorkloadIdentityItem `json:"list" yaml:"list"` // TODO: deprecated
 }
 
 func (m *WorkloadIdentityListResult) Table() [][]string {

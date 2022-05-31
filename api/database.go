@@ -50,7 +50,7 @@ func (m *DatabaseList) Valid() error {
 }
 
 type DatabaseListResult struct {
-	List []*DatabaseItem
+	Items []*DatabaseItem
 }
 
 type DatabaseItem struct {

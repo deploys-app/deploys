@@ -100,7 +100,6 @@ func (m *DiskList) Valid() error {
 
 type DiskListResult struct {
 	Items []*DiskItem `json:"items" yaml:"items"`
-	List  []*DiskItem `json:"list" yaml:"list"`
 }
 
 func (m *DiskListResult) Table() [][]string {

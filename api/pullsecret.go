@@ -79,10 +79,9 @@ func (m *PullSecretList) Valid() error {
 }
 
 type PullSecretListResult struct {
-	Project     string            `json:"project" yaml:"project"`
-	Location    string            `json:"location" yaml:"location"`
-	Items       []*PullSecretItem `json:"items" yaml:"items"`
-	PullSecrets []*PullSecretItem `json:"pullSecrets" yaml:"pullSecrets"`
+	Project  string            `json:"project" yaml:"project"`
+	Location string            `json:"location" yaml:"location"`
+	Items    []*PullSecretItem `json:"items" yaml:"items"`
 }
 
 func (m *PullSecretListResult) Table() [][]string {

@@ -112,9 +112,8 @@ type ServiceAccountListItem struct {
 }
 
 type ServiceAccountListResult struct {
-	Project         string                    `json:"project" yaml:"project"`
-	Items           []*ServiceAccountListItem `json:"items" yaml:"items"`
-	ServiceAccounts []*ServiceAccountListItem `json:"serviceAccounts" yaml:"serviceAccounts"` // TODO: deprecated
+	Project string                    `json:"project" yaml:"project"`
+	Items   []*ServiceAccountListItem `json:"items" yaml:"items"`
 }
 
 func (m *ServiceAccountListResult) Table() [][]string {

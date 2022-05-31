@@ -108,8 +108,7 @@ type ProjectQuota struct {
 }
 
 type ProjectListResult struct {
-	Items    []*ProjectItem `json:"items" yaml:"items"`
-	Projects []*ProjectItem `json:"projects" yaml:"projects"`
+	Items []*ProjectItem `json:"items" yaml:"items"`
 }
 
 func (m *ProjectListResult) Table() [][]string {

@@ -85,6 +85,10 @@ func (c *Client) Deployment() api.Deployment {
 	return deploymentClient{c}
 }
 
+func (c *Client) Domain() api.Domain {
+	return domainClient{c}
+}
+
 func (c *Client) Route() api.Route {
 	return routeClient{c}
 }
