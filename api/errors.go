@@ -41,6 +41,11 @@ var (
 	ErrServiceAccountAlreadyExists   = newError("api: service account already exists")
 	ErrMaximumDeploymentReach        = newError("api: maximum deployment reach")
 	ErrRouteNotFound                 = newError("api: route not found")
+	ErrDomainInUsed                  = newError("api: domain in used")
+	ErrPurgeFailed                   = newError("api: purge failed")
+	ErrDomainNotFound                = newError("api: domain not found")
+	ErrDomainCanNotPurge             = newError("api: domain can not purge")
+	ErrEmailDomainNotFound           = newError("api: email domain not found")
 )
 
 var AllErrors []error

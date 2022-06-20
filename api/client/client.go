@@ -105,6 +105,10 @@ func (c *Client) WorkloadIdentity() api.WorkloadIdentity {
 	return workloadIdentityClient{c}
 }
 
+func (c *Client) Email() api.Email {
+	return emailClient{c}
+}
+
 func (c *Client) Collector() api.Collector {
 	return collectorClient{c}
 }

@@ -13,6 +13,7 @@ type Interface interface {
 	PullSecret() PullSecret
 	WorkloadIdentity() WorkloadIdentity
 	ServiceAccount() ServiceAccount
+	Email() Email
 	Collector() Collector
 	Deployer() Deployer
 }

@@ -104,6 +104,7 @@ func (m *ProjectItem) Table() [][]string {
 }
 
 type ProjectQuota struct {
+	Deployments           int `json:"deployments" yaml:"deployments"`
 	DeploymentMaxReplicas int `json:"deploymentMaxReplicas" yaml:"deploymentMaxReplicas"`
 }
 

@@ -14,13 +14,14 @@ type Domain interface {
 	Get(ctx context.Context, m *DomainGet) (*DomainItem, error)
 	List(ctx context.Context, m *DomainList) (*DomainListResult, error)
 	Delete(ctx context.Context, m *DomainDelete) (*Empty, error)
+	PurgeCache(ctx context.Context, m *DomainGet) (*Empty, error)
 }
 
 type DomainCreate struct {
 	Project  string     `json:"project" yaml:"project"`
 	Location string     `json:"location" yaml:"location"`
 	Domain   string     `json:"domain" yaml:"domain"`
-	Plan     DomainPlan `json:"plan" yaml:"plan"`
+	Type     DomainType `json:"type" yaml:"type"`
 }
 
 func (m *DomainCreate) Valid() error {
@@ -35,16 +36,14 @@ func (m *DomainCreate) Valid() error {
 }
 
 type DomainGet struct {
-	Project  string `json:"project" yaml:"project"`
-	Location string `json:"location" yaml:"location"`
-	Domain   string `json:"domain" yaml:"domain"`
+	Project string `json:"project" yaml:"project"`
+	Domain  string `json:"domain" yaml:"domain"`
 }
 
 func (m *DomainGet) Valid() error {
 	v := validator.New()
 
 	v.Must(m.Project != "", "project required")
-	v.Must(m.Location != "", "location required")
 	v.Must(govalidator.IsDNSName(m.Domain), "domain invalid")
 
 	return WrapValidate(v)
@@ -84,25 +83,51 @@ type DomainItem struct {
 	Project      string             `json:"project" yaml:"project"`
 	Location     string             `json:"location" yaml:"location"`
 	Domain       string             `json:"domain" yaml:"domain"`
-	Plan         DomainPlan         `json:"plan" yaml:"plan"`
+	Type         DomainType         `json:"type" yaml:"type"`
 	Verification DomainVerification `json:"verification" yaml:"verification"`
+	DNSConfig    DomainDNSConfig    `json:"dnsConfig" yaml:"dnsConfig"`
+	Status       DomainStatus       `json:"status" yaml:"status"`
 	CreatedAt    time.Time          `json:"createdAt" yaml:"createdAt"`
+	CreatedBy    string             `json:"createdBy" yaml:"createdBy"`
 }
 
 type DomainVerification struct {
+	Ownership DomainVerificationOwnership `json:"ownership"`
+	SSL       DomainVerificationSSL       `json:"ssl"`
+}
+
+type DomainVerificationOwnership struct {
+	Type   string   `json:"type"`
+	Name   string   `json:"name"`
+	Value  string   `json:"value"`
+	Errors []string `json:"errors"`
+}
+
+type DomainVerificationSSL struct {
+	Records []DomainVerificationSSLRecord `json:"records"`
+	Errors  []string                      `json:"errors"`
+}
+
+type DomainVerificationSSLRecord struct {
+	TxtName  string `json:"txtName"`
+	TxtValue string `json:"txtValue"`
+}
+
+type DomainDNSConfig struct {
+	IPv4  []string `json:"ipv4" yaml:"ipv4"`
+	IPv6  []string `json:"ipv6" yaml:"ipv6"`
+	CName []string `json:"cname" yaml:"cname"`
 }
 
 type DomainDelete struct {
-	Project  string `json:"project" yaml:"project"`
-	Location string `json:"location" yaml:"location"`
-	Domain   string `json:"domain" yaml:"domain"`
+	Project string `json:"project" yaml:"project"`
+	Domain  string `json:"domain" yaml:"domain"`
 }
 
 func (m *DomainDelete) Valid() error {
 	v := validator.New()
 
 	v.Must(m.Project != "", "project required")
-	v.Must(m.Location != "", "location required")
 	v.Must(govalidator.IsDNSName(m.Domain), "domain invalid")
 
 	return WrapValidate(v)

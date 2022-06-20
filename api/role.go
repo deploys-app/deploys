@@ -26,6 +26,12 @@ var permissions = []string{
 	"deployment.list",
 	"deployment.get",
 	"deployment.delete",
+	"domain.*",
+	"domain.create",
+	"domain.list",
+	"domain.get",
+	"domain.delete",
+	"domain.purgecache",
 	"route.*",
 	"route.create",
 	"route.list",
@@ -60,6 +66,8 @@ var permissions = []string{
 	"serviceaccount.key.*",
 	"serviceaccount.key.create",
 	"serviceaccount.key.delete",
+	"email.*",
+	"email.send",
 }
 
 func Permissions() []string {

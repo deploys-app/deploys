@@ -588,7 +588,9 @@ func (rn Runner) pullSecret(args ...string) error {
 		f.StringVar(&req.Location, "location", "", "location")
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Name, "name", "", "name")
-		f.StringVar(&req.Value, "value", "", "value")
+		f.StringVar(&req.Spec.Server, "server", "", "server")
+		f.StringVar(&req.Spec.Username, "username", "", "username")
+		f.StringVar(&req.Spec.Password, "password", "", "password")
 		f.Parse(args[1:])
 		resp, err = s.Create(context.Background(), &req)
 	case "list":

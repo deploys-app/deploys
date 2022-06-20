@@ -39,7 +39,7 @@ func (m *DiskCreate) Valid() error {
 		v.Mustf(cnt >= MinNameLength && cnt <= MaxNameLength, "name must have length between %d-%d characters", MinNameLength, MaxNameLength)
 	}
 	v.Must(m.Size >= 1, "minimum disk size 1 Gi")
-	v.Must(m.Size <= 20, "maximum disk size 20 Gi")
+	v.Mustf(m.Size <= DiskMaxSize, "maximum disk size %d Gi", DiskMaxSize)
 
 	return WrapValidate(v)
 }

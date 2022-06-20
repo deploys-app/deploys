@@ -18,15 +18,22 @@ type PullSecret interface {
 }
 
 type PullSecretCreate struct {
-	Project  string `json:"project" yaml:"project"`
-	Location string `json:"location" yaml:"location"`
-	Name     string `json:"name" yaml:"name"`
-	Value    string `json:"value" yaml:"value"`
+	Project  string         `json:"project" yaml:"project"`
+	Location string         `json:"location" yaml:"location"`
+	Name     string         `json:"name" yaml:"name"`
+	Spec     PullSecretSpec `json:"spec" yaml:"spec"`
+}
+
+type PullSecretSpec struct {
+	Server   string `json:"server" yaml:"server"`
+	Username string `json:"username" yaml:"username"`
+	Password string `json:"password" yaml:"password"`
 }
 
 func (m *PullSecretCreate) Valid() error {
 	m.Name = strings.TrimSpace(m.Name)
-	m.Value = strings.TrimSpace(m.Value)
+	m.Spec.Server = strings.TrimSpace(m.Spec.Server)
+	m.Spec.Username = strings.TrimSpace(m.Spec.Username)
 
 	v := validator.New()
 
@@ -37,8 +44,10 @@ func (m *PullSecretCreate) Valid() error {
 		cnt := utf8.RuneCountInString(m.Name)
 		v.Mustf(cnt >= MinNameLength && cnt <= MaxNameLength, "name must have length between %d-%d characters", MinNameLength, MaxNameLength)
 	}
-	v.Must(m.Value != "", "value required")
-	v.Must(govalidator.IsBase64(m.Value), "value must be base64")
+	v.Must(govalidator.IsURL(m.Spec.Server), "spec.server must be an url")
+	v.Must(m.Spec.Server != "", "spec.server required")
+	v.Must(m.Spec.Username != "", "spec.username required")
+	v.Must(m.Spec.Password != "", "spec.password required")
 
 	return WrapValidate(v)
 }
@@ -100,13 +109,14 @@ func (m *PullSecretListResult) Table() [][]string {
 }
 
 type PullSecretItem struct {
-	Name      string    `json:"name" yaml:"name"`
-	Value     string    `json:"value" yaml:"value"`
-	Location  string    `json:"location" yaml:"location"`
-	Action    Action    `json:"action" yaml:"action"`
-	Status    Status    `json:"status" yaml:"status"`
-	CreatedAt time.Time `json:"createdAt" yaml:"createdAt"`
-	CreatedBy string    `json:"createdBy" yaml:"createdBy"`
+	Name      string         `json:"name" yaml:"name"`
+	Value     string         `json:"value" yaml:"value"`
+	Spec      PullSecretSpec `json:"spec" yaml:"spec"`
+	Location  string         `json:"location" yaml:"location"`
+	Action    Action         `json:"action" yaml:"action"`
+	Status    Status         `json:"status" yaml:"status"`
+	CreatedAt time.Time      `json:"createdAt" yaml:"createdAt"`
+	CreatedBy string         `json:"createdBy" yaml:"createdBy"`
 }
 
 func (m *PullSecretItem) Table() [][]string {

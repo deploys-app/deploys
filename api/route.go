@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/asaskevich/govalidator"
 	"github.com/moonrhythm/validator"
@@ -128,11 +129,13 @@ func (m *RouteListResult) Table() [][]string {
 }
 
 type RouteItem struct {
-	Location   string `json:"location" yaml:"location"`
-	Domain     string `json:"domain" yaml:"domain"`
-	Path       string `json:"path" yaml:"path"`
-	Target     string `json:"target" yaml:"target"`
-	Deployment string `json:"deployment" yaml:"deployment"`
+	Location   string    `json:"location" yaml:"location"`
+	Domain     string    `json:"domain" yaml:"domain"`
+	Path       string    `json:"path" yaml:"path"`
+	Target     string    `json:"target" yaml:"target"`
+	Deployment string    `json:"deployment" yaml:"deployment"`
+	CreatedAt  time.Time `json:"createdAt" yaml:"createdAt"`
+	CreatedBy  string    `json:"createdBy" yaml:"createdBy"`
 }
 
 func (m *RouteItem) Table() [][]string {

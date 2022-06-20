@@ -25,4 +25,5 @@ const (
 const (
 	DeploymentMinReplicas = 1
 	DeploymentMaxReplicas = 20
+	DiskMaxSize           = 100
 )
