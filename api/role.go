@@ -68,6 +68,7 @@ var permissions = []string{
 	"serviceaccount.key.delete",
 	"email.*",
 	"email.send",
+	"email.list",
 }
 
 func Permissions() []string {

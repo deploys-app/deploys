@@ -382,9 +382,11 @@ func (rn Runner) deployment(args ...string) error {
 		resp, err = s.Delete(context.Background(), &req)
 	case "deploy":
 		var (
-			req  api.DeploymentDeploy
-			typ  string
-			port int
+			req         api.DeploymentDeploy
+			typ         string
+			port        int
+			minReplicas int
+			maxReplicas int
 		)
 		f.StringVar(&req.Location, "location", "", "location")
 		f.StringVar(&req.Project, "project", "", "project id")
@@ -392,10 +394,18 @@ func (rn Runner) deployment(args ...string) error {
 		f.StringVar(&req.Image, "image", "", "docker image")
 		f.StringVar(&typ, "type", "", "deployment type")
 		f.IntVar(&port, "port", 0, "port")
+		f.IntVar(&minReplicas, "minReplicas", 0, "autoscale min replicas")
+		f.IntVar(&maxReplicas, "maxReplicas", 0, "autoscale max replicas")
 		f.Parse(args[1:])
 		req.Type = api.ParseDeploymentTypeString(typ)
 		if port > 0 {
 			req.Port = &port
+		}
+		if minReplicas > 0 {
+			req.MinReplicas = &minReplicas
+		}
+		if maxReplicas > 0 {
+			req.MaxReplicas = &maxReplicas
 		}
 		resp, err = s.Deploy(context.Background(), &req)
 	case "set":

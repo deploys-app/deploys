@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/asaskevich/govalidator"
 	"github.com/moonrhythm/validator"
@@ -10,6 +11,7 @@ import (
 
 type Email interface {
 	Send(ctx context.Context, m *EmailSend) (*Empty, error)
+	List(ctx context.Context, m *EmailList) (*EmailListResult, error)
 }
 
 type EmailSend struct {
@@ -53,7 +55,28 @@ func (m *EmailSend) Valid() error {
 	}
 	v.Must(m.Subject != "", "subject required")
 	v.Must(m.Body.Type.Valid(), "body.type invalid")
-	v.Must(m.Body.Content != "", "body.content require")
+	v.Must(m.Body.Content != "", "body.content required")
 
 	return WrapValidate(v)
+}
+
+type EmailItem struct {
+	Domain    string    `json:"domain" yaml:"domain"`
+	CreatedAt time.Time `json:"createdAt" yaml:"createdAt"`
+}
+
+type EmailList struct {
+	Project string `json:"project" yaml:"project"`
+}
+
+func (m *EmailList) Valid() error {
+	v := validator.New()
+
+	v.Must(m.Project != "", "project required")
+
+	return WrapValidate(v)
+}
+
+type EmailListResult struct {
+	Items []*EmailItem `json:"items"`
 }
