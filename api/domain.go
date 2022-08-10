@@ -104,6 +104,7 @@ type DomainVerificationOwnership struct {
 }
 
 type DomainVerificationSSL struct {
+	Pending bool                          `json:"pending"`
 	Records []DomainVerificationSSLRecord `json:"records"`
 	Errors  []string                      `json:"errors"`
 }

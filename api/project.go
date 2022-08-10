@@ -84,12 +84,13 @@ type ProjectGet struct {
 }
 
 type ProjectItem struct {
-	ID             int64        `json:"id" yaml:"id"`
-	Project        string       `json:"project" yaml:"project"`
-	Name           string       `json:"name" yaml:"name"`
-	BillingAccount string       `json:"billingAccount" yaml:"billingAccount"`
-	Quota          ProjectQuota `json:"quota" yaml:"quota"`
-	CreatedAt      time.Time    `json:"createdAt" yaml:"createdAt"`
+	ID             int64         `json:"id" yaml:"id"`
+	Project        string        `json:"project" yaml:"project"`
+	Name           string        `json:"name" yaml:"name"`
+	BillingAccount string        `json:"billingAccount" yaml:"billingAccount"`
+	Quota          ProjectQuota  `json:"quota" yaml:"quota"`
+	Config         ProjectConfig `json:"config" yaml:"config"`
+	CreatedAt      time.Time     `json:"createdAt" yaml:"createdAt"`
 }
 
 func (m *ProjectItem) Table() [][]string {
@@ -106,6 +107,10 @@ func (m *ProjectItem) Table() [][]string {
 type ProjectQuota struct {
 	Deployments           int `json:"deployments" yaml:"deployments"`
 	DeploymentMaxReplicas int `json:"deploymentMaxReplicas" yaml:"deploymentMaxReplicas"`
+}
+
+type ProjectConfig struct {
+	DomainCloudflare bool `json:"domainCloudflare" yaml:"domainCloudflare"`
 }
 
 type ProjectListResult struct {

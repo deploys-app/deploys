@@ -37,7 +37,7 @@ func (m *ServiceAccountCreate) Valid() error {
 	if v.Must(m.SID != "", "sid required") {
 		v.Mustf(ReValidSID.MatchString(m.SID), "sid invalid %s", ReValidSIDStr)
 		cnt := utf8.RuneCountInString(m.SID)
-		v.Must(cnt >= 6 && cnt <= 20, "sid must have length between 6-20 characters")
+		v.Must(cnt >= 3 && cnt <= 20, "sid must have length between 3-20 characters")
 	}
 	{
 		cnt := utf8.RuneCountInString(m.Name)
@@ -65,7 +65,7 @@ func (m *ServiceAccountUpdate) Valid() error {
 	if v.Must(m.SID != "", "sid required") {
 		v.Mustf(ReValidSID.MatchString(m.SID), "sid invalid %s", ReValidSIDStr)
 		cnt := utf8.RuneCountInString(m.SID)
-		v.Must(cnt >= 6 && cnt <= 20, "sid must have length between 6-20 characters")
+		v.Must(cnt >= 3 && cnt <= 20, "sid must have length between 3-20 characters")
 	}
 	{
 		cnt := utf8.RuneCountInString(m.Name)

@@ -107,12 +107,12 @@ func (m *RoleCreate) Valid() error {
 	v.Must(ReValidSID.MatchString(m.Role), "role invalid")
 	{
 		cnt := utf8.RuneCountInString(m.Role)
-		v.Must(cnt >= 6 && cnt <= 20, "role must have length between 6-20 characters")
+		v.Must(cnt >= 3 && cnt <= 20, "role must have length between 3-20 characters")
 	}
 	v.Must(utf8.ValidString(m.Name), "name invalid")
 	{
 		cnt := utf8.RuneCountInString(m.Name)
-		v.Must(cnt >= 4 && cnt <= 64, "name must have length between 4-64 characters")
+		v.Must(cnt >= 3 && cnt <= 64, "name must have length between 3-64 characters")
 	}
 
 	return WrapValidate(v)

@@ -15,6 +15,7 @@ var (
 	ErrProjectNotFound               = newError("api: project not found")
 	ErrBillingAccountNotFound        = newError("api: billing account not found")
 	ErrBillingAccountNotActive       = newError("api: billing account not active, please contact us via email to activate billing account")
+	ErrBillingAccountInUsed          = newError("api: billing account in used")
 	ErrDeploymentNotFound            = newError("api: deployment not found")
 	ErrInvalidRouteTarget            = newError("api: invalid route target")
 	ErrCanNotDelete                  = newError("api: can not delete")

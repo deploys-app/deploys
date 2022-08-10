@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/asaskevich/govalidator"
 	"github.com/moonrhythm/validator"
 )
 
@@ -44,7 +45,7 @@ func IsValidateError(err error) bool {
 
 // helper
 
-var reEnvName = regexp.MustCompile(`[-._a-zA-Z][-._a-zA-Z0-9]*`)
+var reEnvName = regexp.MustCompile(`^[-._a-zA-Z][-._a-zA-Z0-9]*$`)
 
 func validEnvName(env map[string]string) bool {
 	for k := range env {
@@ -68,6 +69,13 @@ func validRouteTarget(target string) bool {
 		if strings.HasPrefix(target, x) {
 			return true
 		}
+	}
+	return false
+}
+
+func validURL(url string) bool {
+	if strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://") {
+		return govalidator.IsURL(url)
 	}
 	return false
 }

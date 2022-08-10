@@ -53,12 +53,23 @@ func (m *RouteCreate) Valid() error {
 	return WrapValidate(v)
 }
 
+type RouteConfig struct {
+	ForwardAuth *RouteConfigForwardAuth `json:"forwardAuth" yaml:"forwardAuth"`
+}
+
+type RouteConfigForwardAuth struct {
+	Target              string   `json:"target" yaml:"target"`
+	AuthRequestHeaders  []string `json:"authRequestHeaders" yaml:"authRequestHeaders"`
+	AuthResponseHeaders []string `json:"authResponseHeaders" yaml:"authResponseHeaders"`
+}
+
 type RouteCreateV2 struct {
-	Project  string `json:"project" yaml:"project"`
-	Location string `json:"location" yaml:"location"`
-	Domain   string `json:"domain" yaml:"domain"`
-	Path     string `json:"path" yaml:"path"`
-	Target   string `json:"target" yaml:"target"`
+	Project  string      `json:"project" yaml:"project"`
+	Location string      `json:"location" yaml:"location"`
+	Domain   string      `json:"domain" yaml:"domain"`
+	Path     string      `json:"path" yaml:"path"`
+	Target   string      `json:"target" yaml:"target"`
+	Config   RouteConfig `json:"config" yaml:"config"`
 }
 
 func (m *RouteCreateV2) Valid() error {
@@ -72,6 +83,12 @@ func (m *RouteCreateV2) Valid() error {
 		v.Must(strings.HasPrefix(m.Path, "/"), "path must start with /")
 	}
 	v.Must(validRouteTarget(m.Target), "target invalid")
+
+	if m.Config.ForwardAuth != nil {
+		if v.Must(m.Config.ForwardAuth.Target != "", "target required") {
+			v.Must(validURL(m.Config.ForwardAuth.Target), "target invalid")
+		}
+	}
 
 	return WrapValidate(v)
 }
@@ -129,13 +146,14 @@ func (m *RouteListResult) Table() [][]string {
 }
 
 type RouteItem struct {
-	Location   string    `json:"location" yaml:"location"`
-	Domain     string    `json:"domain" yaml:"domain"`
-	Path       string    `json:"path" yaml:"path"`
-	Target     string    `json:"target" yaml:"target"`
-	Deployment string    `json:"deployment" yaml:"deployment"`
-	CreatedAt  time.Time `json:"createdAt" yaml:"createdAt"`
-	CreatedBy  string    `json:"createdBy" yaml:"createdBy"`
+	Location   string      `json:"location" yaml:"location"`
+	Domain     string      `json:"domain" yaml:"domain"`
+	Path       string      `json:"path" yaml:"path"`
+	Target     string      `json:"target" yaml:"target"`
+	Deployment string      `json:"deployment" yaml:"deployment"`
+	Config     RouteConfig `json:"config" yaml:"config"`
+	CreatedAt  time.Time   `json:"createdAt" yaml:"createdAt"`
+	CreatedBy  string      `json:"createdBy" yaml:"createdBy"`
 }
 
 func (m *RouteItem) Table() [][]string {
