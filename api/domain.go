@@ -14,7 +14,7 @@ type Domain interface {
 	Get(ctx context.Context, m *DomainGet) (*DomainItem, error)
 	List(ctx context.Context, m *DomainList) (*DomainListResult, error)
 	Delete(ctx context.Context, m *DomainDelete) (*Empty, error)
-	PurgeCache(ctx context.Context, m *DomainGet) (*Empty, error)
+	PurgeCache(ctx context.Context, m *DomainPurgeCache) (*Empty, error)
 }
 
 type DomainCreate struct {
@@ -127,6 +127,24 @@ type DomainDelete struct {
 
 func (m *DomainDelete) Valid() error {
 	v := validator.New()
+
+	v.Must(m.Project != "", "project required")
+	v.Must(govalidator.IsDNSName(m.Domain), "domain invalid")
+
+	return WrapValidate(v)
+}
+
+type DomainPurgeCache struct {
+	Project string `json:"project" yaml:"project"`
+	Domain  string `json:"domain" yaml:"domain"`
+	Prefix  string `json:"prefix" yaml:"prefix"`
+}
+
+func (m *DomainPurgeCache) Valid() error {
+	v := validator.New()
+
+	m.Domain = strings.TrimSpace(m.Domain)
+	m.Prefix = strings.TrimSpace(m.Prefix)
 
 	v.Must(m.Project != "", "project required")
 	v.Must(govalidator.IsDNSName(m.Domain), "domain invalid")

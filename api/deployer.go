@@ -106,11 +106,12 @@ type DeployerCommandDeploymentDeploySpec struct {
 }
 
 type DeployerCommandRouteCreate struct {
-	ID        int64  `json:"id"`
-	ProjectID int64  `json:"projectId"`
-	Domain    string `json:"domain"`
-	Path      string `json:"path"`
-	Target    string `json:"target"`
+	ID        int64       `json:"id"`
+	ProjectID int64       `json:"projectId"`
+	Domain    string      `json:"domain"`
+	Path      string      `json:"path"`
+	Target    string      `json:"target"`
+	Config    RouteConfig `json:"config"`
 }
 
 type DeployerCommandRouteDelete struct {

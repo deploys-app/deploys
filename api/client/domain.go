@@ -46,7 +46,7 @@ func (c domainClient) Delete(ctx context.Context, m *api.DomainDelete) (*api.Emp
 	return &res, nil
 }
 
-func (c domainClient) PurgeCache(ctx context.Context, m *api.DomainGet) (*api.Empty, error) {
+func (c domainClient) PurgeCache(ctx context.Context, m *api.DomainPurgeCache) (*api.Empty, error) {
 	var res api.Empty
 	err := c.inv.invoke(ctx, "domain.purgeCache", m, &res)
 	if err != nil {

@@ -88,6 +88,7 @@ type BillingItem struct {
 	TaxID      string `json:"taxId" yaml:"taxId"`
 	TaxName    string `json:"taxName" yaml:"taxName"`
 	TaxAddress string `json:"taxAddress" yaml:"taxAddress"`
+	Active     bool   `json:"active" yaml:"active"`
 }
 
 type BillingUpdate struct {

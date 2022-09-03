@@ -87,6 +87,7 @@ func (m *RouteCreateV2) Valid() error {
 	if m.Config.ForwardAuth != nil {
 		if v.Must(m.Config.ForwardAuth.Target != "", "target required") {
 			v.Must(validURL(m.Config.ForwardAuth.Target), "target invalid")
+			v.Must(strings.HasPrefix(m.Target, "http://"), "target must start with http://")
 		}
 	}
 
