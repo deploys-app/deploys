@@ -21,7 +21,8 @@ type DomainCreate struct {
 	Project  string     `json:"project" yaml:"project"`
 	Location string     `json:"location" yaml:"location"`
 	Domain   string     `json:"domain" yaml:"domain"`
-	Type     DomainType `json:"type" yaml:"type"`
+	Wildcard bool       `json:"wildcard" yaml:"wildcard"`
+	Type     DomainType `json:"type" yaml:"type"` // deprecate
 }
 
 func (m *DomainCreate) Valid() error {
@@ -83,7 +84,8 @@ type DomainItem struct {
 	Project      string             `json:"project" yaml:"project"`
 	Location     string             `json:"location" yaml:"location"`
 	Domain       string             `json:"domain" yaml:"domain"`
-	Type         DomainType         `json:"type" yaml:"type"`
+	Type         DomainType         `json:"type" yaml:"type"` // deprecate
+	Wildcard     bool               `json:"wildcard" yaml:"wildcard"`
 	Verification DomainVerification `json:"verification" yaml:"verification"`
 	DNSConfig    DomainDNSConfig    `json:"dnsConfig" yaml:"dnsConfig"`
 	Status       DomainStatus       `json:"status" yaml:"status"`
