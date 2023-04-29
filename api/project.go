@@ -110,8 +110,9 @@ type ProjectQuota struct {
 }
 
 type ProjectConfig struct {
-	DomainCloudflare bool `json:"domainCloudflare" yaml:"domainCloudflare"`
-	DomainWildcard   bool `json:"domainWildcard" yaml:"domainWildcard"`
+	DomainCloudflare      bool `json:"domainCloudflare" yaml:"domainCloudflare"`
+	DomainAllowDisableCDN bool `json:"domainAllowDisableCdn" yaml:"domainAllowDisableCDN"`
+	DomainWildcard        bool `json:"domainWildcard" yaml:"domainWildcard"`
 }
 
 type ProjectListResult struct {

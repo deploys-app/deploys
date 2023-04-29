@@ -46,6 +46,8 @@ var (
 	ErrPurgeFailed                   = newError("api: purge failed")
 	ErrDomainNotFound                = newError("api: domain not found")
 	ErrDomainCanNotPurge             = newError("api: domain can not purge")
+	ErrDomainWildcardNotEnabled      = newError("api: domain wildcard not enabled for this project")
+	ErrDomainDisableCDNNotEnabled    = newError("api: domain disable cdn not enabled for this project")
 	ErrEmailDomainNotFound           = newError("api: email domain not found")
 )
 
