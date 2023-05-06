@@ -118,8 +118,7 @@ func (m *DiskListResult) Table() [][]string {
 }
 
 type DiskItem struct {
-	ID        int64     `json:"id" yaml:"id"`
-	ProjectID int64     `json:"projectId" yaml:"projectId"`
+	Project   string    `json:"project" yaml:"project"`
 	Location  string    `json:"location" yaml:"location"`
 	Name      string    `json:"name" yaml:"name"`
 	Size      int64     `json:"size" yaml:"size"`

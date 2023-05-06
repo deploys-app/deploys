@@ -84,7 +84,7 @@ type ProjectGet struct {
 }
 
 type ProjectItem struct {
-	ID             int64         `json:"id" yaml:"id"`
+	ID             string        `json:"id" yaml:"id"`
 	Project        string        `json:"project" yaml:"project"`
 	Name           string        `json:"name" yaml:"name"`
 	BillingAccount string        `json:"billingAccount" yaml:"billingAccount"`
@@ -110,7 +110,6 @@ type ProjectQuota struct {
 }
 
 type ProjectConfig struct {
-	DomainCloudflare      bool `json:"domainCloudflare" yaml:"domainCloudflare"`
 	DomainAllowDisableCDN bool `json:"domainAllowDisableCdn" yaml:"domainAllowDisableCDN"`
 	DomainWildcard        bool `json:"domainWildcard" yaml:"domainWildcard"`
 }

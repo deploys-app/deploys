@@ -135,11 +135,11 @@ func (t *DeploymentType) UnmarshalJSON(b []byte) error {
 	return t.parseString(s)
 }
 
-func (t DeploymentType) MarshalYAML() (interface{}, error) {
+func (t DeploymentType) MarshalYAML() (any, error) {
 	return t.String(), nil
 }
 
-func (t *DeploymentType) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (t *DeploymentType) UnmarshalYAML(unmarshal func(any) error) error {
 	var s string
 	err := unmarshal(&s)
 	if err != nil {

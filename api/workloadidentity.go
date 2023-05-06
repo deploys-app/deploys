@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -99,8 +98,7 @@ func (m *WorkloadIdentityList) Valid() error {
 }
 
 type WorkloadIdentityItem struct {
-	ID        int64     `json:"id" yaml:"id"`
-	ProjectID int64     `json:"projectId" yaml:"projectId"`
+	Project   string    `json:"project" yaml:"project"`
 	Location  string    `json:"location" yaml:"location"`
 	Name      string    `json:"name" yaml:"name"`
 	GSA       string    `json:"gsa" yaml:"gsa"`
@@ -108,10 +106,6 @@ type WorkloadIdentityItem struct {
 	Action    Action    `json:"action" yaml:"action"`
 	CreatedAt time.Time `json:"createdAt" yaml:"createdAt"`
 	CreatedBy string    `json:"createdBy" yaml:"createdBy"`
-}
-
-func (m *WorkloadIdentityItem) ResourceID() string {
-	return fmt.Sprintf("%s-%d", m.Name, m.ProjectID)
 }
 
 func (m *WorkloadIdentityItem) Table() [][]string {

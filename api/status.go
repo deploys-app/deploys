@@ -72,11 +72,11 @@ func (s *Status) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func (s Status) MarshalYAML() (interface{}, error) {
+func (s Status) MarshalYAML() (any, error) {
 	return s.String(), nil
 }
 
-func (s *Status) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (s *Status) UnmarshalYAML(unmarshal func(any) error) error {
 	var t string
 	err := unmarshal(&t)
 	if err != nil {

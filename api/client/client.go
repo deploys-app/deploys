@@ -34,7 +34,7 @@ func (err *Error) apiError() error {
 }
 
 type invoker interface {
-	invoke(ctx context.Context, api string, r interface{}, res interface{}) error
+	invoke(ctx context.Context, api string, r any, res any) error
 }
 
 type Client struct {
@@ -117,7 +117,7 @@ func (c *Client) Deployer() api.Deployer {
 	return deployerClient{c}
 }
 
-func (c *Client) invoke(ctx context.Context, api string, r interface{}, res interface{}) error {
+func (c *Client) invoke(ctx context.Context, api string, r any, res any) error {
 	if err := validRequest(r); err != nil {
 		return err
 	}
@@ -150,9 +150,9 @@ func (c *Client) invoke(ctx context.Context, api string, r interface{}, res inte
 
 	var errMsg Error
 	var respBody struct {
-		OK     bool        `json:"ok"`
-		Result interface{} `json:"result"`
-		Error  interface{} `json:"error"`
+		OK     bool `json:"ok"`
+		Result any  `json:"result"`
+		Error  any  `json:"error"`
 	}
 	respBody.Result = res
 	respBody.Error = &errMsg
@@ -168,7 +168,7 @@ func (c *Client) invoke(ctx context.Context, api string, r interface{}, res inte
 	return nil
 }
 
-func validRequest(r interface{}) error {
+func validRequest(r any) error {
 	if r == nil {
 		return nil
 	}

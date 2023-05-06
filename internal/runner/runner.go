@@ -31,7 +31,7 @@ func (rn Runner) output() *os.File {
 	return rn.Output
 }
 
-func (rn Runner) print(v interface{}) error {
+func (rn Runner) print(v any) error {
 	switch rn.OutputMode {
 	case "", "table":
 		rn.printTable(v.(tablePrinter).Table())
@@ -128,7 +128,7 @@ func (rn Runner) me(args ...string) error {
 	s := rn.API.Me()
 
 	var (
-		resp interface{}
+		resp any
 		err  error
 	)
 
@@ -165,7 +165,7 @@ func (rn Runner) location(args ...string) error {
 	s := rn.API.Location()
 
 	var (
-		resp interface{}
+		resp any
 		err  error
 	)
 
@@ -199,7 +199,7 @@ func (rn Runner) project(args ...string) error {
 	s := rn.API.Project()
 
 	var (
-		resp interface{}
+		resp any
 		err  error
 	)
 
@@ -267,7 +267,7 @@ func (rn Runner) role(args ...string) error {
 	s := rn.API.Role()
 
 	var (
-		resp interface{}
+		resp any
 		err  error
 	)
 
@@ -350,7 +350,7 @@ func (rn Runner) deployment(args ...string) error {
 	s := rn.API.Deployment()
 
 	var (
-		resp interface{}
+		resp any
 		err  error
 	)
 
@@ -425,7 +425,7 @@ func (rn Runner) route(args ...string) error {
 	s := rn.API.Route()
 
 	var (
-		resp interface{}
+		resp any
 		err  error
 	)
 
@@ -488,7 +488,7 @@ func (rn Runner) deploymentSet(args ...string) error {
 	s := rn.API.Deployment()
 
 	var (
-		resp interface{}
+		resp any
 		err  error
 	)
 
@@ -524,7 +524,7 @@ func (rn Runner) disk(args ...string) error {
 	s := rn.API.Disk()
 
 	var (
-		resp interface{}
+		resp any
 		err  error
 	)
 
@@ -584,7 +584,7 @@ func (rn Runner) pullSecret(args ...string) error {
 	s := rn.API.PullSecret()
 
 	var (
-		resp interface{}
+		resp any
 		err  error
 	)
 
@@ -638,7 +638,7 @@ func (rn Runner) workloadIdentity(args ...string) error {
 	s := rn.API.WorkloadIdentity()
 
 	var (
-		resp interface{}
+		resp any
 		err  error
 	)
 
@@ -690,7 +690,7 @@ func (rn Runner) serviceAccount(args ...string) error {
 	s := rn.API.ServiceAccount()
 
 	var (
-		resp interface{}
+		resp any
 		err  error
 	)
 
