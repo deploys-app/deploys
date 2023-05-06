@@ -2,8 +2,6 @@ module github.com/deploys-app/deploys
 
 go 1.20
 
-replace github.com/lib/pq => github.com/moonrhythm/pq v0.0.0-20230419072030-cbd59e2059d6
-
 require (
 	github.com/acoshift/arpc/v2 v2.1.5
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
