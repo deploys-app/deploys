@@ -45,7 +45,6 @@ func (m *RouteCreate) Valid() error {
 	v.Must(m.Project != "", "project required")
 	v.Must(m.Location != "", "location required")
 	v.Must(govalidator.IsDNSName(m.Domain), "domain invalid")
-	v.Must(!strings.HasSuffix(m.Domain, ".deploys.app"), "domain invalid")
 	if m.Path != "" {
 		v.Must(strings.HasPrefix(m.Path, "/"), "path must start with /")
 	}
@@ -54,7 +53,13 @@ func (m *RouteCreate) Valid() error {
 }
 
 type RouteConfig struct {
+	BasicAuth   *RouteConfigBasicAuth   `json:"basicAuth" yaml:"basicAuth"`
 	ForwardAuth *RouteConfigForwardAuth `json:"forwardAuth" yaml:"forwardAuth"`
+}
+
+type RouteConfigBasicAuth struct {
+	User     string `json:"user" yaml:"user"`
+	Password string `json:"password" yaml:"password"`
 }
 
 type RouteConfigForwardAuth struct {
@@ -78,11 +83,16 @@ func (m *RouteCreateV2) Valid() error {
 	v.Must(m.Project != "", "project required")
 	v.Must(m.Location != "", "location required")
 	v.Must(govalidator.IsDNSName(m.Domain), "domain invalid")
-	v.Must(!strings.HasSuffix(m.Domain, ".deploys.app"), "domain invalid")
 	if m.Path != "" {
 		v.Must(strings.HasPrefix(m.Path, "/"), "path must start with /")
 	}
 	v.Must(validRouteTarget(m.Target), "target invalid")
+
+	if m.Config.BasicAuth != nil {
+		v.Must(m.Config.ForwardAuth == nil, "basicAuth and forwardAuth cannot be used together")
+		v.Must(m.Config.BasicAuth.User != "", "user required")
+		v.Must(m.Config.BasicAuth.Password != "", "password required")
+	}
 
 	if m.Config.ForwardAuth != nil {
 		if v.Must(m.Config.ForwardAuth.Target != "", "target required") {
