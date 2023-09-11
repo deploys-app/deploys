@@ -54,3 +54,12 @@ func (c diskClient) Delete(ctx context.Context, m *api.DiskDelete) (*api.Empty, 
 	}
 	return &res, nil
 }
+
+func (c diskClient) Metrics(ctx context.Context, m *api.DiskMetrics) (*api.DiskMetricsResult, error) {
+	var res api.DiskMetricsResult
+	err := c.inv.invoke(ctx, "disk.metrics", m, &res)
+	if err != nil {
+		return nil, err
+	}
+	return &res, nil
+}

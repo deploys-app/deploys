@@ -87,14 +87,14 @@ func (rn *Runner) replaceShortFlag(args []string) {
 
 func (rn Runner) Run(args ...string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
+		return fmt.Errorf("invalid command: (empty args)")
 	}
 
 	rn.replaceShortFlag(args)
 
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command")
+		return fmt.Errorf("invalid command: '%s'", args[0])
 	case "me":
 		return rn.me(args[1:]...)
 	case "location":
@@ -344,7 +344,7 @@ func (rn Runner) role(args ...string) error {
 
 func (rn Runner) deployment(args ...string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
+		return fmt.Errorf("invalid deployment command: (empty args)")
 	}
 
 	s := rn.API.Deployment()
@@ -358,7 +358,7 @@ func (rn Runner) deployment(args ...string) error {
 	rn.registerFlags(f)
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command")
+		return fmt.Errorf("invalid deployment command: '%s'", args[0])
 	case "list":
 		var req api.DeploymentList
 		f.StringVar(&req.Location, "location", "", "location")

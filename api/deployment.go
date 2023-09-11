@@ -590,8 +590,10 @@ func (m *DeploymentMetrics) Valid() error {
 
 type DeploymentMetricsResult struct {
 	CPUUsage    []*DeploymentMetricsLine `json:"cpuUsage" yaml:"cpuUsage"`
+	CPULimit    []*DeploymentMetricsLine `json:"cpuLimit" yaml:"cpuLimit"`
 	MemoryUsage []*DeploymentMetricsLine `json:"memoryUsage" yaml:"memoryUsage"`
 	Memory      []*DeploymentMetricsLine `json:"memory" yaml:"memory"`
+	MemoryLimit []*DeploymentMetricsLine `json:"memoryLimit" yaml:"memoryLimit"`
 	Requests    []*DeploymentMetricsLine `json:"requests" yaml:"requests"`
 	Egress      []*DeploymentMetricsLine `json:"egress" yaml:"egress"`
 }

@@ -111,7 +111,6 @@ type ProjectQuota struct {
 
 type ProjectConfig struct {
 	DomainAllowDisableCDN bool `json:"domainAllowDisableCdn" yaml:"domainAllowDisableCDN"`
-	DomainWildcard        bool `json:"domainWildcard" yaml:"domainWildcard"`
 }
 
 type ProjectListResult struct {

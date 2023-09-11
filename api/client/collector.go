@@ -36,3 +36,12 @@ func (c collectorClient) SetDeploymentUsage(ctx context.Context, m *api.Collecto
 	}
 	return &res, nil
 }
+
+func (c collectorClient) SetDiskUsage(ctx context.Context, m *api.CollectorSetDiskUsage) (*api.Empty, error) {
+	var res api.Empty
+	err := c.inv.invoke(ctx, "collector.setDiskUsage", m, &res)
+	if err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
