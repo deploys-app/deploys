@@ -67,6 +67,7 @@ func (s *CloudSQLProxySidecar) config() *SidecarConfig {
 		Args: []string{
 			s.Instance,
 			"-p=" + strconv.Itoa(port),
+			"--max-sigterm-delay=30",
 		},
 		MountData: map[string]string{},
 	}
