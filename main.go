@@ -7,7 +7,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/quic-go/quic-go/http3"
 	"golang.org/x/oauth2/google"
 
 	"github.com/deploys-app/deploys/api/client"
@@ -29,8 +28,7 @@ func main() {
 
 	apiClient := &client.Client{
 		HTTPClient: &http.Client{
-			Timeout:   15 * time.Second,
-			Transport: &http3.RoundTripper{},
+			Timeout: 15 * time.Second,
 		},
 	}
 	if apiClient.Auth == nil && authUser != "" && authPass != "" {

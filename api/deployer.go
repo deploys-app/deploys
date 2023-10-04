@@ -103,6 +103,7 @@ type DeployerCommandDeploymentDeploySpec struct {
 	DiskMountPath        string             `json:"diskMountPath"`
 	DiskSubPath          string             `json:"diskSubPath"`
 	MountData            map[string]string  `json:"mountData"` // file path => data
+	Sidecars             []*Sidecar         `json:"sidecars"`
 }
 
 type DeployerCommandRouteCreate struct {

@@ -224,6 +224,7 @@ type DeploymentDeploy struct {
 	Schedule         *string             `json:"schedule" yaml:"schedule"`                 // type=CronJob
 	Resources        *DeploymentResource `json:"resources" yaml:"resources"`
 	MountData        map[string]string   `json:"mountData" yaml:"mountData"`
+	Sidecars         []*Sidecar          `json:"sidecars" yaml:"sidecars"`
 }
 
 type DeploymentDisk struct {
@@ -328,6 +329,11 @@ func (m *DeploymentDeploy) Valid() error {
 	v.Must(validEnvName(m.Env), "invalid env name")
 	v.Must(validEnvName(m.AddEnv), "invalid env name")
 
+	v.Must(len(m.Sidecars) <= 2, "sidecars must less than 2")
+	for _, s := range m.Sidecars {
+		v.Must(s.Valid(), "invalid sidecar")
+	}
+
 	return WrapValidate(v)
 }
 
@@ -386,6 +392,7 @@ type DeploymentItem struct {
 	NodePort         int                `json:"nodePort" yaml:"nodePort"`
 	Annotations      map[string]string  `json:"annotations" yaml:"annotations"`
 	Resources        DeploymentResource `json:"resources" yaml:"resources"`
+	Sidecars         []*Sidecar         `json:"sidecars" yaml:"sidecars"`
 	URL              string             `json:"url" yaml:"url"`
 	InternalURL      string             `json:"internalUrl" yaml:"internalUrl"`
 	LogURL           string             `json:"logUrl" yaml:"logUrl"`
