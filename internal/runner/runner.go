@@ -9,9 +9,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/deploys-app/api"
 	"gopkg.in/yaml.v2"
-
-	"github.com/deploys-app/deploys/api"
 )
 
 type tablePrinter interface {

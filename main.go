@@ -7,9 +7,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/deploys-app/api/client"
 	"golang.org/x/oauth2/google"
 
-	"github.com/deploys-app/deploys/api/client"
 	"github.com/deploys-app/deploys/internal/runner"
 )
 
