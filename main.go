@@ -24,9 +24,11 @@ func main() {
 		token    = os.Getenv("DEPLOYS_TOKEN")
 		authUser = os.Getenv("DEPLOYS_AUTH_USER")
 		authPass = os.Getenv("DEPLOYS_AUTH_PASS")
+		endpoint = os.Getenv("DEPLOYS_ENDPOINT")
 	)
 
 	apiClient := &client.Client{
+		Endpoint: endpoint,
 		HTTPClient: &http.Client{
 			Timeout: 15 * time.Second,
 		},
