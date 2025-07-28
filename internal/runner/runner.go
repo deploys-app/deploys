@@ -211,7 +211,7 @@ func (rn Runner) project(args ...string) error {
 		var req api.ProjectCreate
 		f.StringVar(&req.SID, "id", "", "project id")
 		f.StringVar(&req.Name, "name", "", "project name")
-		f.StringVar(&req.BillingAccount, "billingaccount", "", "billing account id")
+		f.Int64Var(&req.BillingAccount, "billingaccount", 0, "billing account id")
 		f.Parse(args[1:])
 		resp, err = s.Create(context.Background(), &req)
 	case "list":
@@ -226,17 +226,17 @@ func (rn Runner) project(args ...string) error {
 		var (
 			req            api.ProjectUpdate
 			name           string
-			billingAccount string
+			billingAccount int64
 		)
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&name, "name", "", "project name")
-		f.StringVar(&billingAccount, "billingaccount", "", "billing account id")
+		f.Int64Var(&billingAccount, "billingaccount", 0, "billing account id")
 		f.Parse(args[1:])
 
 		if name != "" {
 			req.Name = &name
 		}
-		if billingAccount != "" {
+		if billingAccount > 0 {
 			req.BillingAccount = &billingAccount
 		}
 
