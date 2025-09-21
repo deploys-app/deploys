@@ -11,6 +11,8 @@ import (
 
 	"github.com/deploys-app/api"
 	"gopkg.in/yaml.v2"
+
+	"github.com/robfig/cron/v3"
 )
 
 type tablePrinter interface {
@@ -380,33 +382,7 @@ func (rn Runner) deployment(args ...string) error {
 		f.Parse(args[1:])
 		resp, err = s.Delete(context.Background(), &req)
 	case "deploy":
-		var (
-			req         api.DeploymentDeploy
-			typ         string
-			port        int
-			minReplicas int
-			maxReplicas int
-		)
-		f.StringVar(&req.Location, "location", "", "location")
-		f.StringVar(&req.Project, "project", "", "project id")
-		f.StringVar(&req.Name, "name", "", "deployment name")
-		f.StringVar(&req.Image, "image", "", "docker image")
-		f.StringVar(&typ, "type", "", "deployment type")
-		f.IntVar(&port, "port", 0, "port")
-		f.IntVar(&minReplicas, "minReplicas", 0, "autoscale min replicas")
-		f.IntVar(&maxReplicas, "maxReplicas", 0, "autoscale max replicas")
-		f.Parse(args[1:])
-		req.Type = api.ParseDeploymentTypeString(typ)
-		if port > 0 {
-			req.Port = &port
-		}
-		if minReplicas > 0 {
-			req.MinReplicas = &minReplicas
-		}
-		if maxReplicas > 0 {
-			req.MaxReplicas = &maxReplicas
-		}
-		resp, err = s.Deploy(context.Background(), &req)
+		return rn.deploymentDeploy(args[1:]...)
 	case "set":
 		return rn.deploymentSet(args[1:]...)
 	}
@@ -473,6 +449,195 @@ func (rn Runner) route(args ...string) error {
 		f.Parse(args[1:])
 		resp, err = s.Delete(context.Background(), &req)
 	}
+	if err != nil {
+		return err
+	}
+	return rn.print(resp)
+}
+
+func (rn Runner) deploymentDeploy(args ...string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("invalid command")
+	}
+
+	s := rn.API.Deployment()
+
+	var (
+		resp any
+		err  error
+	)
+
+	f := flag.NewFlagSet("", flag.ExitOnError)
+	rn.registerFlags(f)
+
+	var (
+		req          api.DeploymentDeploy
+		typ          string
+		port         int
+		minReplicas  int
+		maxReplicas  int
+		protoStr     string
+		internal     bool
+		envStr       string
+		addEnvStr    string
+		rmEnvStr     string
+		cmdStr       string
+		argsStr      string
+		wi           string
+		pull         string
+		diskName     string
+		diskMount    string
+		diskSub      string
+		schedule     string
+		reqCPU       string
+		reqMem       string
+		limCPU       string
+		limMem       string
+		mountDataStr string
+		sidecarsFile string
+	)
+	f.StringVar(&req.Location, "location", "", "location")
+	f.StringVar(&req.Project, "project", "", "project id")
+	f.StringVar(&req.Name, "name", "", "deployment name")
+	f.StringVar(&req.Image, "image", "", "docker image")
+	f.StringVar(&typ, "type", "", "deployment type (WebService,Worker,CronJob,TCPService,InternalTCPService)")
+	f.IntVar(&port, "port", 0, "port")
+	f.StringVar(&protoStr, "protocol", "", "protocol (http,https,h2c) [WebService]")
+	f.BoolVar(&internal, "internal", false, "run as internal service [WebService]")
+	f.IntVar(&minReplicas, "minReplicas", 0, "autoscale min replicas")
+	f.IntVar(&maxReplicas, "maxReplicas", 0, "autoscale max replicas")
+	f.StringVar(&envStr, "env", "", "env map: KEY=VAL,KEY2=VAL2 (overrides all env)")
+	f.StringVar(&addEnvStr, "addEnv", "", "add env: KEY=VAL,KEY2=VAL2")
+	f.StringVar(&rmEnvStr, "removeEnv", "", "remove env keys: KEY,KEY2")
+	f.StringVar(&cmdStr, "command", "", "container command list: /bin/app,--flag")
+	f.StringVar(&argsStr, "args", "", "container args list: --a,--b=1")
+	f.StringVar(&wi, "workloadIdentity", "", "workload identity name")
+	f.StringVar(&pull, "pullSecret", "", "pull secret name")
+	f.StringVar(&diskName, "disk.name", "", "disk name")
+	f.StringVar(&diskMount, "disk.mountPath", "", "disk mount path")
+	f.StringVar(&diskSub, "disk.subPath", "", "disk sub path")
+	f.StringVar(&schedule, "schedule", "", "cron schedule (CronJob)")
+	f.StringVar(&reqCPU, "resources.requests.cpu", "", "CPU requests")
+	f.StringVar(&reqMem, "resources.requests.memory", "", "Memory requests")
+	f.StringVar(&limCPU, "resources.limits.cpu", "", "CPU limit")
+	f.StringVar(&limMem, "resources.limits.memory", "", "Memory limit")
+	f.StringVar(&mountDataStr, "mountData", "", "mount data: /path=VAL,/config=@file")
+	f.StringVar(&sidecarsFile, "sidecarsFile", "", "path to YAML/JSON file for sidecars array")
+	f.Parse(args[1:])
+
+	// Validate deployment type
+	if typ != "" {
+		validTypes := map[string]struct{}{
+			"WebService":         {},
+			"Worker":             {},
+			"CronJob":            {},
+			"TCPService":         {},
+			"InternalTCPService": {},
+		}
+		if _, ok := validTypes[typ]; !ok {
+			return fmt.Errorf("invalid deployment type: %s", typ)
+		}
+	}
+	req.Type = api.ParseDeploymentTypeString(typ)
+	if port > 0 {
+		req.Port = &port
+	}
+
+	// Validate protocol
+	if protoStr != "" {
+		validProtocols := map[string]struct{}{
+			"http":  {},
+			"https": {},
+			"h2c":   {},
+		}
+		if _, ok := validProtocols[protoStr]; !ok {
+			return fmt.Errorf("invalid protocol: %s", protoStr)
+		}
+	}
+	if protoStr != "" {
+		p := api.DeploymentProtocol(protoStr)
+		req.Protocol = &p
+	}
+	if internal {
+		req.Internal = &internal
+	}
+	if minReplicas > 0 {
+		req.MinReplicas = &minReplicas
+	}
+	if maxReplicas > 0 {
+		req.MaxReplicas = &maxReplicas
+	}
+	if envStr != "" {
+		req.Env = parseKVList(envStr)
+	}
+	if addEnvStr != "" {
+		req.AddEnv = parseKVList(addEnvStr)
+	}
+	if rmEnvStr != "" {
+		req.RemoveEnv = splitCommaList(rmEnvStr)
+	}
+	if cmdStr != "" {
+		req.Command = splitCommaList(cmdStr)
+	}
+	if argsStr != "" {
+		req.Args = splitCommaList(argsStr)
+	}
+	if wi != "" {
+		req.WorkloadIdentity = &wi
+	}
+	if pull != "" {
+		req.PullSecret = &pull
+	}
+	if diskName != "" || diskMount != "" || diskSub != "" {
+		req.Disk = &api.DeploymentDisk{
+			Name:      diskName,
+			MountPath: diskMount,
+			SubPath:   diskSub,
+		}
+	}
+
+	// Validate cron format if schedule is set
+	if schedule != "" {
+		_, err := cron.ParseStandard(schedule)
+		if err != nil {
+			return fmt.Errorf("invalid cron schedule format: %v", err)
+		}
+		req.Schedule = &schedule
+	}
+
+	if reqCPU != "" || reqMem != "" || limCPU != "" || limMem != "" {
+		req.Resources = &api.DeploymentResource{
+			Requests: api.ResourceItem{CPU: reqCPU, Memory: reqMem},
+			Limits:   api.ResourceItem{CPU: limCPU, Memory: limMem},
+		}
+	}
+
+	if mountDataStr != "" {
+		md, err := parseMountData(mountDataStr)
+		if err != nil {
+			return err
+		}
+		req.MountData = md
+	}
+
+	if sidecarsFile != "" {
+		b, err := os.ReadFile(sidecarsFile)
+		if err != nil {
+			return err
+		}
+		var sc []*api.Sidecar
+		if strings.HasSuffix(sidecarsFile, ".yaml") || strings.HasSuffix(sidecarsFile, ".yml") {
+			if err := yaml.Unmarshal(b, &sc); err != nil {
+				return fmt.Errorf("parse sidecars yaml: %w", err)
+			}
+		} else {
+			if err := json.Unmarshal(b, &sc); err != nil {
+				return fmt.Errorf("parse sidecars json: %w", err)
+			}
+		}
+		req.Sidecars = sc
+	}
+	resp, err = s.Deploy(context.Background(), &req)
 	if err != nil {
 		return err
 	}

@@ -17,6 +17,7 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/moonrhythm/validator v1.3.0 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	golang.org/x/net v0.18.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
