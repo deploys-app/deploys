@@ -33,7 +33,12 @@ func (rn Runner) output() *os.File {
 func (rn Runner) print(v any) error {
 	switch rn.OutputMode {
 	case "", "table":
-		rn.printTable(v.(tablePrinter).Table())
+		tp, ok := v.(tablePrinter)
+		if !ok {
+			// no table representation, fall back to yaml
+			return yaml.NewEncoder(rn.output()).Encode(v)
+		}
+		rn.printTable(tp.Table())
 		return nil
 	case "yaml":
 		return yaml.NewEncoder(rn.output()).Encode(v)
@@ -96,6 +101,8 @@ func (rn Runner) Run(args ...string) error {
 		return fmt.Errorf("invalid command: '%s'", args[0])
 	case "me":
 		return rn.me(args[1:]...)
+	case "billing":
+		return rn.billing(args[1:]...)
 	case "location":
 		return rn.location(args[1:]...)
 	case "project":
@@ -104,8 +111,12 @@ func (rn Runner) Run(args ...string) error {
 		return rn.role(args[1:]...)
 	case "deployment", "deploy", "d":
 		return rn.deployment(args[1:]...)
+	case "domain":
+		return rn.domain(args[1:]...)
 	case "route":
 		return rn.route(args[1:]...)
+	case "waf":
+		return rn.waf(args[1:]...)
 	case "disk":
 		return rn.disk(args[1:]...)
 	case "pullsecret", "ps":
@@ -114,6 +125,16 @@ func (rn Runner) Run(args ...string) error {
 		return rn.workloadIdentity(args[1:]...)
 	case "serviceaccount", "sa":
 		return rn.serviceAccount(args[1:]...)
+	case "email":
+		return rn.email(args[1:]...)
+	case "registry":
+		return rn.registry(args[1:]...)
+	case "envgroup", "eg":
+		return rn.envGroup(args[1:]...)
+	case "auditlog":
+		return rn.auditLog(args[1:]...)
+	case "dropbox":
+		return rn.dropbox(args[1:]...)
 	case "github":
 		return rn.github(args[1:]...)
 	case "collector":
@@ -381,6 +402,47 @@ func (rn Runner) deployment(args ...string) error {
 		f.StringVar(&req.Name, "name", "", "deployment name")
 		f.Parse(args[1:])
 		resp, err = s.Delete(context.Background(), &req)
+	case "revisions":
+		var req api.DeploymentRevisions
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Name, "name", "", "deployment name")
+		f.Parse(args[1:])
+		resp, err = s.Revisions(context.Background(), &req)
+	case "pause":
+		var req api.DeploymentPause
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Name, "name", "", "deployment name")
+		f.Parse(args[1:])
+		resp, err = s.Pause(context.Background(), &req)
+	case "resume":
+		var req api.DeploymentResume
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Name, "name", "", "deployment name")
+		f.Parse(args[1:])
+		resp, err = s.Resume(context.Background(), &req)
+	case "rollback":
+		var req api.DeploymentRollback
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Name, "name", "", "deployment name")
+		f.IntVar(&req.Revision, "revision", 0, "revision to rollback to")
+		f.Parse(args[1:])
+		resp, err = s.Rollback(context.Background(), &req)
+	case "metrics":
+		var (
+			req       api.DeploymentMetrics
+			timeRange string
+		)
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Name, "name", "", "deployment name")
+		f.StringVar(&timeRange, "time-range", "1h", "time range (1h, 6h, 12h, 1d)")
+		f.Parse(args[1:])
+		req.TimeRange = api.DeploymentMetricsTimeRange(timeRange)
+		resp, err = s.Metrics(context.Background(), &req)
 	case "deploy":
 		var (
 			req         api.DeploymentDeploy
