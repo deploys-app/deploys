@@ -114,6 +114,8 @@ func (rn Runner) Run(args ...string) error {
 		return rn.workloadIdentity(args[1:]...)
 	case "serviceaccount", "sa":
 		return rn.serviceAccount(args[1:]...)
+	case "github":
+		return rn.github(args[1:]...)
 	case "collector":
 		return rn.collector(args[1:]...)
 	}
@@ -744,6 +746,77 @@ func (rn Runner) serviceAccount(args ...string) error {
 		f.StringVar(&req.Secret, "secret", "", "secret")
 		f.Parse(args[1:])
 		resp, err = s.DeleteKey(context.Background(), &req)
+	}
+	if err != nil {
+		return err
+	}
+	return rn.print(resp)
+}
+
+func (rn Runner) github(args ...string) error {
+	if len(args) == 0 {
+		return fmt.Errorf("invalid command")
+	}
+
+	s := rn.API.GitHub()
+
+	var (
+		resp any
+		err  error
+	)
+
+	f := flag.NewFlagSet("", flag.ExitOnError)
+	rn.registerFlags(f)
+	switch args[0] {
+	default:
+		return fmt.Errorf("invalid command")
+	case "link":
+		var (
+			req        api.GitHubLink
+			repository string
+		)
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&repository, "repository", "", "repository (owner/name)")
+		f.StringVar(&req.ServiceAccount, "service-account", "", "service account id")
+		f.Parse(args[1:])
+		// Resolve owner/name to the immutable repository id through the
+		// github app — this also verifies the app is installed on the repo.
+		lookup, lerr := s.LookupRepo(context.Background(), &api.GitHubLookupRepo{
+			Project:    req.Project,
+			Repository: repository,
+		})
+		if lerr != nil {
+			return lerr
+		}
+		req.RepositoryID = lookup.RepositoryID
+		req.Repository = lookup.Repository
+		req.InstallationID = lookup.InstallationID
+		resp, err = s.Link(context.Background(), &req)
+	case "unlink":
+		var (
+			req        api.GitHubUnlink
+			repository string
+		)
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&repository, "repository", "", "repository (owner/name)")
+		f.Int64Var(&req.RepositoryID, "repository-id", 0, "github repository id (alternative to -repository)")
+		f.Parse(args[1:])
+		if req.RepositoryID == 0 && repository != "" {
+			lookup, lerr := s.LookupRepo(context.Background(), &api.GitHubLookupRepo{
+				Project:    req.Project,
+				Repository: repository,
+			})
+			if lerr != nil {
+				return lerr
+			}
+			req.RepositoryID = lookup.RepositoryID
+		}
+		resp, err = s.Unlink(context.Background(), &req)
+	case "list":
+		var req api.GitHubList
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.Parse(args[1:])
+		resp, err = s.List(context.Background(), &req)
 	}
 	if err != nil {
 		return err
