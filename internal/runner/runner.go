@@ -836,11 +836,15 @@ func (rn Runner) github(args ...string) error {
 		var (
 			req        api.GitHubLink
 			repository string
+			trigger    string
 		)
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&repository, "repository", "", "repository (owner/name)")
 		f.StringVar(&req.ServiceAccount, "service-account", "", "service account id")
+		f.StringVar(&req.ProductionBranch, "production-branch", "", "production branch (empty = any branch; ignored for -trigger pr)")
+		f.StringVar(&trigger, "trigger", "all", "deploy trigger: all | branch | pr")
 		f.Parse(args[1:])
+		req.Trigger = api.ParseGitHubTriggerString(trigger)
 		// Resolve owner/name to the immutable repository id through the
 		// github app — this also verifies the app is installed on the repo.
 		lookup, lerr := s.LookupRepo(context.Background(), &api.GitHubLookupRepo{
@@ -874,6 +878,65 @@ func (rn Runner) github(args ...string) error {
 			req.RepositoryID = lookup.RepositoryID
 		}
 		resp, err = s.Unlink(context.Background(), &req)
+	case "update":
+		var (
+			req        api.GitHubUpdate
+			repository string
+			trigger    string
+		)
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&repository, "repository", "", "repository (owner/name)")
+		f.Int64Var(&req.RepositoryID, "repository-id", 0, "github repository id (alternative to -repository)")
+		f.StringVar(&req.ServiceAccount, "service-account", "", "service account id")
+		f.StringVar(&req.ProductionBranch, "production-branch", "", "production branch (empty = any branch; ignored for -trigger pr)")
+		f.StringVar(&trigger, "trigger", "", "deploy trigger: all | branch | pr")
+		f.Parse(args[1:])
+
+		if req.RepositoryID == 0 && repository != "" {
+			lookup, lerr := s.LookupRepo(context.Background(), &api.GitHubLookupRepo{
+				Project:    req.Project,
+				Repository: repository,
+			})
+			if lerr != nil {
+				return lerr
+			}
+			req.RepositoryID = lookup.RepositoryID
+		}
+		if req.RepositoryID == 0 {
+			return fmt.Errorf("-repository or -repository-id required")
+		}
+
+		// Update is a full replace, so seed every field from the existing link
+		// and override only the flags the user actually passed — omitting a flag
+		// preserves its current value instead of resetting it.
+		list, lerr := s.List(context.Background(), &api.GitHubList{Project: req.Project})
+		if lerr != nil {
+			return lerr
+		}
+		var cur *api.GitHubLinkItem
+		for _, it := range list.Items {
+			if it.RepositoryID == req.RepositoryID {
+				cur = it
+				break
+			}
+		}
+		if cur == nil {
+			return fmt.Errorf("github: repository link not found for repository id %d", req.RepositoryID)
+		}
+		set := map[string]bool{}
+		f.Visit(func(fl *flag.Flag) { set[fl.Name] = true })
+		if !set["service-account"] {
+			req.ServiceAccount = cur.ServiceAccount
+		}
+		if !set["production-branch"] {
+			req.ProductionBranch = cur.ProductionBranch
+		}
+		if set["trigger"] {
+			req.Trigger = api.ParseGitHubTriggerString(trigger)
+		} else {
+			req.Trigger = cur.Trigger
+		}
+		resp, err = s.Update(context.Background(), &req)
 	case "list":
 		var req api.GitHubList
 		f.StringVar(&req.Project, "project", "", "project id")

@@ -11,6 +11,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/deploys-app/api v0.0.0-20260612091159-6332523a9654 h1:Ucga9bk7Tl0PWeBUX0Oy6LGZNzsClHnVSQvWOTU8y+o=
 github.com/deploys-app/api v0.0.0-20260612091159-6332523a9654/go.mod h1:X70UJs5awlRV4Cmn0FPJAgEbn4N933K8YgSKc1y9aD8=
+github.com/deploys-app/api v0.0.0-20260614230708-052c044d7d4f h1:FDPf3/YY3h1nq5nGfWR5WntMVCVCB0j3OZ6itrcTe9c=
+github.com/deploys-app/api v0.0.0-20260614230708-052c044d7d4f/go.mod h1:X70UJs5awlRV4Cmn0FPJAgEbn4N933K8YgSKc1y9aD8=
 github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkpeCY=
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/golang/protobuf v1.3.1/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
