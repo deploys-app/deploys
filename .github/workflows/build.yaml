@@ -8,21 +8,21 @@ jobs:
     runs-on: ubuntu-latest
     name: Build
     steps:
-    - uses: actions/checkout@v3
-    - uses: google-github-actions/auth@v1
+    - uses: actions/checkout@v6
+    - uses: google-github-actions/auth@v3
       id: auth
       with:
         credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
         token_format: access_token
-    - uses: docker/login-action@v1
+    - uses: docker/login-action@v4
       with:
         registry: asia-southeast1-docker.pkg.dev
         username: oauth2accesstoken
         password: ${{ steps.auth.outputs.access_token }}
-    - uses: docker/setup-buildx-action@v2
+    - uses: docker/setup-buildx-action@v4
       with:
         version: latest
-    - uses: docker/build-push-action@v4
+    - uses: docker/build-push-action@v7
       with:
         provenance: false
         push: true
