@@ -103,7 +103,7 @@ Commands:
   envgroup, eg            create, get, list, update, delete
   auditlog                list
   dropbox                 list, metrics
-  github                  link, unlink, list
+  github                  link, unlink, update, list
 
 Flags:
   -output table|yaml|json (or -oyaml, -ojson, -otable)
