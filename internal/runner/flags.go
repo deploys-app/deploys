@@ -1,10 +1,21 @@
 package runner
 
 import (
+	"flag"
 	"fmt"
 	"strings"
 	"time"
 )
+
+// visitedFlags returns the set of flag names that were explicitly provided on
+// the command line. It lets a command distinguish "flag omitted" (leave the
+// request field nil so the server keeps the previous value) from "flag set to
+// the zero value" (e.g. -ttl 0 to clear, -internal=false to set false).
+func visitedFlags(f *flag.FlagSet) map[string]bool {
+	set := map[string]bool{}
+	f.Visit(func(fl *flag.Flag) { set[fl.Name] = true })
+	return set
+}
 
 // multiFlag collects a repeatable string flag (e.g. -env A=1 -env B=2).
 type multiFlag []string
