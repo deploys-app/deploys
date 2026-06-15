@@ -118,6 +118,8 @@ func (rn Runner) Run(args ...string) error {
 		return rn.route(args[1:]...)
 	case "waf":
 		return rn.waf(args[1:]...)
+	case "cache":
+		return rn.cache(args[1:]...)
 	case "disk":
 		return rn.disk(args[1:]...)
 	case "pullsecret", "ps":
@@ -173,6 +175,11 @@ func (rn Runner) me(args ...string) error {
 		f.Parse(args[1:])
 		req.Permissions = splitComma(permissions)
 		resp, err = s.Authorized(context.Background(), &req)
+	case "permissions":
+		var req api.MePermissions
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.Parse(args[1:])
+		resp, err = s.Permissions(context.Background(), &req)
 	}
 	if err != nil {
 		return err
@@ -358,6 +365,9 @@ func (rn Runner) role(args ...string) error {
 		f.Parse(args[1:])
 		req.Roles = splitComma(roles)
 		resp, err = s.Bind(context.Background(), &req)
+	case "permissions":
+		f.Parse(args[1:])
+		resp, err = s.Permissions(context.Background(), &api.Empty{})
 	}
 	if err != nil {
 		return err
@@ -808,6 +818,18 @@ func (rn Runner) disk(args ...string) error {
 		f.StringVar(&req.Name, "name", "", "disk name")
 		f.Parse(args[1:])
 		resp, err = s.Delete(context.Background(), &req)
+	case "metrics":
+		var (
+			req       api.DiskMetrics
+			timeRange string
+		)
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Name, "name", "", "disk name")
+		f.StringVar(&timeRange, "time-range", "1h", "time range (1h, 6h, 12h, 1d, 2d, 7d, 30d)")
+		f.Parse(args[1:])
+		req.TimeRange = api.DiskMetricsTimeRange(timeRange)
+		resp, err = s.Metrics(context.Background(), &req)
 	}
 	if err != nil {
 		return err
