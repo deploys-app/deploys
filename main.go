@@ -82,18 +82,20 @@ Usage:
   deploys <command> <subcommand> [flags]
 
 Commands:
-  me                      get, authorized
+  me                      get, authorized, permissions
   billing                 create, list, get, update, delete, report, skus, project,
                           invoices, invoice, downloadinvoice, downloadreceipt
   location                list, get
   project                 create, list, get, update, delete, usage
-  role                    create, list, get, delete, grant, revoke, users, bind
+  role                    create, list, get, delete, grant, revoke, users, bind,
+                          permissions
   deployment, deploy, d   list, get, deploy, delete, revisions, pause, resume,
                           rollback, metrics, set
   domain                  create, get, list, delete, purgecache
   route                   create, get, list, delete
   waf                     get, list, set, delete, metrics, limitmetrics
-  disk                    create, get, list, update, delete
+  cache                   get, list, set, delete, metrics
+  disk                    create, get, list, update, delete, metrics
   pullsecret, ps          create, get, list, delete
   workloadidentity, wi    create, get, list, delete
   serviceaccount, sa      create, get, list, update, delete, createkey, deletekey
