@@ -1,4 +1,4 @@
-FROM golang:1.24.5-bookworm
+FROM golang:1.26.4-trixie
 
 ENV CGO_ENABLED=0
 
@@ -9,7 +9,7 @@ RUN go mod download
 ADD . .
 RUN go build -o .build/deploys -ldflags "-w -s" .
 
-FROM debian:12-slim
+FROM debian:13-slim
 
 RUN apt-get update && apt-get install -y \
   ca-certificates \
