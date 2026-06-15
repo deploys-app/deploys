@@ -3,10 +3,11 @@ package runner
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"os"
-	"strings"
 	"unicode/utf8"
 
 	"github.com/deploys-app/api"
@@ -170,7 +171,7 @@ func (rn Runner) me(args ...string) error {
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&permissions, "permissions", "", "permissions (comma separated values)")
 		f.Parse(args[1:])
-		req.Permissions = strings.Split(permissions, ",")
+		req.Permissions = splitComma(permissions)
 		resp, err = s.Authorized(context.Background(), &req)
 	}
 	if err != nil {
@@ -308,7 +309,7 @@ func (rn Runner) role(args ...string) error {
 		f.StringVar(&req.Name, "name", "", "role name")
 		f.StringVar(&permissions, "permissions", "", "permissions")
 		f.Parse(args[1:])
-		req.Permissions = strings.Split(permissions, ",")
+		req.Permissions = splitComma(permissions)
 		resp, err = s.Create(context.Background(), &req)
 	case "list":
 		var req api.RoleList
@@ -355,7 +356,7 @@ func (rn Runner) role(args ...string) error {
 		f.StringVar(&req.Email, "email", "", "email")
 		f.StringVar(&roles, "roles", "", "roles")
 		f.Parse(args[1:])
-		req.Roles = strings.Split(roles, ",")
+		req.Roles = splitComma(roles)
 		resp, err = s.Bind(context.Background(), &req)
 	}
 	if err != nil {
@@ -444,33 +445,7 @@ func (rn Runner) deployment(args ...string) error {
 		req.TimeRange = api.DeploymentMetricsTimeRange(timeRange)
 		resp, err = s.Metrics(context.Background(), &req)
 	case "deploy":
-		var (
-			req         api.DeploymentDeploy
-			typ         string
-			port        int
-			minReplicas int
-			maxReplicas int
-		)
-		f.StringVar(&req.Location, "location", "", "location")
-		f.StringVar(&req.Project, "project", "", "project id")
-		f.StringVar(&req.Name, "name", "", "deployment name")
-		f.StringVar(&req.Image, "image", "", "docker image")
-		f.StringVar(&typ, "type", "", "deployment type")
-		f.IntVar(&port, "port", 0, "port")
-		f.IntVar(&minReplicas, "minReplicas", 0, "autoscale min replicas")
-		f.IntVar(&maxReplicas, "maxReplicas", 0, "autoscale max replicas")
-		f.Parse(args[1:])
-		req.Type = api.ParseDeploymentTypeString(typ)
-		if port > 0 {
-			req.Port = &port
-		}
-		if minReplicas > 0 {
-			req.MinReplicas = &minReplicas
-		}
-		if maxReplicas > 0 {
-			req.MaxReplicas = &maxReplicas
-		}
-		resp, err = s.Deploy(context.Background(), &req)
+		return rn.deploymentDeploy(args[1:]...)
 	case "set":
 		return rn.deploymentSet(args[1:]...)
 	}
@@ -541,6 +516,207 @@ func (rn Runner) route(args ...string) error {
 		return err
 	}
 	return rn.print(resp)
+}
+
+func (rn Runner) deploymentDeploy(args ...string) error {
+	req, outputMode, err := parseDeploymentDeploy(args)
+	if errors.Is(err, flag.ErrHelp) {
+		return nil // usage already printed; -h is a clean exit, matching ExitOnError
+	}
+	if err != nil {
+		return err
+	}
+	rn.OutputMode = outputMode
+
+	resp, err := rn.API.Deployment().Deploy(context.Background(), &req)
+	if err != nil {
+		return err
+	}
+	return rn.print(resp)
+}
+
+// parseDeploymentDeploy maps the full api.DeploymentDeploy surface to flags. It
+// is pure (no API calls) so the flag→request mapping is unit-testable.
+//
+// The request is a merge: every optional field is left nil/empty unless its
+// flag is provided, so omitting a flag preserves the previous revision's value.
+// Scalar pointers use visitedFlags so an explicit zero/empty can be sent (e.g.
+// -ttl 0 to clear, -internal=false), while the long-standing -port/-minReplicas/
+// -maxReplicas keep their >0 semantics for backward compatibility.
+func parseDeploymentDeploy(args []string) (api.DeploymentDeploy, string, error) {
+	var (
+		req         api.DeploymentDeploy
+		outputMode  string
+		typ         string
+		port        int
+		minReplicas int
+		maxReplicas int
+
+		protocol string
+		internal bool
+
+		env             multiFlag
+		addEnv          multiFlag
+		removeEnv       string
+		envGroups       string
+		addEnvGroups    string
+		removeEnvGroups string
+
+		command string
+		cmdArgs string
+
+		workloadIdentity string
+		pullSecret       string
+		schedule         string
+		ttl              int64
+
+		diskName      string
+		diskMountPath string
+		diskSubPath   string
+
+		cpuRequest string
+		memRequest string
+		cpuLimit   string
+		memLimit   string
+
+		mountData          multiFlag
+		requireGoogleLogin bool
+		allowedEmails      string
+		allowedDomains     string
+		sidecarsFile       string
+	)
+
+	// ContinueOnError (not ExitOnError) so a parse error returns instead of
+	// calling os.Exit — keeps the function pure and testable; the caller surfaces
+	// the error. Output is discarded so the error is reported once, by main.
+	f := flag.NewFlagSet("deployment deploy", flag.ContinueOnError)
+	f.SetOutput(io.Discard)
+	f.StringVar(&outputMode, "output", "table", "output mode: table, yaml, json")
+	f.StringVar(&req.Location, "location", "", "location")
+	f.StringVar(&req.Project, "project", "", "project id")
+	f.StringVar(&req.Name, "name", "", "deployment name")
+	f.StringVar(&req.Image, "image", "", "docker image")
+	f.StringVar(&typ, "type", "", "deployment type (WebService, Worker, CronJob, TCPService, InternalTCPService, Static)")
+	f.IntVar(&port, "port", 0, "port")
+	f.IntVar(&minReplicas, "minReplicas", 0, "autoscale min replicas")
+	f.IntVar(&maxReplicas, "maxReplicas", 0, "autoscale max replicas")
+	f.StringVar(&protocol, "protocol", "", "WebService protocol: http, https, h2c")
+	f.BoolVar(&internal, "internal", false, "run WebService as an internal service")
+	f.Var(&env, "env", "env KEY=VALUE, replaces all env (repeatable)")
+	f.Var(&addEnv, "addEnv", "env KEY=VALUE to add to the previous revision (repeatable)")
+	f.StringVar(&removeEnv, "removeEnv", "", "env keys to remove (comma separated)")
+	f.StringVar(&envGroups, "envGroups", "", "env groups, replaces all (comma separated)")
+	f.StringVar(&addEnvGroups, "addEnvGroups", "", "env groups to add (comma separated)")
+	f.StringVar(&removeEnvGroups, "removeEnvGroups", "", "env groups to remove (comma separated)")
+	f.StringVar(&command, "command", "", "container entrypoint command (comma separated)")
+	f.StringVar(&cmdArgs, "args", "", "container args (comma separated)")
+	f.StringVar(&workloadIdentity, "workloadIdentity", "", "workload identity name")
+	f.StringVar(&pullSecret, "pullSecret", "", "pull secret name")
+	f.StringVar(&schedule, "schedule", "", "cron schedule (CronJob)")
+	f.Int64Var(&ttl, "ttl", 0, "seconds until auto-delete; pass 0 to clear an existing TTL")
+	f.StringVar(&diskName, "diskName", "", "disk name (Stateful)")
+	f.StringVar(&diskMountPath, "diskMountPath", "", "disk mount path")
+	f.StringVar(&diskSubPath, "diskSubPath", "", "disk sub path")
+	f.StringVar(&cpuRequest, "cpuRequest", "", "CPU request (e.g. 250m)")
+	f.StringVar(&memRequest, "memRequest", "", "memory request (e.g. 256Mi)")
+	f.StringVar(&cpuLimit, "cpuLimit", "", "CPU limit (e.g. 500m)")
+	f.StringVar(&memLimit, "memLimit", "", "memory limit (e.g. 512Mi)")
+	f.Var(&mountData, "mountData", "mounted file PATH=VALUE (repeatable)")
+	f.BoolVar(&requireGoogleLogin, "requireGoogleLogin", false, "require Google login to access the deployment")
+	f.StringVar(&allowedEmails, "allowedEmails", "", "allowed emails for access (comma separated)")
+	f.StringVar(&allowedDomains, "allowedDomains", "", "allowed domains for access (comma separated)")
+	f.StringVar(&sidecarsFile, "sidecarsFile", "", "path to a YAML/JSON file with the sidecars list")
+	if err := f.Parse(args); err != nil {
+		// -h/-help: print usage like the ExitOnError commands do, then let the
+		// caller treat it as a clean (non-error) exit.
+		if errors.Is(err, flag.ErrHelp) {
+			fmt.Fprintln(os.Stderr, "Usage: deploys deployment deploy [flags]")
+			f.SetOutput(os.Stderr)
+			f.PrintDefaults()
+		}
+		return req, "", err
+	}
+
+	set := visitedFlags(f)
+
+	req.Type = api.ParseDeploymentTypeString(typ)
+	if port > 0 {
+		req.Port = &port
+	}
+	if minReplicas > 0 {
+		req.MinReplicas = &minReplicas
+	}
+	if maxReplicas > 0 {
+		req.MaxReplicas = &maxReplicas
+	}
+	if set["protocol"] {
+		p := api.DeploymentProtocol(protocol)
+		req.Protocol = &p
+	}
+	if set["internal"] {
+		req.Internal = &internal
+	}
+	if set["workloadIdentity"] {
+		req.WorkloadIdentity = &workloadIdentity
+	}
+	if set["pullSecret"] {
+		req.PullSecret = &pullSecret
+	}
+	if set["schedule"] {
+		req.Schedule = &schedule
+	}
+	if set["ttl"] {
+		req.TTL = &ttl
+	}
+
+	var err error
+	if req.Env, err = parseKV(env); err != nil {
+		return req, "", err
+	}
+	if req.AddEnv, err = parseKV(addEnv); err != nil {
+		return req, "", err
+	}
+	if req.MountData, err = parseKV(mountData); err != nil {
+		return req, "", err
+	}
+	req.RemoveEnv = splitComma(removeEnv)
+	req.EnvGroups = splitComma(envGroups)
+	req.AddEnvGroups = splitComma(addEnvGroups)
+	req.RemoveEnvGroups = splitComma(removeEnvGroups)
+	req.Command = splitComma(command)
+	req.Args = splitComma(cmdArgs)
+
+	if diskName != "" {
+		req.Disk = &api.DeploymentDisk{
+			Name:      diskName,
+			MountPath: diskMountPath,
+			SubPath:   diskSubPath,
+		}
+	}
+	if cpuRequest != "" || memRequest != "" || cpuLimit != "" || memLimit != "" {
+		req.Resources = &api.DeploymentResource{
+			Requests: api.ResourceItem{CPU: cpuRequest, Memory: memRequest},
+			Limits:   api.ResourceItem{CPU: cpuLimit, Memory: memLimit},
+		}
+	}
+	if requireGoogleLogin || allowedEmails != "" || allowedDomains != "" {
+		req.Access = &api.DeploymentAccessConfig{
+			RequireGoogleLogin: requireGoogleLogin,
+			AllowedEmails:      splitComma(allowedEmails),
+			AllowedDomains:     splitComma(allowedDomains),
+		}
+	}
+	if sidecarsFile != "" {
+		b, err := os.ReadFile(sidecarsFile)
+		if err != nil {
+			return req, "", err
+		}
+		if err := yaml.Unmarshal(b, &req.Sidecars); err != nil {
+			return req, "", fmt.Errorf("invalid sidecars file %q: %w", sidecarsFile, err)
+		}
+	}
+
+	return req, outputMode, nil
 }
 
 func (rn Runner) deploymentSet(args ...string) error {
@@ -923,8 +1099,7 @@ func (rn Runner) github(args ...string) error {
 		if cur == nil {
 			return fmt.Errorf("github: repository link not found for repository id %d", req.RepositoryID)
 		}
-		set := map[string]bool{}
-		f.Visit(func(fl *flag.Flag) { set[fl.Name] = true })
+		set := visitedFlags(f)
 		if !set["service-account"] {
 			req.ServiceAccount = cur.ServiceAccount
 		}
