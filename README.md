@@ -115,6 +115,7 @@ match the corresponding resource.
 
 - `get` — current user info.
 - `authorized` `-permissions a,b` — check whether you hold the given permissions in `-project`.
+- `permissions` — your effective permissions in `-project` (and whether you're an admin).
 
 ### location
 
@@ -128,6 +129,7 @@ match the corresponding resource.
 
 - `create` `-role -name -permissions a,b`, `list`, `get` `-role`, `delete` `-role`.
 - `grant` / `revoke` `-role -email`, `users`, `bind` `-email -roles a,b`.
+- `permissions` — list every assignable permission string.
 
 ### deployment (`deploy`, `d`)
 
@@ -176,9 +178,18 @@ Lifecycle: `list`, `get` `-revision`, `delete`, `revisions`, `pause`, `resume`,
 - `set -f <spec.yaml>` `-description` — apply a WAF zone from a YAML spec (description, rules, limits). `-f` is required.
 - `metrics` / `limitmetrics` `-time-range 1h|6h|12h|1d|7d|30d`.
 
+### cache
+
+Edge cache-override zone (one per project + location), applied at the CDN edge —
+separate from the WAF (a role can hold `cache.*` without `waf.*`).
+
+- `get`, `list`, `delete`.
+- `set -f <spec.yaml>` `-description` — replace the zone's overrides from a YAML spec (`description`, `overrides`), all-or-nothing. `-f` is required.
+- `metrics` `-time-range 1h|6h|12h|1d|7d|30d`.
+
 ### disk
 
-- `create` `-size <Gi>`, `get`, `list`, `update` `-size <Gi>`, `delete`.
+- `create` `-size <Gi>`, `get`, `list`, `update` `-size <Gi>`, `delete`, `metrics` `-time-range 1h|6h|12h|1d|2d|7d|30d`.
 
 ### pullsecret (`ps`)
 
