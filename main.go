@@ -106,6 +106,7 @@ Commands:
   auditlog                list
   dropbox                 list, metrics
   github                  link, unlink, update, list
+  site                    publish
 
 Flags:
   -output table|yaml|json (or -oyaml, -ojson, -otable)

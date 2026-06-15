@@ -142,6 +142,8 @@ func (rn Runner) Run(args ...string) error {
 		return rn.github(args[1:]...)
 	case "collector":
 		return rn.collector(args[1:]...)
+	case "site":
+		return rn.site(args[1:]...)
 	}
 }
 
@@ -606,6 +608,7 @@ func parseDeploymentDeploy(args []string) (api.DeploymentDeploy, string, error) 
 	f.StringVar(&req.Project, "project", "", "project id")
 	f.StringVar(&req.Name, "name", "", "deployment name")
 	f.StringVar(&req.Image, "image", "", "docker image")
+	f.StringVar(&req.Site, "site", "", "static site release ref (site://...); use with -type Static (see `deploys site publish`)")
 	f.StringVar(&typ, "type", "", "deployment type (WebService, Worker, CronJob, TCPService, InternalTCPService, Static)")
 	f.IntVar(&port, "port", 0, "port")
 	f.IntVar(&minReplicas, "minReplicas", 0, "autoscale min replicas")
