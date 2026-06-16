@@ -119,6 +119,7 @@ match the corresponding resource.
 - `get` — current user info.
 - `authorized` `-permissions a,b` — check whether you hold the given permissions in `-project`.
 - `permissions` — your effective permissions in `-project` (and whether you're an admin).
+- `generate-token` `-project -permissions a,b [-ttl 900]` — mint a short-lived bearer token scoped to `-project` and a subset of your permissions (allowed: `dropbox.upload`, `site.publish`; TTL 60–3600s, default 900). Useful for handing a narrow credential to an automated tool (e.g. to `curl` a file upload to dropbox) without exposing a full token.
 
 ### location
 
