@@ -13,6 +13,10 @@ jobs:
     - uses: actions/setup-go@v6
       with:
         go-version: "^1.26"
+    - uses: google-github-actions/auth@v3
+      with:
+        credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+    - uses: google-github-actions/setup-gcloud@v2
     - uses: goreleaser/goreleaser-action@v7
       with:
         version: latest
@@ -20,6 +24,22 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         CGO_ENABLED: 0
+    # Publish the release archives + checksums to the public download bucket
+    # (https://dl.deploys.app), mirroring the mcp release. The tag goes to an
+    # immutable deploys/<tag>/ and is mirrored to a short-cached deploys/latest/
+    # for "always newest" download URLs.
+    - name: Upload to dl.deploys.app
+      run: |
+        shopt -s nullglob
+        files=(dist/*.tar.gz dist/*.zip dist/checksums.txt)
+        if [ ${#files[@]} -eq 0 ]; then
+          echo "no release artifacts found in dist/" >&2
+          exit 1
+        fi
+        gcloud storage cp "${files[@]}" "gs://dl.deploys.app/deploys/${GITHUB_REF_NAME}/" \
+          --cache-control="public, max-age=31536000, immutable"
+        gcloud storage cp "${files[@]}" "gs://dl.deploys.app/deploys/latest/" \
+          --cache-control="public, max-age=300"
     - uses: actions/upload-artifact@v7
       with:
         name: deploys
