@@ -1,8 +1,11 @@
 name: Release
 on:
   push:
+    branches: [master]
     tags:
     - '*'
+permissions:
+  contents: write
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -17,29 +20,49 @@ jobs:
       with:
         credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
     - uses: google-github-actions/setup-gcloud@v2
+    # Tagged push -> full release (publishes the GitHub release).
+    # master push -> --snapshot build (no tag required, nothing published by
+    # goreleaser); the nightly artifacts are uploaded and released below.
     - uses: goreleaser/goreleaser-action@v7
       with:
         version: latest
-        args: release --clean
+        args: release --clean ${{ github.ref_type != 'tag' && '--snapshot' || '' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         CGO_ENABLED: 0
     # Publish the release archives + checksums to the public download bucket
-    # (https://dl.deploys.app), mirroring the mcp release. The tag goes to an
-    # immutable deploys/<tag>/ and is mirrored to a short-cached deploys/latest/
-    # for "always newest" download URLs.
+    # (https://dl.deploys.app), mirroring the mcp release.
+    # Tag    -> immutable deploys/<tag>/ plus a short-cached deploys/latest/.
+    # master -> short-cached deploys/nightly/.
     - name: Upload to dl.deploys.app
       run: |
         shopt -s nullglob
-        files=(dist/*.tar.gz dist/*.zip dist/checksums.txt)
+        files=(dist/*.tar.gz dist/*.zip dist/*checksums.txt)
         if [ ${#files[@]} -eq 0 ]; then
           echo "no release artifacts found in dist/" >&2
           exit 1
         fi
-        gcloud storage cp "${files[@]}" "gs://dl.deploys.app/deploys/${GITHUB_REF_NAME}/" \
-          --cache-control="public, max-age=31536000, immutable"
-        gcloud storage cp "${files[@]}" "gs://dl.deploys.app/deploys/latest/" \
-          --cache-control="public, max-age=300"
+        if [ "$GITHUB_REF_TYPE" = tag ]; then
+          gcloud storage cp "${files[@]}" "gs://dl.deploys.app/deploys/${GITHUB_REF_NAME}/" \
+            --cache-control="public, max-age=31536000, immutable"
+          gcloud storage cp "${files[@]}" "gs://dl.deploys.app/deploys/latest/" \
+            --cache-control="public, max-age=300"
+        else
+          gcloud storage cp "${files[@]}" "gs://dl.deploys.app/deploys/nightly/" \
+            --cache-control="public, max-age=300"
+        fi
+    # master push: refresh the rolling "nightly" prerelease with the latest build.
+    - name: Publish nightly
+      if: github.ref == 'refs/heads/master'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: nightly
+        name: nightly
+        prerelease: true
+        files: |
+          dist/*.tar.gz
+          dist/*.zip
+          dist/*checksums.txt
     - uses: actions/upload-artifact@v7
       with:
         name: deploys
