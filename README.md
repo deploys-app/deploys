@@ -16,7 +16,10 @@ go install github.com/deploys-app/deploys@latest
 ```
 
 **Binaries:** download the archive for your OS/arch from the
-[GitHub releases](https://github.com/deploys-app/deploys/releases).
+[GitHub releases](https://github.com/deploys-app/deploys/releases), or from the
+public bucket at `https://dl.deploys.app/deploys/` — `latest/` for the newest
+release or `<tag>/` for a specific one (e.g.
+`https://dl.deploys.app/deploys/latest/`).
 
 **Container:**
 
