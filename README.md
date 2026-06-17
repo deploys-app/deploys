@@ -119,6 +119,7 @@ match the corresponding resource.
 - `get` — current user info.
 - `authorized` `-permissions a,b` — check whether you hold the given permissions in `-project`.
 - `permissions` — your effective permissions in `-project` (and whether you're an admin).
+- `generate-token` `-project -permissions a,b [-ttl 900]` — mint a short-lived bearer token scoped to `-project` and a subset of your permissions (allowed: `dropbox.upload`, `site.publish`; TTL 60–3600s, default 900). Useful for handing a narrow credential to an automated tool (e.g. to `curl` a file upload to dropbox) without exposing a full token.
 
 ### location
 
@@ -238,6 +239,8 @@ separate from the WAF (a role can hold `cache.*` without `waf.*`).
 ### dropbox
 
 - `list` `-after -before -limit`, `metrics` `-time-range 7d|30d|90d`.
+- `upload` `-project -file -filename -ttl`, e.g. `deploys dropbox upload -project acme -file site.tar.gz -ttl 7`.
+- `upload` reads `-file` (or stdin when omitted or `-`) and prints the public, short-lived download URL; `-ttl` is 1-7 days (default 1). Requires the `dropbox.upload` permission.
 - `-after`/`-before` accept RFC 3339 or `YYYY-MM-DD`.
 
 ### auditlog

@@ -9,8 +9,6 @@ github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2/go.mod h1:W
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/deploys-app/api v0.0.0-20260615105442-6011d386f1fa h1:jwptyE42+0Hg85KukmBKTrCg1NLcDHj+K0IuPNQ+V+U=
-github.com/deploys-app/api v0.0.0-20260615105442-6011d386f1fa/go.mod h1:X70UJs5awlRV4Cmn0FPJAgEbn4N933K8YgSKc1y9aD8=
 github.com/deploys-app/api v0.0.0-20260617003501-7fb5bf092448 h1:OJrGQoFGSSzHrcpqhokHRWDWpsrPyBSW5ic6bpW0j3A=
 github.com/deploys-app/api v0.0.0-20260617003501-7fb5bf092448/go.mod h1:X70UJs5awlRV4Cmn0FPJAgEbn4N933K8YgSKc1y9aD8=
 github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkpeCY=

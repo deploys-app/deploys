@@ -104,7 +104,7 @@ Commands:
                           deletemanifest, untag, metrics
   envgroup, eg            create, get, list, update, delete
   auditlog                list
-  dropbox                 list, metrics
+  dropbox                 list, metrics, upload
   github                  link, unlink, update, list
   site                    publish
 

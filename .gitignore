@@ -1,2 +1,6 @@
 .idea/
 .DS_Store
+# Credentials file written into the workspace by google-github-actions/auth in
+# the release workflow. Ignoring it keeps the tree clean so GoReleaser (which
+# refuses to release a dirty git state) doesn't fail.
+gha-creds-*.json

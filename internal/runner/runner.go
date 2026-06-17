@@ -182,6 +182,17 @@ func (rn Runner) me(args ...string) error {
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.Parse(args[1:])
 		resp, err = s.Permissions(context.Background(), &req)
+	case "generate-token", "generateToken":
+		var (
+			req         api.MeGenerateToken
+			permissions string
+		)
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&permissions, "permissions", "", "permissions (comma separated; allowed: dropbox.upload, site.publish)")
+		f.IntVar(&req.TTLSeconds, "ttl", 0, "token lifetime in seconds (60-3600, default 900)")
+		f.Parse(args[1:])
+		req.Permissions = splitComma(permissions)
+		resp, err = s.GenerateToken(context.Background(), &req)
 	}
 	if err != nil {
 		return err
