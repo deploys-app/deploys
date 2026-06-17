@@ -91,15 +91,15 @@ func (rn *Runner) replaceShortFlag(args []string) {
 }
 
 func (rn Runner) Run(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid command: (empty args)")
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		return rn.topUsage()
 	}
 
 	rn.replaceShortFlag(args)
 
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command: '%s'", args[0])
+		return fmt.Errorf("invalid command: %q (run \"deploys help\")", args[0])
 	case "me":
 		return rn.me(args[1:]...)
 	case "billing":
@@ -148,8 +148,8 @@ func (rn Runner) Run(args ...string) error {
 }
 
 func (rn Runner) me(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		return rn.groupUsage("me")
 	}
 
 	s := rn.API.Me()
@@ -159,11 +159,10 @@ func (rn Runner) me(args ...string) error {
 		err  error
 	)
 
-	f := flag.NewFlagSet("", flag.ExitOnError)
-	rn.registerFlags(f)
+	f := rn.subFlagSet("me", args[0])
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command")
+		return rn.unknownSub("me", args[0])
 	case "get":
 		f.Parse(args[1:])
 		resp, err = s.Get(context.Background(), &api.Empty{})
@@ -201,8 +200,8 @@ func (rn Runner) me(args ...string) error {
 }
 
 func (rn Runner) location(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		return rn.groupUsage("location")
 	}
 
 	s := rn.API.Location()
@@ -212,11 +211,10 @@ func (rn Runner) location(args ...string) error {
 		err  error
 	)
 
-	f := flag.NewFlagSet("", flag.ExitOnError)
-	rn.registerFlags(f)
+	f := rn.subFlagSet("location", args[0])
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command")
+		return rn.unknownSub("location", args[0])
 	case "list":
 		var req api.LocationList
 		f.StringVar(&req.Project, "project", "", "project id")
@@ -235,8 +233,8 @@ func (rn Runner) location(args ...string) error {
 }
 
 func (rn Runner) project(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		return rn.groupUsage("project")
 	}
 
 	s := rn.API.Project()
@@ -246,11 +244,10 @@ func (rn Runner) project(args ...string) error {
 		err  error
 	)
 
-	f := flag.NewFlagSet("", flag.ExitOnError)
-	rn.registerFlags(f)
+	f := rn.subFlagSet("project", args[0])
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command")
+		return rn.unknownSub("project", args[0])
 	case "create":
 		var req api.ProjectCreate
 		f.StringVar(&req.SID, "id", "", "project id")
@@ -303,8 +300,8 @@ func (rn Runner) project(args ...string) error {
 }
 
 func (rn Runner) role(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		return rn.groupUsage("role")
 	}
 
 	s := rn.API.Role()
@@ -314,11 +311,10 @@ func (rn Runner) role(args ...string) error {
 		err  error
 	)
 
-	f := flag.NewFlagSet("", flag.ExitOnError)
-	rn.registerFlags(f)
+	f := rn.subFlagSet("role", args[0])
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command")
+		return rn.unknownSub("role", args[0])
 	case "create":
 		var (
 			req         api.RoleCreate
@@ -389,8 +385,17 @@ func (rn Runner) role(args ...string) error {
 }
 
 func (rn Runner) deployment(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid deployment command: (empty args)")
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		return rn.groupUsage("deployment")
+	}
+
+	// deploy and set own their flag handling (including -h); the shared
+	// subFlagSet below is only for the simple lifecycle subcommands.
+	switch args[0] {
+	case "deploy":
+		return rn.deploymentDeploy(args[1:]...)
+	case "set":
+		return rn.deploymentSet(args[1:]...)
 	}
 
 	s := rn.API.Deployment()
@@ -400,11 +405,10 @@ func (rn Runner) deployment(args ...string) error {
 		err  error
 	)
 
-	f := flag.NewFlagSet("", flag.ExitOnError)
-	rn.registerFlags(f)
+	f := rn.subFlagSet("deployment", args[0])
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid deployment command: '%s'", args[0])
+		return rn.unknownSub("deployment", args[0])
 	case "list":
 		var req api.DeploymentList
 		f.StringVar(&req.Location, "location", "", "location")
@@ -474,10 +478,6 @@ func (rn Runner) deployment(args ...string) error {
 		f.Parse(args[1:])
 		req.TimeRange = api.DeploymentMetricsTimeRange(timeRange)
 		resp, err = s.Metrics(context.Background(), &req)
-	case "deploy":
-		return rn.deploymentDeploy(args[1:]...)
-	case "set":
-		return rn.deploymentSet(args[1:]...)
 	}
 	if err != nil {
 		return err
@@ -486,8 +486,8 @@ func (rn Runner) deployment(args ...string) error {
 }
 
 func (rn Runner) route(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		return rn.groupUsage("route")
 	}
 
 	s := rn.API.Route()
@@ -497,11 +497,10 @@ func (rn Runner) route(args ...string) error {
 		err  error
 	)
 
-	f := flag.NewFlagSet("", flag.ExitOnError)
-	rn.registerFlags(f)
+	f := rn.subFlagSet("route", args[0])
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command")
+		return rn.unknownSub("route", args[0])
 	case "list":
 		var req api.RouteList
 		f.StringVar(&req.Project, "project", "", "project id")
@@ -549,7 +548,9 @@ func (rn Runner) route(args ...string) error {
 }
 
 func (rn Runner) deploymentDeploy(args ...string) error {
-	req, outputMode, err := parseDeploymentDeploy(args)
+	// Pass the runner's output so the -h banner honors Runner.Output like every
+	// other subcommand (subFlagSet's Usage targets rn.output()).
+	req, outputMode, err := parseDeploymentDeploy(rn.output(), args)
 	if errors.Is(err, flag.ErrHelp) {
 		return nil // usage already printed; -h is a clean exit, matching ExitOnError
 	}
@@ -573,7 +574,10 @@ func (rn Runner) deploymentDeploy(args ...string) error {
 // Scalar pointers use visitedFlags so an explicit zero/empty can be sent (e.g.
 // -ttl 0 to clear, -internal=false), while the long-standing -port/-minReplicas/
 // -maxReplicas keep their >0 semantics for backward compatibility.
-func parseDeploymentDeploy(args []string) (api.DeploymentDeploy, string, error) {
+//
+// helpOut receives the -h/-help banner (so it can be redirected and asserted in
+// tests); all other output is discarded and surfaced to the caller as an error.
+func parseDeploymentDeploy(helpOut io.Writer, args []string) (api.DeploymentDeploy, string, error) {
 	var (
 		req         api.DeploymentDeploy
 		outputMode  string
@@ -658,12 +662,11 @@ func parseDeploymentDeploy(args []string) (api.DeploymentDeploy, string, error) 
 	f.StringVar(&allowedDomains, "allowedDomains", "", "allowed domains for access (comma separated)")
 	f.StringVar(&sidecarsFile, "sidecarsFile", "", "path to a YAML/JSON file with the sidecars list")
 	if err := f.Parse(args); err != nil {
-		// -h/-help: print usage like the ExitOnError commands do, then let the
-		// caller treat it as a clean (non-error) exit.
+		// -h/-help: render the same banner as the other subcommands, then let
+		// the caller treat it as a clean (non-error) exit. Other parse errors
+		// stay quiet here (output is discarded) and are surfaced by the caller.
 		if errors.Is(err, flag.ErrHelp) {
-			fmt.Fprintln(os.Stderr, "Usage: deploys deployment deploy [flags]")
-			f.SetOutput(os.Stderr)
-			f.PrintDefaults()
+			writeSubUsage(helpOut, f, "deployment", "deploy")
 		}
 		return req, "", err
 	}
@@ -751,44 +754,45 @@ func parseDeploymentDeploy(args []string) (api.DeploymentDeploy, string, error) 
 }
 
 func (rn Runner) deploymentSet(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
-	}
-
-	s := rn.API.Deployment()
-
-	var (
-		resp any
-		err  error
-	)
-
-	f := flag.NewFlagSet("", flag.ExitOnError)
-	rn.registerFlags(f)
-	switch args[0] {
-	default:
-		return fmt.Errorf("invalid command")
-	case "image":
-		if len(args) == 1 {
-			return fmt.Errorf("deployment name requied")
-		}
-
-		var req api.DeploymentDeploy
-		req.Name = args[1]
+	// set currently has a single leaf, `image`; its flag set doubles as the
+	// help banner for `set`, `set -h`, and `set image -h`.
+	newImageFlags := func() (*flag.FlagSet, *api.DeploymentDeploy) {
+		req := &api.DeploymentDeploy{}
+		f := rn.subFlagSet("deployment", "set image")
 		f.StringVar(&req.Location, "location", "", "location")
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Image, "image", "", "deployment image")
+		return f, req
+	}
+
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		f, _ := newImageFlags()
+		f.Usage()
+		return nil
+	}
+
+	switch args[0] {
+	default:
+		return rn.unknownSub("deployment set", args[0])
+	case "image":
+		f, req := newImageFlags()
+		if len(args) < 2 || IsHelpArg(args[1]) {
+			f.Usage()
+			return nil
+		}
+		req.Name = args[1]
 		f.Parse(args[2:])
-		resp, err = s.Deploy(context.Background(), &req)
+		resp, err := rn.API.Deployment().Deploy(context.Background(), req)
+		if err != nil {
+			return err
+		}
+		return rn.print(resp)
 	}
-	if err != nil {
-		return err
-	}
-	return rn.print(resp)
 }
 
 func (rn Runner) disk(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		return rn.groupUsage("disk")
 	}
 
 	s := rn.API.Disk()
@@ -798,11 +802,10 @@ func (rn Runner) disk(args ...string) error {
 		err  error
 	)
 
-	f := flag.NewFlagSet("", flag.ExitOnError)
-	rn.registerFlags(f)
+	f := rn.subFlagSet("disk", args[0])
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command")
+		return rn.unknownSub("disk", args[0])
 	case "create":
 		var req api.DiskCreate
 		f.StringVar(&req.Project, "project", "", "project id")
@@ -859,8 +862,8 @@ func (rn Runner) disk(args ...string) error {
 }
 
 func (rn Runner) pullSecret(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		return rn.groupUsage("pullsecret")
 	}
 
 	s := rn.API.PullSecret()
@@ -870,11 +873,10 @@ func (rn Runner) pullSecret(args ...string) error {
 		err  error
 	)
 
-	f := flag.NewFlagSet("", flag.ExitOnError)
-	rn.registerFlags(f)
+	f := rn.subFlagSet("pullsecret", args[0])
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command")
+		return rn.unknownSub("pullsecret", args[0])
 	case "create":
 		var req api.PullSecretCreate
 		f.StringVar(&req.Location, "location", "", "location")
@@ -913,8 +915,8 @@ func (rn Runner) pullSecret(args ...string) error {
 }
 
 func (rn Runner) workloadIdentity(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		return rn.groupUsage("workloadidentity")
 	}
 
 	s := rn.API.WorkloadIdentity()
@@ -924,11 +926,10 @@ func (rn Runner) workloadIdentity(args ...string) error {
 		err  error
 	)
 
-	f := flag.NewFlagSet("", flag.ExitOnError)
-	rn.registerFlags(f)
+	f := rn.subFlagSet("workloadidentity", args[0])
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command")
+		return rn.unknownSub("workloadidentity", args[0])
 	case "create":
 		var req api.WorkloadIdentityCreate
 		f.StringVar(&req.Project, "project", "", "project id")
@@ -965,8 +966,8 @@ func (rn Runner) workloadIdentity(args ...string) error {
 }
 
 func (rn Runner) serviceAccount(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		return rn.groupUsage("serviceaccount")
 	}
 
 	s := rn.API.ServiceAccount()
@@ -976,11 +977,10 @@ func (rn Runner) serviceAccount(args ...string) error {
 		err  error
 	)
 
-	f := flag.NewFlagSet("", flag.ExitOnError)
-	rn.registerFlags(f)
+	f := rn.subFlagSet("serviceaccount", args[0])
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command")
+		return rn.unknownSub("serviceaccount", args[0])
 	case "create":
 		var req api.ServiceAccountCreate
 		f.StringVar(&req.Project, "project", "", "project id")
@@ -1035,8 +1035,8 @@ func (rn Runner) serviceAccount(args ...string) error {
 }
 
 func (rn Runner) github(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		return rn.groupUsage("github")
 	}
 
 	s := rn.API.GitHub()
@@ -1046,11 +1046,10 @@ func (rn Runner) github(args ...string) error {
 		err  error
 	)
 
-	f := flag.NewFlagSet("", flag.ExitOnError)
-	rn.registerFlags(f)
+	f := rn.subFlagSet("github", args[0])
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command")
+		return rn.unknownSub("github", args[0])
 	case "link":
 		var (
 			req        api.GitHubLink

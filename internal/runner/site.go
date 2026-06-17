@@ -2,7 +2,6 @@ package runner
 
 import (
 	"context"
-	"flag"
 	"fmt"
 
 	"github.com/deploys-app/api/client"
@@ -12,16 +11,15 @@ import (
 // filesystem and uploads via the raw-HTTP /sites/* endpoints, so it uses the
 // concrete *client.Client helper (PublishSite) rather than the api.Interface.
 func (rn Runner) site(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		return rn.groupUsage("site")
 	}
 
-	f := flag.NewFlagSet("", flag.ExitOnError)
-	rn.registerFlags(f)
+	f := rn.subFlagSet("site", args[0])
 
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command")
+		return rn.unknownSub("site", args[0])
 	case "publish":
 		var opts client.SitePublishOptions
 		f.StringVar(&opts.Project, "project", "", "project id")

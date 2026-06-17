@@ -2,7 +2,6 @@ package runner
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -13,8 +12,8 @@ import (
 )
 
 func (rn Runner) dropbox(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		return rn.groupUsage("dropbox")
 	}
 
 	s := rn.API.Dropbox()
@@ -24,11 +23,10 @@ func (rn Runner) dropbox(args ...string) error {
 		err  error
 	)
 
-	f := flag.NewFlagSet("", flag.ExitOnError)
-	rn.registerFlags(f)
+	f := rn.subFlagSet("dropbox", args[0])
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command")
+		return rn.unknownSub("dropbox", args[0])
 	case "list":
 		var req api.DropboxList
 		f.StringVar(&req.Project, "project", "", "project id")

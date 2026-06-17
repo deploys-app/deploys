@@ -2,15 +2,13 @@ package runner
 
 import (
 	"context"
-	"flag"
-	"fmt"
 
 	"github.com/deploys-app/api"
 )
 
 func (rn Runner) domain(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		return rn.groupUsage("domain")
 	}
 
 	s := rn.API.Domain()
@@ -20,11 +18,10 @@ func (rn Runner) domain(args ...string) error {
 		err  error
 	)
 
-	f := flag.NewFlagSet("", flag.ExitOnError)
-	rn.registerFlags(f)
+	f := rn.subFlagSet("domain", args[0])
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command")
+		return rn.unknownSub("domain", args[0])
 	case "create":
 		var req api.DomainCreate
 		f.StringVar(&req.Project, "project", "", "project id")

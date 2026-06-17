@@ -2,15 +2,13 @@ package runner
 
 import (
 	"context"
-	"flag"
-	"fmt"
 
 	"github.com/deploys-app/api"
 )
 
 func (rn Runner) billing(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		return rn.groupUsage("billing")
 	}
 
 	s := rn.API.Billing()
@@ -20,11 +18,10 @@ func (rn Runner) billing(args ...string) error {
 		err  error
 	)
 
-	f := flag.NewFlagSet("", flag.ExitOnError)
-	rn.registerFlags(f)
+	f := rn.subFlagSet("billing", args[0])
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command")
+		return rn.unknownSub("billing", args[0])
 	case "create":
 		var req api.BillingCreate
 		f.StringVar(&req.Name, "name", "", "billing account name")
