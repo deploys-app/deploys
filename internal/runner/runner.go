@@ -436,6 +436,13 @@ func (rn Runner) deployment(args ...string) error {
 		f.StringVar(&req.Name, "name", "", "deployment name")
 		f.Parse(args[1:])
 		resp, err = s.Resume(context.Background(), &req)
+	case "restart":
+		var req api.DeploymentRestart
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Name, "name", "", "deployment name")
+		f.Parse(args[1:])
+		resp, err = s.Restart(context.Background(), &req)
 	case "rollback":
 		var req api.DeploymentRollback
 		f.StringVar(&req.Location, "location", "", "location")
