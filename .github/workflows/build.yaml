@@ -9,11 +9,21 @@ jobs:
     name: Build
     steps:
     - uses: actions/checkout@v6
+    - uses: google-github-actions/auth@v3
+      id: auth
+      with:
+        credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+        token_format: access_token
+    - uses: docker/login-action@v4
+      with:
+        registry: asia-southeast1-docker.pkg.dev
+        username: oauth2accesstoken
+        password: ${{ steps.auth.outputs.access_token }}
     - uses: docker/login-action@v4
       with:
         registry: registry.deploys.app
-        username: ${{ secrets.REGISTRY_USERNAME }}
-        password: ${{ secrets.REGISTRY_PASSWORD }}
+        username: oauth2accesstoken
+        password: ${{ steps.auth.outputs.access_token }}
     - uses: docker/setup-buildx-action@v4
       with:
         version: latest
@@ -22,5 +32,6 @@ jobs:
         provenance: false
         push: true
         tags: |
+          asia-southeast1-docker.pkg.dev/deploys-app/public/cli:${{ github.sha }}
           registry.deploys.app/public/deploys-cli:${{ github.sha }}
           registry.deploys.app/public/deploys-cli:latest
