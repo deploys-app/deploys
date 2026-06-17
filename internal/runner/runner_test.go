@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"io"
 	"testing"
 
 	"github.com/deploys-app/api"
@@ -9,7 +10,7 @@ import (
 // Omitted optional flags must leave their request fields nil/empty so a deploy
 // is a merge that preserves the previous revision's values.
 func TestParseDeploymentDeploy_OmittedStayNil(t *testing.T) {
-	req, out, err := parseDeploymentDeploy([]string{
+	req, out, err := parseDeploymentDeploy(io.Discard, []string{
 		"-project", "p", "-location", "l", "-name", "web", "-image", "img:1",
 	})
 	if err != nil {
@@ -39,7 +40,7 @@ func TestParseDeploymentDeploy_OmittedStayNil(t *testing.T) {
 // Backward compatibility: the long-standing numeric flags keep their >0 guard
 // (so -port 0 stays nil, matching the previous inline implementation).
 func TestParseDeploymentDeploy_NumericBackcompat(t *testing.T) {
-	req, _, err := parseDeploymentDeploy([]string{"-port", "8080", "-minReplicas", "1", "-maxReplicas", "5"})
+	req, _, err := parseDeploymentDeploy(io.Discard, []string{"-port", "8080", "-minReplicas", "1", "-maxReplicas", "5"})
 	if err != nil {
 		t.Fatalf("err: %v", err)
 	}
@@ -47,7 +48,7 @@ func TestParseDeploymentDeploy_NumericBackcompat(t *testing.T) {
 		t.Errorf("numeric flags not mapped: %+v", req)
 	}
 
-	req, _, err = parseDeploymentDeploy([]string{"-port", "0"})
+	req, _, err = parseDeploymentDeploy(io.Discard, []string{"-port", "0"})
 	if err != nil {
 		t.Fatalf("err: %v", err)
 	}
@@ -59,7 +60,7 @@ func TestParseDeploymentDeploy_NumericBackcompat(t *testing.T) {
 // visitedFlags semantics: an explicitly-passed zero/false must be sent (so a
 // user can clear a TTL or set internal=false), while omitting keeps it nil.
 func TestParseDeploymentDeploy_VisitClears(t *testing.T) {
-	req, _, err := parseDeploymentDeploy([]string{"-ttl", "0", "-internal=false"})
+	req, _, err := parseDeploymentDeploy(io.Discard, []string{"-ttl", "0", "-internal=false"})
 	if err != nil {
 		t.Fatalf("err: %v", err)
 	}
@@ -70,14 +71,14 @@ func TestParseDeploymentDeploy_VisitClears(t *testing.T) {
 		t.Errorf("-internal=false should send a false pointer, got %v", req.Internal)
 	}
 
-	req, _, _ = parseDeploymentDeploy([]string{"-ttl", "3600", "-internal"})
+	req, _, _ = parseDeploymentDeploy(io.Discard, []string{"-ttl", "3600", "-internal"})
 	if req.TTL == nil || *req.TTL != 3600 || req.Internal == nil || *req.Internal != true {
 		t.Errorf("set ttl/internal not mapped: %+v", req)
 	}
 }
 
 func TestParseDeploymentDeploy_MapsListsAndStructs(t *testing.T) {
-	req, _, err := parseDeploymentDeploy([]string{
+	req, _, err := parseDeploymentDeploy(io.Discard, []string{
 		"-type", "Worker",
 		"-env", "A=1", "-env", "B=2",
 		"-addEnv", "C=3",
@@ -129,13 +130,13 @@ func TestParseDeploymentDeploy_MapsListsAndStructs(t *testing.T) {
 }
 
 func TestParseDeploymentDeploy_Errors(t *testing.T) {
-	if _, _, err := parseDeploymentDeploy([]string{"-env", "BAD"}); err == nil {
+	if _, _, err := parseDeploymentDeploy(io.Discard, []string{"-env", "BAD"}); err == nil {
 		t.Error("invalid -env KEY=VALUE should error")
 	}
-	if _, _, err := parseDeploymentDeploy([]string{"-nope"}); err == nil {
+	if _, _, err := parseDeploymentDeploy(io.Discard, []string{"-nope"}); err == nil {
 		t.Error("unknown flag should return an error, not exit")
 	}
-	if _, out, err := parseDeploymentDeploy([]string{"-output", "json"}); err != nil || out != "json" {
+	if _, out, err := parseDeploymentDeploy(io.Discard, []string{"-output", "json"}); err != nil || out != "json" {
 		t.Errorf("output passthrough: out=%q err=%v", out, err)
 	}
 }

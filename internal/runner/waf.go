@@ -2,7 +2,6 @@ package runner
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"os"
 
@@ -11,8 +10,8 @@ import (
 )
 
 func (rn Runner) waf(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		return rn.groupUsage("waf")
 	}
 
 	s := rn.API.WAF()
@@ -22,11 +21,10 @@ func (rn Runner) waf(args ...string) error {
 		err  error
 	)
 
-	f := flag.NewFlagSet("", flag.ExitOnError)
-	rn.registerFlags(f)
+	f := rn.subFlagSet("waf", args[0])
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command")
+		return rn.unknownSub("waf", args[0])
 	case "get":
 		var req api.WAFGet
 		f.StringVar(&req.Project, "project", "", "project id")

@@ -2,15 +2,14 @@ package runner
 
 import (
 	"context"
-	"flag"
 	"fmt"
 
 	"github.com/deploys-app/api"
 )
 
 func (rn Runner) auditLog(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		return rn.groupUsage("auditlog")
 	}
 
 	s := rn.API.AuditLog()
@@ -20,11 +19,10 @@ func (rn Runner) auditLog(args ...string) error {
 		err  error
 	)
 
-	f := flag.NewFlagSet("", flag.ExitOnError)
-	rn.registerFlags(f)
+	f := rn.subFlagSet("auditlog", args[0])
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command")
+		return rn.unknownSub("auditlog", args[0])
 	case "list":
 		var (
 			req     api.AuditLogList

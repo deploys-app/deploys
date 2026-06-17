@@ -2,16 +2,14 @@ package runner
 
 import (
 	"context"
-	"flag"
-	"fmt"
 	"time"
 
 	"github.com/deploys-app/api"
 )
 
 func (rn Runner) scheduler(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		return rn.groupUsage("scheduler")
 	}
 
 	s := rn.API.Scheduler()
@@ -21,11 +19,10 @@ func (rn Runner) scheduler(args ...string) error {
 		err  error
 	)
 
-	f := flag.NewFlagSet("", flag.ExitOnError)
-	rn.registerFlags(f)
+	f := rn.subFlagSet("scheduler", args[0])
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command")
+		return rn.unknownSub("scheduler", args[0])
 
 	case "list":
 		var req api.SchedulerList

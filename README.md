@@ -51,8 +51,12 @@ Point the CLI at a non-production API with `DEPLOYS_ENDPOINT`.
 deploys <command> <subcommand> [flags]
 ```
 
-Run `deploys` with no arguments for the top-level help, or any command with `-h`
-to see its flags.
+Help is available at every level (via `-h`, `--help`, or `help`):
+
+- `deploys` (or `deploys help`) — the top-level command list.
+- `deploys <command> -h` — a command's subcommands, e.g. `deploys deployment -h`.
+- `deploys <command> <subcommand> -h` — a subcommand's flags, e.g.
+  `deploys deployment deploy -h`.
 
 ### Output formats
 

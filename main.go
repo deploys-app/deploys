@@ -14,9 +14,14 @@ import (
 )
 
 func main() {
-	args := os.Args
-	if len(args) <= 1 {
-		help()
+	args := os.Args[1:]
+	// Fast path for the bare/top-level help invocation: print usage without
+	// building the api client (which may resolve Application Default
+	// Credentials). Group- and subcommand-level help (`deploys me -h`, etc.) is
+	// dispatched through Run below and still pays that lookup, but it returns
+	// before making any API call, so the resolved token is simply unused.
+	if len(args) == 0 || (len(args) == 1 && runner.IsHelpArg(args[0])) {
+		runner.PrintUsage(os.Stdout)
 		return
 	}
 
@@ -54,7 +59,7 @@ func main() {
 		Output: os.Stdout,
 	}
 
-	err := rn.Run(args[1:]...)
+	err := rn.Run(args...)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -73,47 +78,4 @@ func getDefaultToken() (string, error) {
 	}
 
 	return tk.AccessToken, nil
-}
-
-func help() {
-	fmt.Print(`deploys.app cli
-
-Usage:
-  deploys <command> <subcommand> [flags]
-
-Commands:
-  me                      get, authorized, permissions
-  billing                 create, list, get, update, delete, report, skus, project,
-                          invoices, invoice, downloadinvoice, downloadreceipt
-  location                list, get
-  project                 create, list, get, update, delete, usage
-  role                    create, list, get, delete, grant, revoke, users, bind,
-                          permissions
-  deployment, deploy, d   list, get, deploy, delete, revisions, pause, resume,
-                          restart, rollback, metrics, set
-  domain                  create, get, list, delete, purgecache
-  route                   create, get, list, delete
-  waf                     get, list, set, delete, metrics, limitmetrics
-  cache                   get, list, set, delete, metrics
-  disk                    create, get, list, update, delete, metrics
-  pullsecret, ps          create, get, list, delete
-  workloadidentity, wi    create, get, list, delete
-  serviceaccount, sa      create, get, list, update, delete, createkey, deletekey
-  email                   send, list
-  registry                list, get, tags, manifests, storage, delete,
-                          deletemanifest, untag, metrics
-  envgroup, eg            create, get, list, update, delete
-  auditlog                list
-  dropbox                 list, metrics, upload
-  github                  link, unlink, update, list
-  site                    publish
-  scheduler               create, get, list, update, delete, pause, resume, trigger, logs
-
-Flags:
-  -output table|yaml|json (or -oyaml, -ojson, -otable)
-
-Environment:
-  DEPLOYS_TOKEN           api token
-  DEPLOYS_ENDPOINT        override api endpoint
-`)
 }
