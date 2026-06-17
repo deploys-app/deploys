@@ -254,6 +254,26 @@ separate from the WAF (a role can hold `cache.*` without `waf.*`).
 
 - `list` `-resource-type -actor -channel api|console|cli|mcp -outcome success|failure -after -before -limit`.
 
+### scheduler
+
+Cron-driven outbound HTTP requests (project-scoped, location-less).
+
+- `list` `-project`, `get` / `delete` / `pause` / `resume` / `trigger` `-project -name`.
+- `create` `-project -name -schedule <cron> [-timezone <IANA>] [-method GET] -url <url> [-header KEY=VALUE ...] [-body ...] [-auth-type none|basic|bearer -auth-user <u> -auth-secret <s>] [-insecure-tls] [-paused]`.
+- `update` `-project -name [flags]` — omitted flags are preserved; omit `-auth-secret` to keep the stored secret.
+- `trigger` runs the job once now and prints the invocation result.
+- `logs` `-project -name [-limit] [-after] [-before]` — recent invocations (timestamp, success/failed, latency, status).
+- `-schedule` is a 5-field cron expression or an `@descriptor` (`@hourly`, `@every 30m`). `-after`/`-before` accept RFC 3339 or `YYYY-MM-DD`.
+
+Example:
+
+```bash
+deploys scheduler create -project acme -name daily-health-check \
+  -schedule "0 9 * * *" -timezone Asia/Bangkok \
+  -method POST -url https://example.com/health \
+  -header Content-Type=application/json -body '{"check":true}'
+```
+
 ## Development
 
 ```bash

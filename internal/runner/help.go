@@ -294,6 +294,21 @@ var commands = []command{
 			{name: "publish", args: "-name -dir <path> [-environment -spa -notFound]", short: "publish a static site from a local directory"},
 		},
 	},
+	{
+		name:  "scheduler",
+		short: "run HTTP requests on a cron schedule",
+		subs: []subcommand{
+			{name: "create", args: "-name -schedule <cron> -url <url> [-method -timezone -header KEY=VALUE -body -auth-type -auth-user -auth-secret -insecure-tls -paused]", short: "create a scheduled HTTP request job"},
+			{name: "get", args: "-name", short: "show a scheduled job"},
+			{name: "list", short: "list scheduled jobs"},
+			{name: "update", args: "-name [flags]", short: "update a scheduled job (omitted flags are preserved)"},
+			{name: "delete", args: "-name", short: "delete a scheduled job"},
+			{name: "pause", args: "-name", short: "pause a scheduled job"},
+			{name: "resume", args: "-name", short: "resume a paused scheduled job"},
+			{name: "trigger", args: "-name", short: "run a scheduled job once now and print the result"},
+			{name: "logs", args: "-name [-limit -after -before]", short: "show a job's recent invocations"},
+		},
+	},
 }
 
 // lookupCommand finds a group by its canonical name or any alias.
