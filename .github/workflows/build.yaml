@@ -34,4 +34,4 @@ jobs:
         tags: |
           asia-southeast1-docker.pkg.dev/deploys-app/public/cli:${{ github.sha }}
           registry.deploys.app/public/deploys-cli:${{ github.sha }}
-          registry.deploys.app/public/deploys-cli:latest
+          registry.deploys.app/public/deploys-cli:nightly
