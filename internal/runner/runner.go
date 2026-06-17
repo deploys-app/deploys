@@ -144,6 +144,8 @@ func (rn Runner) Run(args ...string) error {
 		return rn.collector(args[1:]...)
 	case "site":
 		return rn.site(args[1:]...)
+	case "scheduler":
+		return rn.scheduler(args[1:]...)
 	}
 }
 

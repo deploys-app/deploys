@@ -107,6 +107,7 @@ Commands:
   dropbox                 list, metrics, upload
   github                  link, unlink, update, list
   site                    publish
+  scheduler               create, get, list, update, delete, pause, resume, trigger, logs
 
 Flags:
   -output table|yaml|json (or -oyaml, -ojson, -otable)
