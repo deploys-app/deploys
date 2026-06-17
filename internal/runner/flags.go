@@ -73,7 +73,7 @@ func (f timeFlag) Set(v string) error {
 // Returns nil on empty input.
 func splitComma(s string) []string {
 	var res []string
-	for _, x := range strings.Split(s, ",") {
+	for x := range strings.SplitSeq(s, ",") {
 		x = strings.TrimSpace(x)
 		if x != "" {
 			res = append(res, x)
