@@ -24,8 +24,11 @@ release or `<tag>/` for a specific one (e.g.
 **Container:**
 
 ```bash
-docker run --rm -e DEPLOYS_TOKEN asia-southeast1-docker.pkg.dev/deploys-app/public/cli <command>...
+docker run --rm -e DEPLOYS_TOKEN registry.deploys.app/public/deploys-cli <command>...
 ```
+
+`latest` tracks the newest `master` build; pin a specific build with its
+commit-sha tag (`registry.deploys.app/public/deploys-cli:<sha>`).
 
 ## Authentication
 
@@ -255,5 +258,6 @@ go vet ./...
 go test ./...
 ```
 
-Releases are cut by GoReleaser on tag push; the container image is built and
-pushed by the `Build` workflow on `master`.
+Releases are cut by GoReleaser on tag push; the container image is built by the
+`Build` workflow on `master` and pushed to
+`registry.deploys.app/public/deploys-cli` (tags: the commit sha and `latest`).
