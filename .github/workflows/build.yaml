@@ -14,6 +14,11 @@ jobs:
       with:
         credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
         token_format: access_token
+        # cloud-platform: push to the Artifact Registry host. userinfo.email:
+        # registry.deploys.app forwards the token to api.deploys.app/me.get,
+        # which resolves the caller's email from the token — without this scope
+        # it can't, and the push is rejected as unauthorized.
+        access_token_scopes: https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/userinfo.email
     - uses: docker/login-action@v4
       with:
         registry: asia-southeast1-docker.pkg.dev
