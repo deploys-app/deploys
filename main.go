@@ -90,7 +90,7 @@ Commands:
   role                    create, list, get, delete, grant, revoke, users, bind,
                           permissions
   deployment, deploy, d   list, get, deploy, delete, revisions, pause, resume,
-                          rollback, metrics, set
+                          restart, rollback, metrics, set
   domain                  create, get, list, delete, purgecache
   route                   create, get, list, delete
   waf                     get, list, set, delete, metrics, limitmetrics
