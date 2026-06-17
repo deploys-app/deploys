@@ -2,7 +2,6 @@ package runner
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"os"
 
@@ -10,8 +9,8 @@ import (
 )
 
 func (rn Runner) email(args ...string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("invalid command")
+	if len(args) == 0 || IsHelpArg(args[0]) {
+		return rn.groupUsage("email")
 	}
 
 	s := rn.API.Email()
@@ -21,11 +20,10 @@ func (rn Runner) email(args ...string) error {
 		err  error
 	)
 
-	f := flag.NewFlagSet("", flag.ExitOnError)
-	rn.registerFlags(f)
+	f := rn.subFlagSet("email", args[0])
 	switch args[0] {
 	default:
-		return fmt.Errorf("invalid command")
+		return rn.unknownSub("email", args[0])
 	case "send":
 		var (
 			req         api.EmailSend
