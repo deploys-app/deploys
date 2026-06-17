@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/deploys-app/api"
 	"github.com/deploys-app/api/client"
 	"golang.org/x/oauth2/google"
 
@@ -34,6 +35,7 @@ func main() {
 
 	apiClient := &client.Client{
 		Endpoint: endpoint,
+		Channel:  api.AuditChannelCLI,
 		HTTPClient: &http.Client{
 			Timeout: 15 * time.Second,
 		},

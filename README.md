@@ -252,7 +252,7 @@ separate from the WAF (a role can hold `cache.*` without `waf.*`).
 
 ### auditlog
 
-- `list` `-resource-type -actor -outcome success|failure -after -before -limit`.
+- `list` `-resource-type -actor -channel api|console|cli|mcp -outcome success|failure -after -before -limit`.
 
 ## Development
 
