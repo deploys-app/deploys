@@ -101,6 +101,8 @@ jobs:
       with:
         provenance: false
         push: true
+        build-args: |
+          VERSION=${{ github.ref_name }}
         tags: |
           asia-southeast1-docker.pkg.dev/deploys-app/public/cli:${{ github.ref_name }}
           asia-southeast1-docker.pkg.dev/deploys-app/public/cli:latest

@@ -4,10 +4,14 @@ ENV CGO_ENABLED=0
 
 WORKDIR /workspace
 
+# VERSION stamps the binary so `deploys check-update` can report it; the release
+# workflow passes the git tag. Defaults to "dev" for a plain `docker build`.
+ARG VERSION=dev
+
 ADD go.mod go.sum ./
 RUN go mod download
 ADD . .
-RUN go build -o .build/deploys -ldflags "-w -s" .
+RUN go build -o .build/deploys -ldflags "-w -s -X main.version=${VERSION}" .
 
 FROM debian:13-slim
 

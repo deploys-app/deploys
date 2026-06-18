@@ -366,6 +366,9 @@ func PrintUsage(w io.Writer) {
 		}
 		fmt.Fprintf(tw, "  %s\t%s\n", name, strings.Join(subs, ", "))
 	}
+	// check-update is a standalone, API-less utility command, not a group with
+	// subcommands, so it lives outside the registry above.
+	fmt.Fprintf(tw, "  %s\t%s\n", "check-update", "check whether a newer cli version is available")
 	tw.Flush()
 
 	fmt.Fprint(w, "\nFlags:\n")
