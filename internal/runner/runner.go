@@ -22,6 +22,9 @@ type Runner struct {
 	API        api.Interface
 	Output     *os.File
 	OutputMode string
+	// Version is this binary's version, shown by check-update. Empty for an
+	// unknown/local build (reported as "dev").
+	Version string
 }
 
 func (rn Runner) output() *os.File {
@@ -146,6 +149,10 @@ func (rn Runner) Run(args ...string) error {
 		return rn.site(args[1:]...)
 	case "scheduler":
 		return rn.scheduler(args[1:]...)
+	case "check-update":
+		return rn.checkUpdate(args[1:]...)
+	case "version":
+		return rn.version(args[1:]...)
 	}
 }
 

@@ -274,6 +274,32 @@ deploys scheduler create -project acme -name daily-health-check \
   -header Content-Type=application/json -body '{"check":true}'
 ```
 
+### version
+
+Prints this binary's version (see the resolution rules under check-update). The
+default output is the bare version; `-ojson`/`-oyaml` wrap it as a `version`
+object.
+
+```bash
+deploys version          # e.g. v1.1.3
+deploys version -ojson   # { "version": "v1.1.3" }
+```
+
+### check-update
+
+Compares this binary's version against the latest stable
+[release](https://github.com/deploys-app/deploys/releases) and reports whether a
+newer one is available. It is a local, credential-free command — it makes no API
+call. Release archives and container images carry their release version;
+`go install ...@<version>` and source-checkout builds report the version (or
+commit) the Go toolchain records; the nightly image reports `nightly-<sha>`. A
+build with no version information reports `dev` and is treated as out of date.
+
+```bash
+deploys check-update          # table (the default)
+deploys check-update -ojson   # { "current": ..., "latest": ..., "updateAvailable": ... }
+```
+
 ## Development
 
 ```bash

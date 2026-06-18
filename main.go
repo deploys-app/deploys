@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"runtime/debug"
 	"time"
 
 	"github.com/deploys-app/api"
@@ -13,6 +14,11 @@ import (
 
 	"github.com/deploys-app/deploys/internal/runner"
 )
+
+// version is set at release time via -ldflags "-X main.version=...". For other
+// builds it stays empty and resolveVersion falls back to the module's build
+// info.
+var version string
 
 func main() {
 	args := os.Args[1:]
@@ -26,6 +32,25 @@ func main() {
 		return
 	}
 
+	rn := runner.Runner{
+		Output:  os.Stdout,
+		Version: resolveVersion(),
+	}
+
+	// Local utility commands (check-update) run entirely client-side; skip
+	// building the api client so they never resolve Google credentials.
+	if !runner.IsLocalCommand(args[0]) {
+		rn.API = newAPIClient()
+	}
+
+	err := rn.Run(args...)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func newAPIClient() *client.Client {
 	var (
 		token    = os.Getenv("DEPLOYS_TOKEN")
 		authUser = os.Getenv("DEPLOYS_AUTH_USER")
@@ -56,16 +81,55 @@ func main() {
 		}
 	}
 
-	rn := runner.Runner{
-		API:    apiClient,
-		Output: os.Stdout,
-	}
+	return apiClient
+}
 
-	err := rn.Run(args...)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+// resolveVersion reports this binary's version: the release value injected via
+// ldflags, else the module version recorded by the Go toolchain for
+// `go install ...@version` builds, else "dev".
+func resolveVersion() string {
+	if version != "" {
+		return version
 	}
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return "dev"
+	}
+	// `go install <module>@<version>` records the module version (a tag like
+	// v1.1.3, or a v0.0.0-<date>-<sha> pseudo-version for @main / @<commit>).
+	if v := info.Main.Version; v != "" && v != "(devel)" {
+		return v
+	}
+	// Built from a source checkout (go build / go install . in a clone): fall
+	// back to the VCS revision the toolchain embeds, so the build is still
+	// identifiable (e.g. "dev-1a2b3c4" or "dev-1a2b3c4-dirty").
+	return vcsVersion(info)
+}
+
+// vcsVersion derives a "dev-<shortsha>[-dirty]" string from the build's VCS
+// settings, or "dev" when none are present.
+func vcsVersion(info *debug.BuildInfo) string {
+	var revision string
+	var modified bool
+	for _, s := range info.Settings {
+		switch s.Key {
+		case "vcs.revision":
+			revision = s.Value
+		case "vcs.modified":
+			modified = s.Value == "true"
+		}
+	}
+	if revision == "" {
+		return "dev"
+	}
+	if len(revision) > 7 {
+		revision = revision[:7]
+	}
+	v := "dev-" + revision
+	if modified {
+		v += "-dirty"
+	}
+	return v
 }
 
 func getDefaultToken() (string, error) {
