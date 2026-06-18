@@ -9,6 +9,9 @@ jobs:
     name: Build
     steps:
     - uses: actions/checkout@v6
+    - name: Short SHA
+      id: vars
+      run: echo "sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
     - uses: google-github-actions/auth@v3
       id: auth
       with:
@@ -36,6 +39,8 @@ jobs:
       with:
         provenance: false
         push: true
+        build-args: |
+          VERSION=nightly-${{ steps.vars.outputs.sha }}
         tags: |
           asia-southeast1-docker.pkg.dev/deploys-app/public/cli:${{ github.sha }}
           registry.deploys.app/public/deploys-cli:${{ github.sha }}

@@ -279,8 +279,10 @@ deploys scheduler create -project acme -name daily-health-check \
 Compares this binary's version against the latest stable
 [release](https://github.com/deploys-app/deploys/releases) and reports whether a
 newer one is available. It is a local, credential-free command — it makes no API
-call. Release builds carry their version; a plain `go build` reports `dev` and is
-always treated as out of date.
+call. Release archives and container images carry their release version;
+`go install ...@<version>` and source-checkout builds report the version (or
+commit) the Go toolchain records; the nightly image reports `nightly-<sha>`. A
+build with no version information reports `dev` and is treated as out of date.
 
 ```bash
 deploys check-update          # table (the default)

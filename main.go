@@ -91,12 +91,45 @@ func resolveVersion() string {
 	if version != "" {
 		return version
 	}
-	if info, ok := debug.ReadBuildInfo(); ok {
-		if v := info.Main.Version; v != "" && v != "(devel)" {
-			return v
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		return "dev"
+	}
+	// `go install <module>@<version>` records the module version (a tag like
+	// v1.1.3, or a v0.0.0-<date>-<sha> pseudo-version for @main / @<commit>).
+	if v := info.Main.Version; v != "" && v != "(devel)" {
+		return v
+	}
+	// Built from a source checkout (go build / go install . in a clone): fall
+	// back to the VCS revision the toolchain embeds, so the build is still
+	// identifiable (e.g. "dev-1a2b3c4" or "dev-1a2b3c4-dirty").
+	return vcsVersion(info)
+}
+
+// vcsVersion derives a "dev-<shortsha>[-dirty]" string from the build's VCS
+// settings, or "dev" when none are present.
+func vcsVersion(info *debug.BuildInfo) string {
+	var revision string
+	var modified bool
+	for _, s := range info.Settings {
+		switch s.Key {
+		case "vcs.revision":
+			revision = s.Value
+		case "vcs.modified":
+			modified = s.Value == "true"
 		}
 	}
-	return "dev"
+	if revision == "" {
+		return "dev"
+	}
+	if len(revision) > 7 {
+		revision = revision[:7]
+	}
+	v := "dev-" + revision
+	if modified {
+		v += "-dirty"
+	}
+	return v
 }
 
 func getDefaultToken() (string, error) {
