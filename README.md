@@ -274,6 +274,17 @@ deploys scheduler create -project acme -name daily-health-check \
   -header Content-Type=application/json -body '{"check":true}'
 ```
 
+### version
+
+Prints this binary's version (see the resolution rules under check-update). The
+default output is the bare version; `-ojson`/`-oyaml` wrap it as a `version`
+object.
+
+```bash
+deploys version          # e.g. v1.1.3
+deploys version -ojson   # { "version": "v1.1.3" }
+```
+
 ### check-update
 
 Compares this binary's version against the latest stable

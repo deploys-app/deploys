@@ -26,10 +26,48 @@ var githubLatestURL = "https://api.github.com/repos/deploys-app/deploys/releases
 // credentials) for it.
 func IsLocalCommand(name string) bool {
 	switch name {
-	case "check-update":
+	case "check-update", "version":
 		return true
 	}
 	return false
+}
+
+// versionInfo is the structured form of `deploys version` (for -ojson/-oyaml).
+type versionInfo struct {
+	Version string `json:"version" yaml:"version"`
+}
+
+func (v versionInfo) Table() [][]string {
+	return [][]string{{v.Version}}
+}
+
+// version prints this binary's version. The default view is the bare version
+// string; -ojson/-oyaml wrap it as a {version: ...} object for scripting.
+func (rn Runner) version(args ...string) error {
+	if len(args) > 0 && IsHelpArg(args[0]) {
+		writeVersionUsage(rn.output())
+		return nil
+	}
+
+	f := flag.NewFlagSet("deploys version", flag.ExitOnError)
+	f.SetOutput(rn.output())
+	rn.registerFlags(f)
+	f.Usage = func() { writeVersionUsage(rn.output()) }
+	if err := f.Parse(args); err != nil {
+		return err
+	}
+
+	v := displayVersion(rn.Version)
+	if rn.OutputMode == "" || rn.OutputMode == "table" {
+		fmt.Fprintln(rn.output(), v)
+		return nil
+	}
+	return rn.print(versionInfo{Version: v})
+}
+
+func writeVersionUsage(w io.Writer) {
+	fmt.Fprint(w, "version — print the deploys cli version\n\n")
+	fmt.Fprint(w, "Usage:\n  deploys version [-output table|yaml|json]\n")
 }
 
 // updateCheck is the result of `deploys check-update`.

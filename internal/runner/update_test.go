@@ -132,12 +132,65 @@ func TestCheckUpdateHelpNeedsNoNetwork(t *testing.T) {
 }
 
 func TestIsLocalCommand(t *testing.T) {
-	if !IsLocalCommand("check-update") {
-		t.Error("check-update should be a local command")
+	for _, c := range []string{"check-update", "version"} {
+		if !IsLocalCommand(c) {
+			t.Errorf("%q should be a local command", c)
+		}
 	}
 	for _, c := range []string{"me", "deployment", "site", ""} {
 		if IsLocalCommand(c) {
 			t.Errorf("%q should not be a local command", c)
 		}
+	}
+}
+
+// version prints the bare, canonicalized version by default and a structured
+// object for -ojson; neither path needs an API client.
+func TestVersion(t *testing.T) {
+	cases := []struct {
+		args    []string
+		version string
+		want    string
+	}{
+		{nil, "1.1.3", "v1.1.3\n"},                         // bare, v-prefixed
+		{[]string{"-output", "json"}, "1.1.3", `"v1.1.3"`}, // structured
+		{nil, "dev-1a2b3c4", "dev-1a2b3c4\n"},              // non-semver stays raw
+		{nil, "", "dev\n"},                                 // unknown build
+	}
+	for _, tc := range cases {
+		tmp, err := os.CreateTemp(t.TempDir(), "ver")
+		if err != nil {
+			t.Fatal(err)
+		}
+		rn := Runner{Output: tmp, Version: tc.version} // API intentionally nil
+		if err := rn.version(tc.args...); err != nil {
+			t.Fatalf("version(%v): %v", tc.args, err)
+		}
+		tmp.Close()
+		b, _ := os.ReadFile(tmp.Name())
+		if !strings.Contains(string(b), tc.want) {
+			t.Errorf("version(%v) version=%q = %q; want it to contain %q", tc.args, tc.version, b, tc.want)
+		}
+	}
+}
+
+func TestVersionHelp(t *testing.T) {
+	tmp, err := os.CreateTemp(t.TempDir(), "ver")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tmp.Close()
+	rn := Runner{Output: tmp, Version: "1.1.3"}
+	if err := rn.version("-h"); err != nil {
+		t.Fatalf("version -h: %v", err)
+	}
+	b, _ := os.ReadFile(tmp.Name())
+	out := string(b)
+	if !strings.Contains(out, "print the deploys cli version") {
+		t.Errorf("version -h missing banner:\n%s", out)
+	}
+	// -h must not print the version itself, only usage.
+	if strings.Contains(out, "v1.1.3") {
+		t.Errorf("version -h should not print the version:\n%s", out)
 	}
 }

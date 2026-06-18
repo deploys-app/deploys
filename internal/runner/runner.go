@@ -151,6 +151,8 @@ func (rn Runner) Run(args ...string) error {
 		return rn.scheduler(args[1:]...)
 	case "check-update":
 		return rn.checkUpdate(args[1:]...)
+	case "version":
+		return rn.version(args[1:]...)
 	}
 }
 
