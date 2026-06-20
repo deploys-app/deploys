@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 	"unicode/utf8"
 
 	"github.com/deploys-app/api"
@@ -489,11 +490,66 @@ func (rn Runner) deployment(args ...string) error {
 		f.Parse(args[1:])
 		req.TimeRange = api.DeploymentMetricsTimeRange(timeRange)
 		resp, err = s.Metrics(context.Background(), &req)
+	case "status":
+		var req api.DeploymentStatus
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Name, "name", "", "deployment name")
+		f.Parse(args[1:])
+		resp, err = s.Status(context.Background(), &req)
+	case "logs":
+		var (
+			req    api.DeploymentLogs
+			follow bool
+		)
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Name, "name", "", "deployment name")
+		f.StringVar(&req.Pod, "pod", "", "single pod name (default: all pods of the deployment)")
+		f.BoolVar(&req.Previous, "previous", false, "read the last crashed container (crash post-mortem)")
+		f.IntVar(&req.TailLines, "tail", 0, "lines per pod (default 200, max 1000)")
+		f.BoolVar(&follow, "follow", false, "re-poll for new lines (client-side; the API stays snapshot-only)")
+		f.Parse(args[1:])
+		if follow {
+			// --follow is a CLI-only convenience: re-poll the bounded snapshot on
+			// an interval and print lines not seen before. The API/MCP contract
+			// stays snapshot-only.
+			return rn.deploymentLogsFollow(s, &req)
+		}
+		resp, err = s.Logs(context.Background(), &req)
 	}
 	if err != nil {
 		return err
 	}
 	return rn.print(resp)
+}
+
+// deploymentLogsFollow client-side tails a deployment by re-polling the bounded
+// deployment.logs snapshot and printing only lines it hasn't printed yet. It
+// runs until interrupted. The seen-set is soft-capped so a long session can't
+// grow it without bound (a reset may reprint the current tail once).
+func (rn Runner) deploymentLogsFollow(s api.Deployment, req *api.DeploymentLogs) error {
+	const seenCap = 20000
+	seen := map[string]bool{}
+	out := rn.output()
+	for {
+		res, err := s.Logs(context.Background(), req)
+		if err != nil {
+			return err
+		}
+		if len(seen) > seenCap {
+			seen = map[string]bool{}
+		}
+		for _, l := range res.Lines {
+			key := l.Timestamp.Format(time.RFC3339Nano) + "\x00" + l.Pod + "\x00" + l.Log
+			if seen[key] {
+				continue
+			}
+			seen[key] = true
+			fmt.Fprintf(out, "%s %s %s\n", l.Timestamp.Format(time.RFC3339), l.Pod, l.Log)
+		}
+		time.Sleep(2 * time.Second)
+	}
 }
 
 func (rn Runner) route(args ...string) error {

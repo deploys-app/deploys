@@ -128,6 +128,8 @@ var commands = []command{
 			{name: "restart", short: "restart a deployment"},
 			{name: "rollback", args: "-revision n", short: "roll back to a previous revision"},
 			{name: "metrics", args: "[-time-range 1h|6h|12h|1d]", short: "show deployment metrics"},
+			{name: "status", short: "show pod health and failure reasons"},
+			{name: "logs", args: "[-pod p] [-previous] [-tail n] [-follow]", short: "read a bounded snapshot of recent container logs"},
 			// "set" is the user-facing listing; "set image" is the hidden leaf that
 			// backs its banner. They share wording so the listing and banner agree.
 			{name: "set", short: "roll out a new image (set image <name> -image <ref>)"},
