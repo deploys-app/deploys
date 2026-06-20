@@ -149,6 +149,8 @@ func (rn Runner) Run(args ...string) error {
 		return rn.site(args[1:]...)
 	case "scheduler":
 		return rn.scheduler(args[1:]...)
+	case "notification":
+		return rn.notification(args[1:]...)
 	case "check-update":
 		return rn.checkUpdate(args[1:]...)
 	case "version":

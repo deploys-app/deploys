@@ -309,6 +309,19 @@ var commands = []command{
 			{name: "logs", args: "-name [-limit -after -before]", short: "show a job's recent invocations"},
 		},
 	},
+	{
+		name:  "notification",
+		short: "deliver project changes to webhook/discord channels",
+		subs: []subcommand{
+			{name: "create", args: "-name -type <webhook|discord> -url <url> [-secret -insecure-tls -resource-type -action -outcome -disabled]", short: "create a notification channel"},
+			{name: "get", args: "-name", short: "show a notification channel"},
+			{name: "list", short: "list notification channels"},
+			{name: "update", args: "-name [flags]", short: "update a notification channel (omitted flags are preserved)"},
+			{name: "delete", args: "-name", short: "delete a notification channel"},
+			{name: "test", args: "-name", short: "deliver a synthetic change now and print the result"},
+			{name: "deliveries", args: "-name [-limit -after -before]", short: "show recent change deliveries"},
+		},
+	},
 }
 
 // lookupCommand finds a group by its canonical name or any alias.
