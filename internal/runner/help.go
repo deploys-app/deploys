@@ -321,7 +321,7 @@ var commands = []command{
 			{name: "delete", args: "-name", short: "delete a notification channel"},
 			{name: "test", args: "-name", short: "deliver a synthetic change now and print the result"},
 			{name: "deliveries", args: "-name [-limit -after -before]", short: "show recent change deliveries"},
-			{name: "pull", args: "-name [-ack -limit -follow -interval]", short: "fetch a pull channel's change events (ack to advance; -follow to stream)"},
+			{name: "pull", args: "-name [-ack -limit -follow -poll -interval]", short: "fetch a pull channel's change events (ack to advance; -follow streams over SSE)"},
 		},
 	},
 }

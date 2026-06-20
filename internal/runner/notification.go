@@ -2,9 +2,14 @@ package runner
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/deploys-app/api"
+	"github.com/deploys-app/api/client"
+	"gopkg.in/yaml.v2"
 )
 
 func (rn Runner) notification(args ...string) error {
@@ -167,21 +172,24 @@ func (rn Runner) notification(args ...string) error {
 	case "pull":
 		// Consume a pull channel's change events. The server stores the cursor;
 		// pass -ack <cursor> (from a previous pull) to acknowledge that batch and
-		// advance. -follow keeps pulling, auto-acking each batch, until interrupted.
+		// advance. -follow streams new changes as they land (over SSE), printing one
+		// event per line, until interrupted.
 		var (
 			req      api.NotificationPull
 			follow   bool
+			poll     bool
 			interval time.Duration
 		)
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Name, "name", "", "channel name")
 		f.Int64Var(&req.Ack, "ack", 0, "cursor from a previous pull to acknowledge as handled (advances past it)")
 		f.IntVar(&req.Limit, "limit", 0, "max events per batch (default 100, max 1000)")
-		f.BoolVar(&follow, "follow", false, "keep pulling, auto-acking each batch, until interrupted")
-		f.DurationVar(&interval, "interval", 2*time.Second, "poll interval between empty batches when following")
+		f.BoolVar(&follow, "follow", false, "stream new changes as they land (over SSE), until interrupted")
+		f.BoolVar(&poll, "poll", false, "with -follow, use RPC polling instead of the SSE stream")
+		f.DurationVar(&interval, "interval", 2*time.Second, "poll interval between empty batches when following with -poll")
 		f.Parse(args[1:])
 		if follow {
-			return rn.followNotificationPull(s, &req, interval)
+			return rn.followNotificationPull(s, &req, interval, poll)
 		}
 		resp, err = s.Pull(context.Background(), &req)
 	}
@@ -191,19 +199,49 @@ func (rn Runner) notification(args ...string) error {
 	return rn.print(resp)
 }
 
-// followNotificationPull streams a pull channel: pull a batch, print it, then ack
-// it (by passing its cursor as the next request's Ack) so the next pull advances.
-// It blocks until an error or process interrupt; an empty batch waits one interval
-// before retrying. Because each batch is acked only on the next pull, an interrupt
-// mid-batch redelivers it on the next run (at-least-once).
-func (rn Runner) followNotificationPull(s api.Notification, req *api.NotificationPull, interval time.Duration) error {
+// followNotificationPull streams a pull channel's changes until interrupted. By
+// default it uses the server-push SSE transport; it falls back to RPC polling
+// when -poll is set, the concrete client is unavailable, or the server predates
+// the SSE endpoint. Either way delivery is at-least-once — an interrupt before a
+// change is printed redelivers it on the next run — and each change prints on its
+// own line (honoring -output).
+func (rn Runner) followNotificationPull(s api.Notification, req *api.NotificationPull, interval time.Duration, poll bool) error {
+	c, ok := rn.API.(*client.Client)
+	if poll || !ok {
+		return rn.pollNotificationPull(s, req, interval)
+	}
+
+	ctx := context.Background()
+	for {
+		err := c.NotificationPullStream(ctx, req, func(_ int64, ev api.ChangeEventPayload) error {
+			return rn.printNotificationEvent(ev)
+		})
+		switch {
+		case err == nil:
+			// The server closed the stream at its connection cap; reconnect from the
+			// advanced req.Ack.
+			continue
+		case errors.Is(err, client.ErrNotificationStreamUnsupported):
+			// Server without the SSE endpoint — fall back to RPC polling.
+			return rn.pollNotificationPull(s, req, interval)
+		default:
+			return err
+		}
+	}
+}
+
+// pollNotificationPull is the RPC-polling follow loop: pull a batch, print each
+// event, then ack it (by passing the cursor as the next request's Ack). An empty
+// batch waits one interval. Because a batch is acked only on the next pull, an
+// interrupt mid-batch redelivers it (at-least-once).
+func (rn Runner) pollNotificationPull(s api.Notification, req *api.NotificationPull, interval time.Duration) error {
 	for {
 		res, err := s.Pull(context.Background(), req)
 		if err != nil {
 			return err
 		}
-		if len(res.Events) > 0 {
-			if err := rn.print(res); err != nil {
+		for _, ev := range res.Events {
+			if err := rn.printNotificationEvent(ev); err != nil {
 				return err
 			}
 		}
@@ -211,5 +249,30 @@ func (rn Runner) followNotificationPull(s api.Notification, req *api.Notificatio
 		if !res.HasMore {
 			time.Sleep(interval)
 		}
+	}
+}
+
+// printNotificationEvent renders one streamed change, honoring -output: a compact
+// JSON line (NDJSON, ideal for an agent) for json, a YAML document for yaml, and a
+// single tab-separated line (time, actor, action, resource, outcome) otherwise.
+func (rn Runner) printNotificationEvent(ev api.ChangeEventPayload) error {
+	switch rn.OutputMode {
+	case "json":
+		b, err := json.Marshal(ev)
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintln(rn.output(), string(b))
+		return err
+	case "yaml":
+		return yaml.NewEncoder(rn.output()).Encode(ev)
+	default:
+		res := ev.ResourceType
+		if ev.ResourceName != "" {
+			res += "/" + ev.ResourceName
+		}
+		_, err := fmt.Fprintf(rn.output(), "%s\t%s\t%s\t%s\t%s\n",
+			ev.Time.Format(time.RFC3339), ev.Actor, ev.Action, res, ev.Outcome)
+		return err
 	}
 }
