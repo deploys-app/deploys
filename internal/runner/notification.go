@@ -39,16 +39,15 @@ func (rn Runner) notification(args ...string) error {
 
 	case "create":
 		var (
-			req           api.NotificationCreate
-			typ           string
-			url           string
-			secret        string
-			insecureTLS   bool
-			pullTTL       int
-			resourceTypes multiFlag
-			actions       multiFlag
-			outcomes      multiFlag
-			disabled      bool
+			req         api.NotificationCreate
+			typ         string
+			url         string
+			secret      string
+			insecureTLS bool
+			pullTTL     int
+			events      multiFlag
+			outcomes    multiFlag
+			disabled    bool
 		)
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Name, "name", "", "channel name")
@@ -57,16 +56,14 @@ func (rn Runner) notification(args ...string) error {
 		f.StringVar(&secret, "secret", "", "webhook signing secret (required for webhook)")
 		f.BoolVar(&insecureTLS, "insecure-tls", false, "skip TLS verification for HTTPS targets")
 		f.IntVar(&pullTTL, "pull-ttl", 0, "pull channel inactivity TTL in seconds before auto-delete (0 = server default; 60-86400)")
-		f.Var(&resourceTypes, "resource-type", "resource type to subscribe to (repeatable; empty = all)")
-		f.Var(&actions, "action", "action to subscribe to (repeatable; empty = all)")
+		f.Var(&events, "event", "resource.action event to subscribe to: *, deployment.*, *.delete, deployment.deploy (repeatable; empty = all)")
 		f.Var(&outcomes, "outcome", "outcome to subscribe to: success or failure (repeatable; empty = all)")
 		f.BoolVar(&disabled, "disabled", false, "create the channel disabled")
 		f.Parse(args[1:])
 		req.Config = api.NotificationConfig{Type: typ, URL: url, Secret: secret, InsecureSkipVerify: insecureTLS, PullTTLSeconds: pullTTL}
 		req.Subscription = api.NotificationSubscription{
-			ResourceTypes: []string(resourceTypes),
-			Actions:       []string(actions),
-			Outcomes:      []string(outcomes),
+			Events:   []string(events),
+			Outcomes: []string(outcomes),
 		}
 		req.Disabled = disabled
 		resp, err = s.Create(context.Background(), &req)
@@ -78,16 +75,15 @@ func (rn Runner) notification(args ...string) error {
 		// keeps the stored one. A subscription axis is replaced only when at least
 		// one value is passed for it.
 		var (
-			req           api.NotificationUpdate
-			typ           string
-			url           string
-			secret        string
-			insecureTLS   bool
-			pullTTL       int
-			resourceTypes multiFlag
-			actions       multiFlag
-			outcomes      multiFlag
-			disabled      bool
+			req         api.NotificationUpdate
+			typ         string
+			url         string
+			secret      string
+			insecureTLS bool
+			pullTTL     int
+			events      multiFlag
+			outcomes    multiFlag
+			disabled    bool
 		)
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Name, "name", "", "channel name")
@@ -96,8 +92,7 @@ func (rn Runner) notification(args ...string) error {
 		f.StringVar(&secret, "secret", "", "webhook signing secret (omit to keep existing)")
 		f.BoolVar(&insecureTLS, "insecure-tls", false, "skip TLS verification for HTTPS targets")
 		f.IntVar(&pullTTL, "pull-ttl", 0, "pull channel inactivity TTL in seconds (0 = server default; 60-86400)")
-		f.Var(&resourceTypes, "resource-type", "resource type to subscribe to (repeatable; replaces all)")
-		f.Var(&actions, "action", "action to subscribe to (repeatable; replaces all)")
+		f.Var(&events, "event", "resource.action event to subscribe to: *, deployment.*, *.delete (repeatable; replaces all)")
 		f.Var(&outcomes, "outcome", "outcome to subscribe to (repeatable; replaces all)")
 		f.BoolVar(&disabled, "disabled", false, "disable the channel")
 		f.Parse(args[1:])
@@ -128,11 +123,8 @@ func (rn Runner) notification(args ...string) error {
 		if set["pull-ttl"] {
 			req.Config.PullTTLSeconds = pullTTL
 		}
-		if len(resourceTypes) > 0 {
-			req.Subscription.ResourceTypes = []string(resourceTypes)
-		}
-		if len(actions) > 0 {
-			req.Subscription.Actions = []string(actions)
+		if len(events) > 0 {
+			req.Subscription.Events = []string(events)
 		}
 		if len(outcomes) > 0 {
 			req.Subscription.Outcomes = []string(outcomes)
