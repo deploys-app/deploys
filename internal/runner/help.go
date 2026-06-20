@@ -314,7 +314,7 @@ var commands = []command{
 		name:  "notification",
 		short: "deliver project changes to webhook/discord channels, or pull them",
 		subs: []subcommand{
-			{name: "create", args: "-name -type <webhook|discord|pull> [-url -secret -insecure-tls -pull-ttl -resource-type -action -outcome -disabled]", short: "create a notification channel"},
+			{name: "create", args: "-name -type <webhook|discord|pull> [-url -secret -insecure-tls -pull-ttl -event -outcome -disabled]", short: "create a notification channel"},
 			{name: "get", args: "-name", short: "show a notification channel"},
 			{name: "list", short: "list notification channels"},
 			{name: "update", args: "-name [flags]", short: "update a notification channel (omitted flags are preserved)"},
