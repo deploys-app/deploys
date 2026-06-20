@@ -101,9 +101,12 @@ func (rn Runner) scheduler(args ...string) error {
 		f.Parse(args[1:])
 		set := visitedFlags(f)
 
-		cur, err := s.Get(context.Background(), &api.SchedulerGet{Project: req.Project, Name: req.Name})
-		if err != nil {
-			return err
+		// A distinct name avoids shadowing the outer err in this case block —
+		// otherwise the s.Update below would assign the shadowed err and the
+		// after-switch error check would silently miss a failed update.
+		cur, getErr := s.Get(context.Background(), &api.SchedulerGet{Project: req.Project, Name: req.Name})
+		if getErr != nil {
+			return getErr
 		}
 		req.Schedule = cur.Schedule
 		req.Timezone = cur.Timezone
