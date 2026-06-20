@@ -70,6 +70,12 @@ func (rn Runner) registry(args ...string) error {
 		f.StringVar(&req.Tag, "tag", "", "tag")
 		f.Parse(args[1:])
 		resp, err = s.Untag(context.Background(), &req)
+	case "gc":
+		var req api.RegistryGC
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.BoolVar(&req.DryRun, "dry-run", false, "preview what would be removed without deleting")
+		f.Parse(args[1:])
+		resp, err = s.GC(context.Background(), &req)
 	case "metrics":
 		var (
 			req       api.RegistryMetrics
