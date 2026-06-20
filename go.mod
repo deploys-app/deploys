@@ -3,7 +3,7 @@ module github.com/deploys-app/deploys
 go 1.26
 
 require (
-	github.com/deploys-app/api v0.0.0-20260617151946-5463ffa1018a
+	github.com/deploys-app/api v0.0.0-20260619070526-dd20e9d51519
 	golang.org/x/mod v0.37.0
 	golang.org/x/oauth2 v0.14.0
 	gopkg.in/yaml.v2 v2.4.0
