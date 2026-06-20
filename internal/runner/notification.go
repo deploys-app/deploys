@@ -44,6 +44,7 @@ func (rn Runner) notification(args ...string) error {
 			url           string
 			secret        string
 			insecureTLS   bool
+			pullTTL       int
 			resourceTypes multiFlag
 			actions       multiFlag
 			outcomes      multiFlag
@@ -51,16 +52,17 @@ func (rn Runner) notification(args ...string) error {
 		)
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Name, "name", "", "channel name")
-		f.StringVar(&typ, "type", "", "channel type: webhook or discord")
-		f.StringVar(&url, "url", "", "delivery URL (http/https)")
+		f.StringVar(&typ, "type", "", "channel type: webhook, discord, or pull")
+		f.StringVar(&url, "url", "", "delivery URL (http/https; webhook/discord only)")
 		f.StringVar(&secret, "secret", "", "webhook signing secret (required for webhook)")
 		f.BoolVar(&insecureTLS, "insecure-tls", false, "skip TLS verification for HTTPS targets")
+		f.IntVar(&pullTTL, "pull-ttl", 0, "pull channel inactivity TTL in seconds before auto-delete (0 = server default; 60-86400)")
 		f.Var(&resourceTypes, "resource-type", "resource type to subscribe to (repeatable; empty = all)")
 		f.Var(&actions, "action", "action to subscribe to (repeatable; empty = all)")
 		f.Var(&outcomes, "outcome", "outcome to subscribe to: success or failure (repeatable; empty = all)")
 		f.BoolVar(&disabled, "disabled", false, "create the channel disabled")
 		f.Parse(args[1:])
-		req.Config = api.NotificationConfig{Type: typ, URL: url, Secret: secret, InsecureSkipVerify: insecureTLS}
+		req.Config = api.NotificationConfig{Type: typ, URL: url, Secret: secret, InsecureSkipVerify: insecureTLS, PullTTLSeconds: pullTTL}
 		req.Subscription = api.NotificationSubscription{
 			ResourceTypes: []string(resourceTypes),
 			Actions:       []string(actions),
@@ -81,6 +83,7 @@ func (rn Runner) notification(args ...string) error {
 			url           string
 			secret        string
 			insecureTLS   bool
+			pullTTL       int
 			resourceTypes multiFlag
 			actions       multiFlag
 			outcomes      multiFlag
@@ -88,10 +91,11 @@ func (rn Runner) notification(args ...string) error {
 		)
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Name, "name", "", "channel name")
-		f.StringVar(&typ, "type", "", "channel type: webhook or discord")
+		f.StringVar(&typ, "type", "", "channel type: webhook, discord, or pull")
 		f.StringVar(&url, "url", "", "delivery URL (http/https)")
 		f.StringVar(&secret, "secret", "", "webhook signing secret (omit to keep existing)")
 		f.BoolVar(&insecureTLS, "insecure-tls", false, "skip TLS verification for HTTPS targets")
+		f.IntVar(&pullTTL, "pull-ttl", 0, "pull channel inactivity TTL in seconds (0 = server default; 60-86400)")
 		f.Var(&resourceTypes, "resource-type", "resource type to subscribe to (repeatable; replaces all)")
 		f.Var(&actions, "action", "action to subscribe to (repeatable; replaces all)")
 		f.Var(&outcomes, "outcome", "outcome to subscribe to (repeatable; replaces all)")
@@ -120,6 +124,9 @@ func (rn Runner) notification(args ...string) error {
 		}
 		if set["insecure-tls"] {
 			req.Config.InsecureSkipVerify = insecureTLS
+		}
+		if set["pull-ttl"] {
+			req.Config.PullTTLSeconds = pullTTL
 		}
 		if len(resourceTypes) > 0 {
 			req.Subscription.ResourceTypes = []string(resourceTypes)
@@ -164,9 +171,53 @@ func (rn Runner) notification(args ...string) error {
 		req.After = after
 		req.Before = before
 		resp, err = s.Deliveries(context.Background(), &req)
+
+	case "pull":
+		// Consume a pull channel's change events. The server stores the cursor;
+		// pass -ack <cursor> (from a previous pull) to acknowledge that batch and
+		// advance. -follow keeps pulling, auto-acking each batch, until interrupted.
+		var (
+			req      api.NotificationPull
+			follow   bool
+			interval time.Duration
+		)
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Name, "name", "", "channel name")
+		f.Int64Var(&req.Ack, "ack", 0, "cursor from a previous pull to acknowledge as handled (advances past it)")
+		f.IntVar(&req.Limit, "limit", 0, "max events per batch (default 100, max 1000)")
+		f.BoolVar(&follow, "follow", false, "keep pulling, auto-acking each batch, until interrupted")
+		f.DurationVar(&interval, "interval", 2*time.Second, "poll interval between empty batches when following")
+		f.Parse(args[1:])
+		if follow {
+			return rn.followNotificationPull(s, &req, interval)
+		}
+		resp, err = s.Pull(context.Background(), &req)
 	}
 	if err != nil {
 		return err
 	}
 	return rn.print(resp)
+}
+
+// followNotificationPull streams a pull channel: pull a batch, print it, then ack
+// it (by passing its cursor as the next request's Ack) so the next pull advances.
+// It blocks until an error or process interrupt; an empty batch waits one interval
+// before retrying. Because each batch is acked only on the next pull, an interrupt
+// mid-batch redelivers it on the next run (at-least-once).
+func (rn Runner) followNotificationPull(s api.Notification, req *api.NotificationPull, interval time.Duration) error {
+	for {
+		res, err := s.Pull(context.Background(), req)
+		if err != nil {
+			return err
+		}
+		if len(res.Events) > 0 {
+			if err := rn.print(res); err != nil {
+				return err
+			}
+		}
+		req.Ack = res.Cursor
+		if !res.HasMore {
+			time.Sleep(interval)
+		}
+	}
 }
