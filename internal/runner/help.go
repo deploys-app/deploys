@@ -246,6 +246,7 @@ var commands = []command{
 			{name: "delete", args: "-repository", short: "delete a repository"},
 			{name: "deletemanifest", args: "-repository -digest", short: "delete a manifest by digest"},
 			{name: "untag", args: "-repository -tag", short: "remove a tag"},
+			{name: "gc", args: "[-dry-run]", short: "garbage-collect manifests no deployment uses"},
 			{name: "metrics", args: "[-time-range 7d|30d|90d]", short: "show registry storage metrics"},
 		},
 	},
