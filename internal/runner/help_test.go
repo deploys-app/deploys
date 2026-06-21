@@ -121,6 +121,10 @@ func TestRunHelpNeedsNoAPI(t *testing.T) {
 		{[]string{"me"}, "Subcommands:"},
 		{[]string{"me", "help"}, "identity and access"},
 		{[]string{"d", "-h"}, "deployments and their lifecycle"},
+		// the deployment errors sub-group renders its own banners without an API
+		{[]string{"deployment", "errors", "-h"}, "list detected application error issues"},
+		{[]string{"deployment", "errors", "get", "-h"}, "Usage: deploys deployment errors get"},
+		{[]string{"deployment", "errors", "update", "-h"}, "change an error issue's triage status"},
 	}
 	for _, tc := range cases {
 		if err := tmp.Truncate(0); err != nil {

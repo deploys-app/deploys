@@ -53,6 +53,20 @@ func TestTimeFlag(t *testing.T) {
 	}
 }
 
+func TestIsFlag(t *testing.T) {
+	for _, s := range []string{"-id", "--status", "-h", "-x"} {
+		if !isFlag(s) {
+			t.Errorf("isFlag(%q) = false; want true", s)
+		}
+	}
+	// subcommand keywords and a lone "-" are not flags
+	for _, s := range []string{"", "-", "get", "update", "list"} {
+		if isFlag(s) {
+			t.Errorf("isFlag(%q) = true; want false", s)
+		}
+	}
+}
+
 func TestSplitComma(t *testing.T) {
 	if got := splitComma(""); got != nil {
 		t.Errorf("splitComma(\"\") = %v; want nil", got)
