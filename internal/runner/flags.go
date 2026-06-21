@@ -69,6 +69,14 @@ func (f timeFlag) Set(v string) error {
 	return fmt.Errorf("invalid time '%s' (want RFC 3339 or YYYY-MM-DD)", v)
 }
 
+// isFlag reports whether an argument looks like a flag (starts with "-") rather
+// than a subcommand keyword. A lone "-" is not treated as a flag. It lets a
+// group dispatch a bare, flagless invocation to a default leaf while still
+// routing explicit subcommand keywords.
+func isFlag(arg string) bool {
+	return len(arg) > 1 && arg[0] == '-'
+}
+
 // splitComma splits a comma separated value, dropping empty elements.
 // Returns nil on empty input.
 func splitComma(s string) []string {

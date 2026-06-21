@@ -155,6 +155,14 @@ relative duration (`24h`, `1h`, `30m` = now minus that), `-until` defaults to no
 `-reverse` returns newest-first, and `-cursor` pages through using a prior
 response's `nextCursor`.
 
+Errors: `errors` `[-status open|resolved|muted|all] [-sort lastSeen|firstSeen|count]
+[-limit] [-cursor]` — list detected application error issues (grouped, deduplicated
+stack traces mined from the durable log stream); `-status` defaults to `open`.
+`errors get -id <id>` shows one issue with its representative stack trace and recent
+occurrences; `errors update -id <id> -status resolved|open|muted` changes an issue's
+triage status (resolve, reopen, or mute). History-backed and best-effort, like
+`logsHistory`; available only where log capture is enabled for the location.
+
 `deploy` — create or update a deployment (a merge; omitted flags are preserved).
 
 | Flag | Notes |

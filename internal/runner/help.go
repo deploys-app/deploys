@@ -134,6 +134,12 @@ var commands = []command{
 			// backs its banner. They share wording so the listing and banner agree.
 			{name: "set", short: "roll out a new image (set image <name> -image <ref>)"},
 			{name: "set image", args: "<name> -image <ref>", short: "roll out a new image for a deployment", hidden: true},
+			// "errors" is the user-facing listing for the error-issue sub-group; the
+			// bare invocation lists issues, while "errors get"/"errors update" are
+			// hidden leaves that back their own banners (mirroring "set"/"set image").
+			{name: "errors", args: "[-status open|resolved|muted|all] [-sort lastSeen|firstSeen|count] [-limit n] [-cursor c]", short: "list detected application error issues (get/update an issue by id)"},
+			{name: "errors get", args: "-id <id>", short: "show an error issue with its sample stack and recent occurrences", hidden: true},
+			{name: "errors update", args: "-id <id> -status resolved|open|muted", short: "change an error issue's triage status (resolve, reopen, or mute)", hidden: true},
 		},
 	},
 	{
