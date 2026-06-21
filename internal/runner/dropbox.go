@@ -29,7 +29,7 @@ func (rn Runner) dropbox(args ...string) error {
 		return rn.unknownSub("dropbox", args[0])
 	case "list":
 		var req api.DropboxList
-		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Project, "project", "", "project sid")
 		f.Var(timeFlag{&req.After}, "after", "only files after this time (RFC 3339 or YYYY-MM-DD)")
 		f.Var(timeFlag{&req.Before}, "before", "only files before this time (RFC 3339 or YYYY-MM-DD)")
 		f.IntVar(&req.Limit, "limit", 0, "max entries")
@@ -40,7 +40,7 @@ func (rn Runner) dropbox(args ...string) error {
 			req       api.DropboxMetrics
 			timeRange string
 		)
-		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Project, "project", "", "project sid")
 		f.StringVar(&timeRange, "time-range", "30d", "time range (7d, 30d, 90d)")
 		f.Parse(args[1:])
 		req.TimeRange = api.UsageMetricsTimeRange(timeRange)
@@ -48,7 +48,7 @@ func (rn Runner) dropbox(args ...string) error {
 	case "upload":
 		var opts client.DropboxUploadOptions
 		var file string
-		f.StringVar(&opts.Project, "project", "", "project id")
+		f.StringVar(&opts.Project, "project", "", "project sid")
 		f.StringVar(&file, "file", "", "path to the file to upload, or - for stdin (default stdin)")
 		f.StringVar(&opts.Filename, "filename", "", "filename recorded in the download (defaults to the base name of -file)")
 		f.IntVar(&opts.TTLDays, "ttl", 0, "download lifetime in days, 1-7 (default 1)")
