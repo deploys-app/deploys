@@ -130,6 +130,7 @@ var commands = []command{
 			{name: "metrics", args: "[-time-range 1h|6h|12h|1d]", short: "show deployment metrics"},
 			{name: "status", short: "show pod health and failure reasons"},
 			{name: "logs", args: "[-pod p] [-previous] [-tail n] [-follow]", short: "read a bounded snapshot of recent container logs"},
+			{name: "extend-ttl", args: "-name n -ttl s", short: "re-stamp a preview's auto-delete window to now+ttl (keep-alive)"},
 			// "set" is the user-facing listing; "set image" is the hidden leaf that
 			// backs its banner. They share wording so the listing and banner agree.
 			{name: "set", short: "roll out a new image (set image <name> -image <ref>)"},
@@ -306,6 +307,7 @@ var commands = []command{
 		short: "publish static sites from the local filesystem",
 		subs: []subcommand{
 			{name: "publish", args: "-name -dir <path> [-environment -spa -notFound]", short: "publish a static site from a local directory"},
+			{name: "preview", args: "-name -dir <path> [-ttl s] [-force] [-environment -spa -notFound]", short: "publish and deploy a throwaway preview (auto-deletes at ttl; -force to overwrite a non-preview)"},
 		},
 	},
 	{
