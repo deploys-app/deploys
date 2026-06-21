@@ -517,11 +517,52 @@ func (rn Runner) deployment(args ...string) error {
 			return rn.deploymentLogsFollow(s, &req)
 		}
 		resp, err = s.Logs(context.Background(), &req)
+	case "logsHistory", "logs-history":
+		var (
+			req          api.DeploymentLogsHistory
+			since, until string
+		)
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Name, "name", "", "deployment name")
+		f.StringVar(&req.Pod, "pod", "", "single pod name (default: all pods of the deployment)")
+		f.StringVar(&since, "since", "", "window start, RFC3339 or relative (e.g. 24h, 1h, 30m = now minus that); required")
+		f.StringVar(&until, "until", "", "window end, RFC3339 or relative (e.g. 1h); empty defaults to now")
+		f.IntVar(&req.Limit, "limit", 0, "max lines per page (default 200, max 1000)")
+		f.BoolVar(&req.Reverse, "reverse", false, "return newest-first and page backward into the past")
+		f.StringVar(&req.Cursor, "cursor", "", "opaque page cursor from a previous response's nextCursor")
+		f.Parse(args[1:])
+		if req.Since, err = parseHistoryTime(since); err != nil {
+			return fmt.Errorf("invalid -since: %w", err)
+		}
+		if req.Until, err = parseHistoryTime(until); err != nil {
+			return fmt.Errorf("invalid -until: %w", err)
+		}
+		resp, err = s.LogsHistory(context.Background(), &req)
 	}
 	if err != nil {
 		return err
 	}
 	return rn.print(resp)
+}
+
+// parseHistoryTime parses a -since/-until flag value for deployment logs
+// history. An empty value yields the zero time (the server resolves a zero
+// Until to now; a zero Since is rejected upstream as required). A value is
+// either an RFC3339 timestamp or a Go duration (e.g. 24h, 30m) interpreted as
+// now minus that duration.
+func parseHistoryTime(s string) (time.Time, error) {
+	if s == "" {
+		return time.Time{}, nil
+	}
+	if t, err := time.Parse(time.RFC3339, s); err == nil {
+		return t, nil
+	}
+	d, err := time.ParseDuration(s)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("expected RFC3339 timestamp or duration (e.g. 24h): %q", s)
+	}
+	return time.Now().Add(-d), nil
 }
 
 // deploymentLogsFollow client-side tails a deployment by re-polling the bounded

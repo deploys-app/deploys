@@ -147,6 +147,14 @@ match the corresponding resource.
 Lifecycle: `list`, `get` `-revision`, `delete`, `revisions`, `pause`, `resume`,
 `rollback` `-revision`, `metrics` `-time-range 1h|6h|12h|1d`, `set image <name> -image ...`.
 
+Logs: `logs` `[-pod] [-tail] [-previous] [-follow]` — live, ephemeral container
+logs (current pods, snapshot). `logsHistory` (alias `logs-history`)
+`-since <RFC3339|24h> [-until] [-pod] [-limit] [-reverse] [-cursor]` — durable
+30-day stored history; `-since` is required and accepts an RFC3339 timestamp or a
+relative duration (`24h`, `1h`, `30m` = now minus that), `-until` defaults to now,
+`-reverse` returns newest-first, and `-cursor` pages through using a prior
+response's `nextCursor`.
+
 `deploy` — create or update a deployment (a merge; omitted flags are preserved).
 
 | Flag | Notes |
