@@ -543,6 +543,14 @@ func (rn Runner) deployment(args ...string) error {
 			return fmt.Errorf("invalid -until: %w", err)
 		}
 		resp, err = s.LogsHistory(context.Background(), &req)
+	case "extend-ttl", "extendTTL":
+		var req api.DeploymentExtendTTL
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Name, "name", "", "deployment name")
+		f.Int64Var(&req.TTL, "ttl", 0, "seconds from now until auto-delete (must be > 0)")
+		f.Parse(args[1:])
+		resp, err = s.ExtendTTL(context.Background(), &req)
 	}
 	if err != nil {
 		return err
