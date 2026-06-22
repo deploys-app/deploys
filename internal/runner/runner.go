@@ -201,7 +201,7 @@ func (rn Runner) me(args ...string) error {
 			permissions string
 		)
 		f.StringVar(&req.Project, "project", "", "project id")
-		f.StringVar(&permissions, "permissions", "", "permissions (comma separated; allowed: dropbox.upload, site.publish)")
+		f.StringVar(&permissions, "permissions", "", "permissions (comma separated; allowed: dropbox.upload, site.publish, deployment.deploy, deployment.get, deployment.logs, error.create, error.list, error.get)")
 		f.IntVar(&req.TTLSeconds, "ttl", 0, "token lifetime in seconds (60-3600, default 900)")
 		f.Parse(args[1:])
 		req.Permissions = splitComma(permissions)
