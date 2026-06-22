@@ -201,11 +201,23 @@ func (rn Runner) me(args ...string) error {
 			permissions string
 		)
 		f.StringVar(&req.Project, "project", "", "project id")
-		f.StringVar(&permissions, "permissions", "", "permissions (comma separated; allowed: dropbox.upload, site.publish, deployment.deploy, deployment.get, deployment.logs, error.create, error.list, error.get)")
+		f.StringVar(&permissions, "permissions", "", "permissions (comma separated; any you hold except wildcards and role.*/serviceaccount.key.*/billing.*/pullsecret.get)")
 		f.IntVar(&req.TTLSeconds, "ttl", 0, "token lifetime in seconds (60-3600, default 900)")
+		f.StringVar(&req.Label, "label", "", "optional attribution label for the agent session (e.g. claude-code:pr-42)")
 		f.Parse(args[1:])
 		req.Permissions = splitComma(permissions)
 		resp, err = s.GenerateToken(context.Background(), &req)
+	case "list-tokens", "listTokens":
+		var req api.MeListTokens
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.Parse(args[1:])
+		resp, err = s.ListTokens(context.Background(), &req)
+	case "revoke-token", "revokeToken":
+		var req api.MeRevokeToken
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.ID, "id", "", "scoped token id (from list-tokens)")
+		f.Parse(args[1:])
+		resp, err = s.RevokeToken(context.Background(), &req)
 	}
 	if err != nil {
 		return err
