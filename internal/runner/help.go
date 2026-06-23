@@ -57,7 +57,9 @@ var commands = []command{
 			{name: "get", short: "show the current authenticated identity"},
 			{name: "authorized", args: "-project p -permissions a,b", short: "check whether you hold the given permissions in a project"},
 			{name: "permissions", args: "-project p", short: "list your effective permissions in a project"},
-			{name: "generate-token", aliases: []string{"generateToken"}, args: "-project p -permissions a,b [-ttl 900]", short: "mint a short-lived, scope-limited bearer token"},
+			{name: "generate-token", aliases: []string{"generateToken"}, args: "-project p -permissions a,b [-ttl 900] [-label l]", short: "mint a short-lived, scope-limited bearer token"},
+			{name: "list-tokens", aliases: []string{"listTokens"}, args: "-project p", short: "list your active scoped tokens for a project"},
+			{name: "revoke-token", aliases: []string{"revokeToken"}, args: "-project p -id t", short: "revoke one of your scoped tokens by id"},
 		},
 	},
 	{
