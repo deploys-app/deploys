@@ -37,19 +37,29 @@ const loopbackHost = "127.0.0.1"
 // flow to another origin.
 const defaultAuthBase = "https://auth.deploys.app"
 
-// bakedInClientID returns a pre-provisioned public client_id for an auth base,
-// or "" to self-provision via Dynamic Client Registration. No client is seeded
-// today, so this is empty and the CLI registers (once, cached) against every
-// auth base. An operator may later seed a public client for the default host and
-// return it here to avoid per-machine DCR rows.
+// bakedInClientID returns the pre-provisioned public client_id for an auth base,
+// or "" to self-provision via Dynamic Client Registration. The production auth
+// server seeds a well-known "deploys-cli" public client (auth migration
+// 05_seed_cli_client.sql), so the common case never calls /register. Any other
+// auth base (forks, self-hosted, staging) falls back to DCR. If the seed is
+// absent the login self-heals: a stale baked-in id is detected and DCR takes
+// over (see Login).
 func bakedInClientID(authBase string) string {
+	if authBase == defaultAuthBase {
+		return "deploys-cli"
+	}
 	return ""
 }
 
 // errLoginTimeout is returned when the browser login does not complete in time.
-// It is also the signal that a stale cached client_id may be to blame (a bad id
-// is rejected at the authorize step in the browser, so the loopback never fires).
+// It is also a signal that a stale baked-in/cached client_id may be to blame (a
+// bad id is rejected at the authorize step in the browser, so the loopback never
+// fires and we only observe a timeout).
 var errLoginTimeout = errors.New("login timed out")
+
+// errInvalidClient is wrapped into a /token error when the server rejects the
+// client_id, so Login can fall back to a fresh DCR registration.
+var errInvalidClient = errors.New("invalid_client")
 
 // LoginOptions configures a browser login. Zero values are sensible defaults.
 type LoginOptions struct {
@@ -95,16 +105,19 @@ func Login(ctx context.Context, authBase, apiEndpoint string, opts LoginOptions)
 		return Result{}, err
 	}
 
-	clientID, fromCache, err := ensureClientID(ctx, authBase, meta.RegistrationEndpoint)
+	clientID, reusable, err := ensureClientID(ctx, authBase, meta.RegistrationEndpoint)
 	if err != nil {
 		return Result{}, err
 	}
 
 	res, err := runFlow(ctx, meta, clientID, opts)
-	if errors.Is(err, errLoginTimeout) && fromCache {
-		// A stale cached client_id is rejected in the browser at the authorize
-		// step, so the loopback never receives a callback and we only see a
-		// timeout. Re-register once and retry before giving up.
+	// A stale baked-in or cached client_id surfaces either as a /token
+	// invalid_client or — when the authorize step rejects it in the browser, so
+	// the loopback never fires — as a plain timeout. In either case, if the id was
+	// pre-existing (not freshly registered this run), re-register once via DCR,
+	// cache it, and retry before giving up. This self-heals an un-seeded or reset
+	// auth server.
+	if err != nil && reusable && (errors.Is(err, errLoginTimeout) || errors.Is(err, errInvalidClient)) && meta.RegistrationEndpoint != "" {
 		newID, rerr := registerClient(ctx, meta.RegistrationEndpoint)
 		if rerr == nil {
 			_ = SaveClientID(authBase, newID)
@@ -192,16 +205,26 @@ func sameOrigin(a, b string) bool {
 	return ua.Scheme == ub.Scheme && strings.EqualFold(ua.Host, ub.Host)
 }
 
-// ensureClientID returns a usable client_id: a baked-in one, the cached DCR id,
-// or a freshly registered one (cached for reuse). fromCache reports whether the
-// id came from the cache, so a timeout can trigger a single re-registration.
-func ensureClientID(ctx context.Context, authBase, regEndpoint string) (clientID string, fromCache bool, err error) {
-	if id := bakedInClientID(authBase); id != "" {
-		return id, false, nil
-	}
+// ensureClientID returns a usable client_id and whether it is "reusable" — i.e.
+// pre-existing (a cached DCR id or the baked-in id) rather than freshly
+// registered this run. Precedence is cache → baked-in → register:
+//
+//   - The cache is checked first so that once a DCR fallback has happened against
+//     an un-seeded base, later logins use that cached id instead of re-hitting
+//     the (still failing) baked-in id every time.
+//   - The baked-in id is next, so a seeded base (no cache entry) uses the shared
+//     well-known client and never calls /register.
+//   - Otherwise register once and cache it.
+//
+// reusable is true for the first two so Login can fall back to a fresh DCR if a
+// stale id is rejected; a freshly-registered id returns reusable=false (no loop).
+func ensureClientID(ctx context.Context, authBase, regEndpoint string) (clientID string, reusable bool, err error) {
 	if id, ok, lerr := LoadClientID(authBase); lerr != nil {
 		return "", false, lerr
 	} else if ok {
+		return id, true, nil
+	}
+	if id := bakedInClientID(authBase); id != "" {
 		return id, true, nil
 	}
 	if regEndpoint == "" {
@@ -425,7 +448,12 @@ func exchangeCode(ctx context.Context, tokenEndpoint, clientID, code, verifier, 
 		}
 		_ = json.Unmarshal(body, &oe)
 		if oe.Error != "" {
-			return Result{}, fmt.Errorf("token exchange failed: %s", strings.TrimSpace(oe.Error+" "+oe.Desc))
+			msg := fmt.Errorf("token exchange failed: %s", strings.TrimSpace(oe.Error+" "+oe.Desc))
+			if oe.Error == "invalid_client" {
+				// Wrap the sentinel so Login can fall back to a fresh DCR.
+				return Result{}, fmt.Errorf("%w: %w", errInvalidClient, msg)
+			}
+			return Result{}, msg
 		}
 		return Result{}, fmt.Errorf("token exchange failed: status %d", resp.StatusCode)
 	}

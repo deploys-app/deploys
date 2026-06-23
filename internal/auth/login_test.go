@@ -52,6 +52,14 @@ func fakeAuthServer(t *testing.T) (*httptest.Server, *authProbe) {
 	})
 	mux.HandleFunc("/token", func(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
+		probe.mu.Lock()
+		reject := probe.rejectClientID
+		probe.mu.Unlock()
+		if reject != "" && r.Form.Get("client_id") == reject {
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]string{"error": "invalid_client"})
+			return
+		}
 		code := r.Form.Get("code")
 		verifier := r.Form.Get("code_verifier")
 		probe.mu.Lock()
@@ -77,12 +85,13 @@ func fakeAuthServer(t *testing.T) (*httptest.Server, *authProbe) {
 }
 
 type authProbe struct {
-	mu          sync.Mutex
-	challenges  map[string]string
-	method      string
-	gotClientID string
-	registered  int
-	exchanged   bool
+	mu             sync.Mutex
+	challenges     map[string]string
+	method         string
+	gotClientID    string
+	registered     int
+	exchanged      bool
+	rejectClientID string // /token returns invalid_client for this client_id
 }
 
 func TestLogin(t *testing.T) {
@@ -133,6 +142,56 @@ func TestLogin(t *testing.T) {
 	}
 	if probe.registered != 1 {
 		t.Errorf("re-registered (count=%d); cached client_id should be reused", probe.registered)
+	}
+}
+
+func TestBakedInClientID(t *testing.T) {
+	if got := bakedInClientID("https://auth.deploys.app"); got != "deploys-cli" {
+		t.Errorf("baked-in for default = %q; want deploys-cli", got)
+	}
+	for _, b := range []string{"https://auth.staging", "http://127.0.0.1:9000", ""} {
+		if got := bakedInClientID(b); got != "" {
+			t.Errorf("baked-in for %q = %q; want empty (DCR)", b, got)
+		}
+	}
+}
+
+// A stale cached/baked-in client_id rejected at /token triggers a single DCR
+// re-registration and retry, so login self-heals against an un-seeded server.
+func TestLoginFallsBackToDCROnInvalidClient(t *testing.T) {
+	t.Setenv("DEPLOYS_CONFIG_DIR", t.TempDir())
+	srv, probe := fakeAuthServer(t)
+	defer srv.Close()
+
+	// Pre-cache a client_id the server will reject, so ensureClientID returns it
+	// as reusable and Login must fall back to DCR.
+	if err := SaveClientID(srv.URL, "stale-id"); err != nil {
+		t.Fatal(err)
+	}
+	probe.mu.Lock()
+	probe.rejectClientID = "stale-id"
+	probe.mu.Unlock()
+
+	opener := func(rawURL string) error {
+		resp, err := http.Get(rawURL)
+		if resp != nil {
+			resp.Body.Close()
+		}
+		return err
+	}
+	res, err := Login(context.Background(), srv.URL, srv.URL, LoginOptions{OpenBrowser: opener, Timeout: 5 * time.Second})
+	if err != nil {
+		t.Fatalf("Login should self-heal via DCR: %v", err)
+	}
+	if res.Token != "deploys-api.test" {
+		t.Errorf("token = %q", res.Token)
+	}
+	if probe.registered != 1 {
+		t.Errorf("expected exactly one DCR fallback registration, got %d", probe.registered)
+	}
+	// The freshly registered id replaced the stale one in the cache.
+	if id, ok, _ := LoadClientID(srv.URL); !ok || id == "stale-id" {
+		t.Errorf("cache not updated after fallback: id=%q ok=%v", id, ok)
 	}
 }
 
