@@ -165,7 +165,7 @@ var commands = []command{
 		name:  "route",
 		short: "HTTP routes mapping a domain/path to a target",
 		subs: []subcommand{
-			{name: "create", args: "-domain -path (-target <t> | -deployment <name>)", short: "create a route"},
+			{name: "create", args: "-domain -path (-target <t> | -deployment <name>) [-host <h>]", short: "create a route"},
 			{name: "get", args: "-domain -path", short: "show a route"},
 			{name: "list", short: "list routes"},
 			{name: "delete", args: "-domain -path", short: "delete a route"},

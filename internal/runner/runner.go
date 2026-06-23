@@ -658,6 +658,7 @@ func (rn Runner) route(args ...string) error {
 		f.StringVar(&req.Path, "path", "", "path")
 		f.StringVar(&req.Target, "target", "", "target (for v2)")
 		f.StringVar(&deployment, "deployment", "", "deployment name (for v1)")
+		f.StringVar(&req.Config.Host, "host", "", "override the Host header sent upstream (external http:// targets only)")
 		f.Parse(args[1:])
 
 		if req.Target == "" && deployment != "" {
