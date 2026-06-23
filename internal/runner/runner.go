@@ -26,6 +26,11 @@ type Runner struct {
 	// Version is this binary's version, shown by check-update. Empty for an
 	// unknown/local build (reported as "dev").
 	Version string
+	// Account is the account selector (an email) pre-scanned from a global
+	// -account flag in main, or empty. The auth subcommands fall back to the
+	// DEPLOYS_ACCOUNT env var when this is empty; main threads the same value
+	// into the API client for normal commands.
+	Account string
 }
 
 func (rn Runner) output() *os.File {
@@ -104,6 +109,12 @@ func (rn Runner) Run(args ...string) error {
 	switch args[0] {
 	default:
 		return fmt.Errorf("invalid command: %q (run \"deploys help\")", args[0])
+	case "login":
+		return rn.login(args[1:]...)
+	case "logout":
+		return rn.logout(args[1:]...)
+	case "auth":
+		return rn.authGroup(args[1:]...)
 	case "me":
 		return rn.me(args[1:]...)
 	case "billing":

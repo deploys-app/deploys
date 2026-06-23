@@ -51,6 +51,18 @@ type subcommand struct {
 // listed — keep them in sync by hand.
 var commands = []command{
 	{
+		name:  "auth",
+		short: "log in and manage stored accounts",
+		subs: []subcommand{
+			{name: "login", short: "sign in via the browser and store the account"},
+			{name: "logout", args: "[-account email] [-all]", short: "revoke and remove a stored account"},
+			{name: "status", args: "[-endpoint url]", short: "show the credential in effect and its expiry"},
+			{name: "list", short: "list stored accounts grouped by endpoint"},
+			{name: "switch", args: "-account email [-endpoint url]", short: "change the active account for an endpoint"},
+			{name: "token", args: "[-endpoint url] [-force]", short: "print the resolved bearer token (for scripts)"},
+		},
+	},
+	{
 		name:  "me",
 		short: "identity and access for the current credential",
 		subs: []subcommand{
@@ -384,6 +396,10 @@ func PrintUsage(w io.Writer) {
 
 	fmt.Fprintln(w, "Commands:")
 	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
+	// login/logout are the primary verbs (aliases of auth login/logout); list
+	// them first, above the resource groups.
+	fmt.Fprintf(tw, "  %s\t%s\n", "login", "sign in via the browser (alias of auth login)")
+	fmt.Fprintf(tw, "  %s\t%s\n", "logout", "remove a stored account (alias of auth logout)")
 	for _, c := range commands {
 		name := c.name
 		if len(c.aliases) > 0 {
@@ -406,16 +422,35 @@ func PrintUsage(w io.Writer) {
 
 	fmt.Fprint(w, "\nFlags:\n")
 	fmt.Fprint(w, "  -output table|yaml|json   output mode (or the -oyaml, -ojson, -otable shorthands)\n")
+	fmt.Fprint(w, "  -account email            use a specific stored account for this command\n")
 
 	fmt.Fprint(w, "\nEnvironment:\n")
 	tw = tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
-	fmt.Fprint(tw, "  DEPLOYS_TOKEN\tbearer api token\n")
+	fmt.Fprint(tw, "  DEPLOYS_TOKEN\tbearer api token (overrides a stored login)\n")
 	fmt.Fprint(tw, "  DEPLOYS_AUTH_USER\tservice-account email (basic auth, with DEPLOYS_AUTH_PASS)\n")
 	fmt.Fprint(tw, "  DEPLOYS_AUTH_PASS\tservice-account key secret\n")
 	fmt.Fprint(tw, "  DEPLOYS_ENDPOINT\toverride the api endpoint\n")
+	fmt.Fprint(tw, "  DEPLOYS_ACCOUNT\tselect a stored account by email (same as -account)\n")
+	fmt.Fprint(tw, "  DEPLOYS_AUTH_ENDPOINT\toverride the auth (login) server\n")
+	fmt.Fprint(tw, "  DEPLOYS_CONFIG_DIR\toverride the config/credentials directory\n")
 	tw.Flush()
 
 	fmt.Fprint(w, "\nRun \"deploys <command> -h\" for a command's subcommands and flags.\n")
+}
+
+// writeLoginUsage writes the banner for the standalone `deploys login` verb.
+func writeLoginUsage(w io.Writer) {
+	fmt.Fprint(w, "login — sign in via the browser and store the account (alias of auth login)\n\n")
+	fmt.Fprint(w, "Usage:\n  deploys login [-endpoint url] [-no-browser] [-port n] [-timeout 3m]\n\n")
+	fmt.Fprint(w, "Opens a browser to authorize, then saves a credential under your config dir.\n")
+	fmt.Fprint(w, "On a remote/SSH host, use -no-browser and forward the printed callback port.\n")
+}
+
+// writeLogoutUsage writes the banner for the standalone `deploys logout` verb.
+func writeLogoutUsage(w io.Writer) {
+	fmt.Fprint(w, "logout — revoke and remove a stored account (alias of auth logout)\n\n")
+	fmt.Fprint(w, "Usage:\n  deploys logout [-account email] [-endpoint url] [-all] [-yes]\n\n")
+	fmt.Fprint(w, "With no flags, logs out the active account for the endpoint.\n")
 }
 
 // writeGroupUsage writes a group's help: its description, aliases, and the list
