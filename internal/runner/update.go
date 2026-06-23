@@ -32,6 +32,20 @@ func IsLocalCommand(name string) bool {
 	return false
 }
 
+// IsAuthCommand reports whether name is the login/logout/auth surface. These do
+// not use the pre-built rn.API (login establishes credentials; the auth
+// management subcommands read the store directly), so main must not build the
+// API client for them — building it could short-circuit with a "not logged in"
+// error before the user can even log in. Unlike IsLocalCommand, these may hit
+// the network (login/logout), so they are a separate predicate.
+func IsAuthCommand(name string) bool {
+	switch name {
+	case "login", "logout", "auth":
+		return true
+	}
+	return false
+}
+
 // versionInfo is the structured form of `deploys version` (for -ojson/-oyaml).
 type versionInfo struct {
 	Version string `json:"version" yaml:"version"`

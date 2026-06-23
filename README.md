@@ -32,18 +32,55 @@ specific release, and `nightly` tracks the newest `master` build.
 
 ## Authentication
 
-The CLI resolves credentials in this order:
+For interactive use, sign in once with your browser:
+
+```bash
+deploys login          # opens a browser, stores the account, makes it active
+deploys auth status    # show the credential in effect and its expiry
+deploys logout         # revoke and remove the active account
+```
+
+`login` runs an OAuth Authorization Code + PKCE flow against `auth.deploys.app`
+(a loopback redirect on `127.0.0.1`), then stores the resulting bearer token —
+keyed by `(endpoint, email)` — in a `0600` file under your config dir
+(`$DEPLOYS_CONFIG_DIR`, else `$XDG_CONFIG_HOME/deploys`, else the OS config dir).
+Tokens last **7 days and cannot be refreshed**: when one expires the CLI exits
+with code **4** and asks you to run `deploys login` again.
+
+### Multiple accounts
+
+```bash
+deploys auth list                      # all stored accounts, grouped by endpoint
+deploys auth switch -account bob@x     # change the active account for an endpoint
+deploys <cmd> -account bob@x ...       # use a specific account for one command
+deploys auth token | some-tool         # print the resolved token for scripts
+```
+
+Accounts are keyed by `(endpoint, email)`, so the same email can hold separate
+sessions on prod, staging (`-endpoint`), and self-hosted servers. Each endpoint
+has its own active account.
+
+### Resolution order
+
+The CLI resolves credentials in this order (so CI is unaffected):
 
 1. **Service-account key (HTTP basic):** set both `DEPLOYS_AUTH_USER` and
    `DEPLOYS_AUTH_PASS`. The user is a service-account email
    (`<sid>@<project>.serviceaccount.deploys.app`) and the pass is its key secret.
    Best for CI.
 2. **Bearer token:** set `DEPLOYS_TOKEN` to an API token.
-3. **Application Default Credentials:** if neither of the above is set, the CLI
-   falls back to Google ADC (e.g. `gcloud auth application-default login`) and
-   uses the resulting access token.
+3. **Stored login:** the account selected by `-account` / `DEPLOYS_ACCOUNT`, else
+   the active account for the endpoint (from `deploys login`).
+4. **Application Default Credentials:** if none of the above apply, the CLI falls
+   back to Google ADC (e.g. `gcloud auth application-default login`).
 
-Point the CLI at a non-production API with `DEPLOYS_ENDPOINT`.
+A service-account key and `DEPLOYS_TOKEN` always win, so existing CI pipelines
+are untouched. Point the CLI at a non-production API with `DEPLOYS_ENDPOINT`, and
+at a non-production auth server with `DEPLOYS_AUTH_ENDPOINT`.
+
+> **Headless / SSH:** the loopback flow needs a browser on the same machine. On a
+> remote host, run `deploys login -no-browser` and forward the printed callback
+> port (`ssh -L <port>:127.0.0.1:<port> <host>`), or use the CI env vars above.
 
 ## Usage
 
@@ -120,6 +157,17 @@ deploys github link -project acme -repository acme/web \
 
 `deployment` (aliases `deploy`, `d`) and the short aliases `ps`, `wi`, `sa`, `eg`
 match the corresponding resource.
+
+### auth (and the top-level `login` / `logout`)
+
+- `login` `[-endpoint url] [-no-browser] [-port n] [-timeout 3m]` — browser sign-in; stores the account and makes it active. Same as `auth login`.
+- `logout` `[-account email] [-endpoint url] [-all] [-yes]` — revoke and remove an account (the active one by default). Same as `auth logout`.
+- `auth status` `[-endpoint url]` — show the credential in effect (env, stored login, or ADC fallback) and its expiry.
+- `auth list` — list stored accounts grouped by endpoint, marking the active one.
+- `auth switch` `-account email [-endpoint url]` — change the active account for an endpoint.
+- `auth token` `[-endpoint url] [-force]` — print the resolved bearer token (refuses a terminal without `-force`; prints with no trailing newline for `$(...)`).
+
+Use `-account email` (or `DEPLOYS_ACCOUNT`) on any command to pick a stored account for that invocation.
 
 ### me
 
