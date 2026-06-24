@@ -304,6 +304,7 @@ var commands = []command{
 			{name: "list", args: "[-after -before -limit]", short: "list dropbox files"},
 			{name: "metrics", args: "[-time-range 7d|30d|90d]", short: "show dropbox usage metrics"},
 			{name: "upload", args: "-file <path> [-filename -ttl]", short: "upload a file and print a short-lived download URL"},
+			{name: "upload-url", args: "-project <sid> [-filename -content-type -min-size -max-size -ttl -expires]", short: "mint a signed upload URL to hand off (recipient PUTs the file, no token needed)"},
 		},
 	},
 	{

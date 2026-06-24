@@ -71,6 +71,22 @@ func (rn Runner) dropbox(args ...string) error {
 			return err
 		}
 		resp, err = c.DropboxUpload(context.Background(), &opts)
+	case "upload-url":
+		var opts client.DropboxCreateUploadURLOptions
+		f.StringVar(&opts.Project, "project", "", "project sid")
+		f.StringVar(&opts.Filename, "filename", "", "filename recorded in the download")
+		f.StringVar(&opts.ContentType, "content-type", "", "Content-Type the upload must send (optional; enforced)")
+		f.Int64Var(&opts.MinSize, "min-size", 0, "minimum upload size in bytes (server floors at 1)")
+		f.Int64Var(&opts.MaxSize, "max-size", 0, "maximum upload size in bytes (server clamps to its cap, default 5 GiB)")
+		f.IntVar(&opts.TTLDays, "ttl", 0, "download lifetime in days, 1-7 (default 1)")
+		f.IntVar(&opts.Expires, "expires", 0, "upload-URL lifetime in seconds, 1-3600 (default 900)")
+		f.Parse(args[1:])
+
+		c, ok := rn.API.(*client.Client)
+		if !ok {
+			return fmt.Errorf("dropbox upload-url requires the default api client")
+		}
+		resp, err = c.DropboxCreateUploadURL(context.Background(), &opts)
 	}
 	if err != nil {
 		return err
