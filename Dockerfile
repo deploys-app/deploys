@@ -9,9 +9,12 @@ WORKDIR /workspace
 ARG VERSION=dev
 
 ADD go.mod go.sum ./
-RUN go mod download
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
 ADD . .
-RUN go build -o .build/deploys -ldflags "-w -s -X main.version=${VERSION}" .
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go build -o .build/deploys -ldflags "-w -s -X main.version=${VERSION}" .
 
 FROM debian:13-slim
 
