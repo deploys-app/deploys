@@ -5,7 +5,7 @@ on:
     - master
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     name: Build
     steps:
     - uses: actions/checkout@v6
@@ -34,7 +34,8 @@ jobs:
         password: ${{ steps.auth.outputs.access_token }}
     - uses: docker/setup-buildx-action@v4
       with:
-        version: latest
+        driver: remote
+        endpoint: ${{ secrets.REMOTE_BUILD_ENDPOINT }}
     - uses: docker/build-push-action@v7
       with:
         provenance: false
