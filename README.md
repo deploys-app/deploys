@@ -299,9 +299,9 @@ separate from the WAF (a role can hold `cache.*` without `waf.*`).
 
 ### billing
 
-- `create` / `update` `-id -name -tax-id -tax-name -tax-address`, `list`, `get` `-id`, `delete` `-id`.
+- `create` / `update` `-id -name -type individual|company -tax-id -tax-name -tax-address`, `list`, `get` `-id`, `delete` `-id`. `type` defaults to `individual`; a `company` prints "Head Office (สำนักงานใหญ่)" on its tax invoices.
 - `report` `-id -range -projects a,b`, `skus`, `project` `-project`.
-- `invoices` `-id`, `invoice` / `downloadinvoice` / `downloadreceipt` `-id <invoice id>`.
+- `invoices` `-id`, `invoice` / `downloadinvoice` / `downloadreceipt` `-id <invoice id>`. A paid `invoice` carries a `receiptNumber` (DPLY-RC-YYYYMM-NNNN), the receipt's own running number, distinct from the invoice number.
 
 ### email
 
