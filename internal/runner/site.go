@@ -3,6 +3,7 @@ package runner
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/deploys-app/api"
 	"github.com/deploys-app/api/client"
@@ -35,11 +36,44 @@ func (rn Runner) site(args ...string) error {
 		if !ok {
 			return fmt.Errorf("site publish requires the default api client")
 		}
+
+		progress, finish := newPublishProgress(os.Stderr)
+		opts.Progress = progress
 		res, err := c.PublishSite(context.Background(), &opts)
+		finish()
 		if err != nil {
 			return err
 		}
 		return rn.print(res)
+	case "deploy":
+		// deploy wraps publish → deploy → get into one command: it publishes the
+		// local directory and deploys it as a permanent (non-TTL) Static
+		// deployment, then prints the resulting deployment (url + releaseUrl). It
+		// is the permanent counterpart of `preview`; the only differences are the
+		// production environment default and that it clears any TTL.
+		var (
+			opts     client.SitePublishOptions
+			location string
+		)
+		f.StringVar(&opts.Project, "project", "", "project id")
+		f.StringVar(&opts.Name, "name", "", "deployment name")
+		f.StringVar(&opts.Dir, "dir", ".", "local directory to publish")
+		f.StringVar(&location, "location", "", "location")
+		f.StringVar(&opts.Environment, "environment", "", "release environment: production (default) or pr-<n>")
+		f.BoolVar(&opts.SPA, "spa", false, "serve index.html for unmatched paths (single-page app)")
+		f.StringVar(&opts.NotFound, "notFound", "", "custom 404 document path (e.g. 404.html)")
+		f.Parse(args[1:])
+
+		c, ok := rn.API.(*client.Client)
+		if !ok {
+			return fmt.Errorf("site deploy requires the default api client")
+		}
+
+		// Permanent deploy: pass an explicit TTL of 0 so a deployment of the same
+		// name that was previously a throwaway preview is promoted to a
+		// non-expiring one (a nil TTL would leave its auto-delete in place).
+		zero := int64(0)
+		return rn.deployPublishedStatic(c, &opts, location, &zero)
 	case "preview":
 		// preview wraps publish → deploy(ttl) → get into one throwaway-preview
 		// step: it publishes the local directory, deploys it as a TTL'd Static
@@ -85,36 +119,53 @@ func (rn Runner) site(args ...string) error {
 			}
 		}
 
-		// 1. Publish the local directory → a content-addressed site ref.
-		pub, err := c.PublishSite(context.Background(), &opts)
-		if err != nil {
-			return err
-		}
-
-		// 2. Deploy it as a TTL'd Static preview.
-		deploy := &api.DeploymentDeploy{
-			Project:  opts.Project,
-			Location: location,
-			Name:     opts.Name,
-			Type:     api.DeploymentTypeStatic,
-			Site:     pub.SiteRef,
-		}
+		// ttl > 0 sets an auto-delete; ttl <= 0 (the documented "0 = no
+		// auto-delete") leaves the deployment's TTL untouched.
+		var ttlPtr *int64
 		if ttl > 0 {
-			deploy.TTL = &ttl
+			ttlPtr = &ttl
 		}
-		if _, err := c.Deployment().Deploy(context.Background(), deploy); err != nil {
-			return err
-		}
-
-		// 3. Read back the rolling url, the immutable releaseUrl, and expiresAt.
-		got, err := c.Deployment().Get(context.Background(), &api.DeploymentGet{
-			Project:  opts.Project,
-			Location: location,
-			Name:     opts.Name,
-		})
-		if err != nil {
-			return err
-		}
-		return rn.print(got)
+		return rn.deployPublishedStatic(c, &opts, location, ttlPtr)
 	}
+}
+
+// deployPublishedStatic publishes opts.Dir (rendering an upload progress bar)
+// and deploys the resulting site ref as a Static deployment at location, then
+// prints the deployment (url + releaseUrl + expiresAt). ttl controls
+// auto-delete: a nil ttl leaves the deployment's TTL untouched, while &n sets
+// it (with 0 clearing any existing TTL). Shared by `site deploy` and
+// `site preview`.
+func (rn Runner) deployPublishedStatic(c *client.Client, opts *client.SitePublishOptions, location string, ttl *int64) error {
+	// 1. Publish the local directory → a content-addressed site ref.
+	progress, finish := newPublishProgress(os.Stderr)
+	opts.Progress = progress
+	pub, err := c.PublishSite(context.Background(), opts)
+	finish()
+	if err != nil {
+		return err
+	}
+
+	// 2. Deploy the release as a Static deployment.
+	deploy := &api.DeploymentDeploy{
+		Project:  opts.Project,
+		Location: location,
+		Name:     opts.Name,
+		Type:     api.DeploymentTypeStatic,
+		Site:     pub.SiteRef,
+		TTL:      ttl,
+	}
+	if _, err := c.Deployment().Deploy(context.Background(), deploy); err != nil {
+		return err
+	}
+
+	// 3. Read back the rolling url, the immutable releaseUrl, and expiresAt.
+	got, err := c.Deployment().Get(context.Background(), &api.DeploymentGet{
+		Project:  opts.Project,
+		Location: location,
+		Name:     opts.Name,
+	})
+	if err != nil {
+		return err
+	}
+	return rn.print(got)
 }
