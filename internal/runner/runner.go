@@ -137,6 +137,8 @@ func (rn Runner) Run(args ...string) error {
 		return rn.waf(args[1:]...)
 	case "cache":
 		return rn.cache(args[1:]...)
+	case "transform":
+		return rn.transform(args[1:]...)
 	case "disk":
 		return rn.disk(args[1:]...)
 	case "pullsecret", "ps":
