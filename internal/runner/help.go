@@ -321,7 +321,8 @@ var commands = []command{
 		name:  "site",
 		short: "publish static sites from the local filesystem",
 		subs: []subcommand{
-			{name: "publish", args: "-name -dir <path> [-environment -spa -notFound]", short: "publish a static site from a local directory"},
+			{name: "publish", args: "-name -dir <path> [-environment -spa -notFound]", short: "publish a static site from a local directory (prints a site:// ref)"},
+			{name: "deploy", args: "-name -dir <path> [-location] [-environment -spa -notFound]", short: "publish and deploy a static site as a permanent deployment"},
 			{name: "preview", args: "-name -dir <path> [-ttl s] [-force] [-environment -spa -notFound]", short: "publish and deploy a throwaway preview (auto-deletes at ttl; -force to overwrite a non-preview)"},
 		},
 	},
