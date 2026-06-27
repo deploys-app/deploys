@@ -78,10 +78,10 @@ var commands = []command{
 		name:  "billing",
 		short: "billing accounts, reports, and invoices",
 		subs: []subcommand{
-			{name: "create", short: "create a billing account"},
+			{name: "create", args: "-name <n> [-type individual|company -tax-id <t> -tax-name <n> -tax-address <a>]", short: "create a billing account"},
 			{name: "list", short: "list billing accounts"},
 			{name: "get", args: "-id <id>", short: "show a billing account"},
-			{name: "update", args: "-id <id>", short: "update a billing account"},
+			{name: "update", args: "-id <id> [-name <n> -type individual|company -tax-id <t> -tax-name <n> -tax-address <a>]", short: "update a billing account"},
 			{name: "delete", args: "-id <id>", short: "delete a billing account"},
 			{name: "report", args: "-id <id> -range <r> [-projects a,b]", short: "usage/cost report for a billing account"},
 			{name: "skus", short: "list billable SKUs and their prices"},

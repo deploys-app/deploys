@@ -25,6 +25,7 @@ func (rn Runner) billing(args ...string) error {
 	case "create":
 		var req api.BillingCreate
 		f.StringVar(&req.Name, "name", "", "billing account name")
+		f.StringVar(&req.Type, "type", "", "entity type: individual|company (default individual)")
 		f.StringVar(&req.TaxID, "tax-id", "", "tax id")
 		f.StringVar(&req.TaxName, "tax-name", "", "tax name")
 		f.StringVar(&req.TaxAddress, "tax-address", "", "tax address")
@@ -42,6 +43,7 @@ func (rn Runner) billing(args ...string) error {
 		var req api.BillingUpdate
 		f.Int64Var(&req.ID, "id", 0, "billing account id")
 		f.StringVar(&req.Name, "name", "", "billing account name")
+		f.StringVar(&req.Type, "type", "", "entity type: individual|company (default individual)")
 		f.StringVar(&req.TaxID, "tax-id", "", "tax id")
 		f.StringVar(&req.TaxName, "tax-name", "", "tax name")
 		f.StringVar(&req.TaxAddress, "tax-address", "", "tax address")
