@@ -320,3 +320,81 @@ func TestResolveExplicitVsImplicit(t *testing.T) {
 		t.Errorf("explicit expired should be AuthRequiredError, got %v", err)
 	}
 }
+
+func TestLockIsStale(t *testing.T) {
+	dir := t.TempDir()
+	p := filepath.Join(dir, "lock")
+
+	// A fresh lockfile is not stale.
+	if err := os.WriteFile(p, []byte("1 1\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if lockIsStale(p, time.Minute) {
+		t.Error("fresh lockfile reported stale")
+	}
+
+	// A lockfile whose mtime is past maxAge is stale.
+	old := time.Now().Add(-time.Hour)
+	if err := os.Chtimes(p, old, old); err != nil {
+		t.Fatal(err)
+	}
+	if !lockIsStale(p, time.Minute) {
+		t.Error("old lockfile not reported stale")
+	}
+
+	// A vanished lockfile counts as stale so the acquire loop retries.
+	if err := os.Remove(p); err != nil {
+		t.Fatal(err)
+	}
+	if !lockIsStale(p, time.Minute) {
+		t.Error("missing lockfile not reported stale")
+	}
+}
+
+func TestAcquireLockRoundTrip(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("DEPLOYS_CONFIG_DIR", dir)
+	lockPath := filepath.Join(dir, "test.lock")
+
+	unlock, err := acquireLock("test.lock")
+	if err != nil {
+		t.Fatalf("acquireLock: %v", err)
+	}
+	if _, err := os.Stat(lockPath); err != nil {
+		t.Fatalf("lockfile not created: %v", err)
+	}
+
+	// Releasing removes the lockfile so a later caller can re-acquire.
+	unlock()
+	if _, err := os.Stat(lockPath); !os.IsNotExist(err) {
+		t.Fatalf("lockfile not removed on unlock: %v", err)
+	}
+	unlock2, err := acquireLock("test.lock")
+	if err != nil {
+		t.Fatalf("re-acquire after unlock: %v", err)
+	}
+	unlock2()
+}
+
+func TestAcquireLockReclaimsStale(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("DEPLOYS_CONFIG_DIR", dir)
+	lockPath := filepath.Join(dir, "test.lock")
+
+	// Simulate a crashed run that left a lockfile behind, with an mtime past the
+	// reclaim window. acquireLock must break it instead of blocking to the
+	// deadline.
+	if err := os.WriteFile(lockPath, []byte("999999 1\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	old := time.Now().Add(-time.Minute)
+	if err := os.Chtimes(lockPath, old, old); err != nil {
+		t.Fatal(err)
+	}
+
+	unlock, err := acquireLock("test.lock")
+	if err != nil {
+		t.Fatalf("acquireLock did not reclaim a stale lock: %v", err)
+	}
+	unlock()
+}

@@ -404,9 +404,10 @@ func readFileSecure(path string) ([]byte, error) {
 }
 
 // acquireLock takes an exclusive O_EXCL lockfile (portable, unlike flock, which
-// Go cannot do cross-platform). A lockfile older than lockStale — or whose
-// recorded PID matches the current process from a crashed prior run — is broken
-// so an interrupted command can't wedge the store forever.
+// Go cannot do cross-platform). A lockfile whose mtime is older than lockStale is
+// treated as abandoned and reclaimed, so a crashed or interrupted command can't
+// wedge the store forever. The pid and timestamp written into the file are only
+// diagnostic (so a human can see who holds a stuck lock); reclaim is by age alone.
 func acquireLock(name string) (func(), error) {
 	dir, err := ConfigDir()
 	if err != nil {
