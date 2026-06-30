@@ -207,6 +207,16 @@ var commands = []command{
 		},
 	},
 	{
+		name:  "transform",
+		short: "edge request/response transform zones (separate from the WAF)",
+		subs: []subcommand{
+			{name: "get", short: "show the transform zone"},
+			{name: "list", short: "list transform zones in a project"},
+			{name: "set", args: "-f <spec.yaml> [-description]", short: "replace the transform zone's rules from a YAML spec"},
+			{name: "delete", short: "delete the transform zone"},
+		},
+	},
+	{
 		name:  "disk",
 		short: "persistent disks for stateful deployments",
 		subs: []subcommand{
