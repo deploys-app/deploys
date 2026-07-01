@@ -51,7 +51,7 @@ func (rn Runner) dropbox(args ...string) error {
 		f.StringVar(&opts.Project, "project", "", "project sid")
 		f.StringVar(&file, "file", "", "path to the file to upload, or - for stdin (default stdin)")
 		f.StringVar(&opts.Filename, "filename", "", "filename recorded in the download (defaults to the base name of -file)")
-		f.IntVar(&opts.TTLDays, "ttl", 0, "download lifetime in days, 1-7 (default 1)")
+		f.IntVar(&opts.TTLDays, "ttl", 0, "download lifetime in days, 1-365 (default 1)")
 		f.Parse(args[1:])
 
 		c, ok := rn.API.(*client.Client)
@@ -78,7 +78,7 @@ func (rn Runner) dropbox(args ...string) error {
 		f.StringVar(&opts.ContentType, "content-type", "", "Content-Type the upload must send (optional; enforced)")
 		f.Int64Var(&opts.MinSize, "min-size", 0, "minimum upload size in bytes (server floors at 1)")
 		f.Int64Var(&opts.MaxSize, "max-size", 0, "maximum upload size in bytes (server clamps to its cap, default 5 GiB)")
-		f.IntVar(&opts.TTLDays, "ttl", 0, "download lifetime in days, 1-7 (default 1)")
+		f.IntVar(&opts.TTLDays, "ttl", 0, "download lifetime in days, 1-365 (default 1)")
 		f.IntVar(&opts.Expires, "expires", 0, "upload-URL lifetime in seconds, 1-3600 (default 900)")
 		f.Parse(args[1:])
 

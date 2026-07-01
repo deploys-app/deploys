@@ -311,7 +311,7 @@ separate from the WAF (a role can hold `cache.*` without `waf.*`).
 
 - `list` `-after -before -limit`, `metrics` `-time-range 7d|30d|90d`.
 - `upload` `-project -file -filename -ttl`, e.g. `deploys dropbox upload -project acme -file site.tar.gz -ttl 7`.
-- `upload` reads `-file` (or stdin when omitted or `-`) and prints the public, short-lived download URL; `-ttl` is 1-7 days (default 1). Requires the `dropbox.upload` permission.
+- `upload` reads `-file` (or stdin when omitted or `-`) and prints the public, short-lived download URL; `-ttl` is 1-365 days (default 1). Requires the `dropbox.upload` permission.
 - `-after`/`-before` accept RFC 3339 or `YYYY-MM-DD`.
 
 ### auditlog
