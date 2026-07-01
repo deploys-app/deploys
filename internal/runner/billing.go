@@ -93,6 +93,24 @@ func (rn Runner) billing(args ...string) error {
 		f.Int64Var(&req.InvoiceID, "id", 0, "invoice id")
 		f.Parse(args[1:])
 		resp, err = s.DownloadReceipt(context.Background(), &req)
+	case "list-members", "listMembers":
+		var req api.BillingMemberList
+		f.Int64Var(&req.ID, "id", 0, "billing account id")
+		f.Parse(args[1:])
+		resp, err = s.ListMembers(context.Background(), &req)
+	case "add-member", "addMember":
+		var req api.BillingMemberAdd
+		f.Int64Var(&req.ID, "id", 0, "billing account id")
+		f.StringVar(&req.Email, "email", "", "member email")
+		f.StringVar(&req.Role, "role", "", "member role: admin|accountant")
+		f.Parse(args[1:])
+		resp, err = s.AddMember(context.Background(), &req)
+	case "remove-member", "removeMember":
+		var req api.BillingMemberRemove
+		f.Int64Var(&req.ID, "id", 0, "billing account id")
+		f.StringVar(&req.Email, "email", "", "member email")
+		f.Parse(args[1:])
+		resp, err = s.RemoveMember(context.Background(), &req)
 	}
 	if err != nil {
 		return err

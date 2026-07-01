@@ -90,6 +90,9 @@ var commands = []command{
 			{name: "invoice", args: "-id <invoice id>", short: "show an invoice"},
 			{name: "downloadinvoice", args: "-id <invoice id>", short: "download an invoice PDF"},
 			{name: "downloadreceipt", args: "-id <invoice id>", short: "download a receipt PDF"},
+			{name: "list-members", aliases: []string{"listMembers"}, args: "-id <id>", short: "list the members of a billing account"},
+			{name: "add-member", aliases: []string{"addMember"}, args: "-id <id> -email <email> -role admin|accountant", short: "invite or update a billing account member"},
+			{name: "remove-member", aliases: []string{"removeMember"}, args: "-id <id> -email <email>", short: "remove a billing account member"},
 		},
 	},
 	{
