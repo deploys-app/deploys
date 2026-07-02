@@ -436,7 +436,7 @@ func PrintUsage(w io.Writer) {
 	tw.Flush()
 
 	fmt.Fprint(w, "\nFlags:\n")
-	fmt.Fprint(w, "  -output table|yaml|json   output mode (or the -oyaml, -ojson, -otable shorthands)\n")
+	fmt.Fprint(w, "  -output table|yaml|json|toon   output mode (or the -oyaml, -ojson, -otable, -otoon shorthands)\n")
 	fmt.Fprint(w, "  -account email            use a specific stored account for this command\n")
 
 	fmt.Fprint(w, "\nEnvironment:\n")

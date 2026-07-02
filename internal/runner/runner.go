@@ -12,6 +12,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/deploys-app/api"
+	"github.com/deploys-app/api/toon"
 	"gopkg.in/yaml.v2"
 )
 
@@ -56,6 +57,13 @@ func (rn Runner) print(v any) error {
 		enc := json.NewEncoder(rn.output())
 		enc.SetIndent("", "    ")
 		return enc.Encode(v)
+	case "toon":
+		b, err := toon.Marshal(v)
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintln(rn.output(), string(b))
+		return err
 	default:
 		return fmt.Errorf("invalid output")
 	}
@@ -83,7 +91,7 @@ func (rn Runner) printTable(table [][]string) {
 }
 
 func (rn *Runner) registerFlags(f *flag.FlagSet) {
-	f.StringVar(&rn.OutputMode, "output", "table", "output mode: table, yaml, json")
+	f.StringVar(&rn.OutputMode, "output", "table", "output mode: table, yaml, json, toon")
 }
 
 func (rn *Runner) replaceShortFlag(args []string) {
@@ -95,6 +103,8 @@ func (rn *Runner) replaceShortFlag(args []string) {
 			args[i] = "--output=json"
 		case "-otable":
 			args[i] = "--output=table"
+		case "-otoon":
+			args[i] = "--output=toon"
 		}
 	}
 }
@@ -771,7 +781,7 @@ func parseDeploymentDeploy(helpOut io.Writer, args []string) (api.DeploymentDepl
 	// the error. Output is discarded so the error is reported once, by main.
 	f := flag.NewFlagSet("deployment deploy", flag.ContinueOnError)
 	f.SetOutput(io.Discard)
-	f.StringVar(&outputMode, "output", "table", "output mode: table, yaml, json")
+	f.StringVar(&outputMode, "output", "table", "output mode: table, yaml, json, toon")
 	f.StringVar(&req.Location, "location", "", "location")
 	f.StringVar(&req.Project, "project", "", "project id")
 	f.StringVar(&req.Name, "name", "", "deployment name")
