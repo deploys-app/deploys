@@ -9,6 +9,7 @@ import (
 
 	"github.com/deploys-app/api"
 	"github.com/deploys-app/api/client"
+	"github.com/deploys-app/api/toon"
 	"gopkg.in/yaml.v2"
 )
 
@@ -253,8 +254,9 @@ func (rn Runner) pollNotificationPull(s api.Notification, req *api.NotificationP
 }
 
 // printNotificationEvent renders one streamed change, honoring -output: a compact
-// JSON line (NDJSON, ideal for an agent) for json, a YAML document for yaml, and a
-// single tab-separated line (time, actor, action, resource, outcome) otherwise.
+// JSON line (NDJSON, ideal for an agent) for json, a YAML document for yaml, a
+// TOON document for toon, and a single tab-separated line (time, actor, action,
+// resource, outcome) otherwise.
 func (rn Runner) printNotificationEvent(ev api.ChangeEventPayload) error {
 	switch rn.OutputMode {
 	case "json":
@@ -266,6 +268,13 @@ func (rn Runner) printNotificationEvent(ev api.ChangeEventPayload) error {
 		return err
 	case "yaml":
 		return yaml.NewEncoder(rn.output()).Encode(ev)
+	case "toon":
+		b, err := toon.Marshal(ev)
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintln(rn.output(), string(b))
+		return err
 	default:
 		res := ev.ResourceType
 		if ev.ResourceName != "" {
