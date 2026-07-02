@@ -103,9 +103,13 @@ Every command accepts `-output` (default `table`):
 deploys deployment list -project acme -location gke.cluster-rcf2          # table
 deploys deployment list -project acme -location gke.cluster-rcf2 -oyaml   # yaml
 deploys deployment list -project acme -location gke.cluster-rcf2 -ojson   # json
+deploys deployment list -project acme -location gke.cluster-rcf2 -otoon   # toon
 ```
 
-`-oyaml`, `-ojson`, and `-otable` are shorthands for `-output yaml|json|table`.
+`-oyaml`, `-ojson`, `-otable`, and `-otoon` are shorthands for
+`-output yaml|json|table|toon`. `toon` ([Token-Oriented Object
+Notation](https://github.com/toon-format/spec)) is a compact format aimed at
+LLM/agent consumers, using fewer tokens than JSON or YAML for the same data.
 
 ### Conventions
 
