@@ -9,7 +9,7 @@ import (
 )
 
 // print's toon case must render the same encoding/json-tagged data as -ojson,
-// just in the TOON encoding (github.com/deploys-app/api/toon), plus a trailing
+// just in the TOON encoding (github.com/moonrhythm/toon), plus a trailing
 // newline like the other output modes.
 func TestPrint_Toon(t *testing.T) {
 	type item struct {

@@ -9,7 +9,7 @@ import (
 
 	"github.com/deploys-app/api"
 	"github.com/deploys-app/api/client"
-	"github.com/deploys-app/api/toon"
+	"github.com/moonrhythm/toon"
 	"gopkg.in/yaml.v2"
 )
 
