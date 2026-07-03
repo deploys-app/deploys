@@ -3,7 +3,7 @@ module github.com/deploys-app/deploys
 go 1.26
 
 require (
-	github.com/deploys-app/api v0.0.0-20260701121314-4db37546124c
+	github.com/deploys-app/api v0.0.0-20260703134850-18e777ddf18f
 	github.com/moonrhythm/toon v0.0.0-20260702100246-6fcdad0a6a12
 	golang.org/x/mod v0.37.0
 	golang.org/x/oauth2 v0.14.0
