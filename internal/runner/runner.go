@@ -145,6 +145,8 @@ func (rn Runner) Run(args ...string) error {
 		return rn.route(args[1:]...)
 	case "waf":
 		return rn.waf(args[1:]...)
+	case "wafList", "waflist":
+		return rn.wafList(args[1:]...)
 	case "cache":
 		return rn.cache(args[1:]...)
 	case "transform":
