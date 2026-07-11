@@ -265,9 +265,12 @@ filters via `ipInList(<field>, "<name>")`. Project-scoped data — no location.
 - `list`, `get` `-name`, `delete` `-name` (refused while a zone references the list).
 - `set -name <n>` with entries from repeated `-entry <ip-or-cidr>` flags, an
   `-entries-file <path>` (one entry per line, `#` comments stripped), or
-  `-f <list.yaml>` (the YAML form of `wafList get`; flags override file values).
-  Replaces the whole list all-or-nothing; editing a referenced list re-applies
-  every zone that uses it.
+  `-f <list.yaml>` (the YAML form of `wafList get`). Base entries come from
+  `-entries-file` if given, else from the `-f` entries; `-entry` flags append
+  to that base. Scalar flags override `-f` values. Replaces the whole list
+  all-or-nothing; emptying a list must be explicit (`entries: []` in `-f`) —
+  an entries source that yields nothing is an error. Editing a referenced
+  list re-applies every zone that uses it.
 
 ### cache
 
