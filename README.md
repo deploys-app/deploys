@@ -254,7 +254,7 @@ triage status (resolve, reopen, or mute). History-backed and best-effort, like
 ### waf
 
 - `get`, `list`, `delete`.
-- `set -f <spec.yaml>` `-description` — apply a WAF zone from a YAML spec (description, rules, limits). `-f` is required.
+- `set -f <spec.yaml>` `-description` — apply a WAF zone from a YAML spec (description, rules, limits, managedRules). `-f` is required. Set replaces the whole zone: a spec that omits `managedRules` disables and clears it, so always start from `waf get -oyaml` output.
 - `metrics` / `limitmetrics` `-time-range 1h|6h|12h|1d|7d|30d`.
 
 ### wafList (`waflist`)
