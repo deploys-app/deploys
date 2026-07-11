@@ -92,7 +92,19 @@ func (rn Runner) waf(args ...string) error {
 		f.StringVar(&req.Before, "before", "", "page cursor from a previous response's next")
 		f.IntVar(&req.Limit, "limit", 0, "max events per page (default 50, max 200)")
 		f.Parse(args[1:])
-		resp, err = s.Events(context.Background(), &req)
+		r, rerr := s.Events(context.Background(), &req)
+		if rerr != nil {
+			return rerr
+		}
+		if perr := rn.print(r); perr != nil {
+			return perr
+		}
+		// Table() carries no cursor column, so without this trailer a
+		// table-mode user has no way to obtain the -before value.
+		if (rn.OutputMode == "" || rn.OutputMode == "table") && r.Next != "" {
+			fmt.Fprintf(rn.output(), "next: %s\n", r.Next)
+		}
+		return nil
 	case "metrics":
 		var (
 			req       api.WAFMetrics
