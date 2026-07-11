@@ -83,6 +83,16 @@ func (rn Runner) waf(args ...string) error {
 		f.StringVar(&req.Location, "location", "", "location")
 		f.Parse(args[1:])
 		resp, err = s.Delete(context.Background(), &req)
+	case "events":
+		var req api.WAFEvents
+		f.StringVar(&req.Project, "project", "", "project id")
+		f.StringVar(&req.Location, "location", "", "location")
+		f.StringVar(&req.RuleID, "rule", "", "rule id filter (short id from waf get)")
+		f.StringVar(&req.Action, "action", "", "action filter: log, allow, block")
+		f.StringVar(&req.Before, "before", "", "page cursor from a previous response's next")
+		f.IntVar(&req.Limit, "limit", 0, "max events per page (default 50, max 200)")
+		f.Parse(args[1:])
+		resp, err = s.Events(context.Background(), &req)
 	case "metrics":
 		var (
 			req       api.WAFMetrics
