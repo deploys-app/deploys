@@ -257,6 +257,21 @@ triage status (resolve, reopen, or mute). History-backed and best-effort, like
 - `set -f <spec.yaml>` `-description` — apply a WAF zone from a YAML spec (description, rules, limits). `-f` is required.
 - `metrics` / `limitmetrics` `-time-range 1h|6h|12h|1d|7d|30d`.
 
+### wafList (`waflist`)
+
+Named, reusable IP/CIDR lists referenced from WAF rule expressions and limit
+filters via `ipInList(<field>, "<name>")`. Project-scoped data — no location.
+
+- `list`, `get` `-name`, `delete` `-name` (refused while a zone references the list).
+- `set -name <n>` with entries from repeated `-entry <ip-or-cidr>` flags, an
+  `-entries-file <path>` (one entry per line, `#` comments stripped), or
+  `-f <list.yaml>` (the YAML form of `wafList get`). Base entries come from
+  `-entries-file` if given, else from the `-f` entries; `-entry` flags append
+  to that base. Scalar flags override `-f` values. Replaces the whole list
+  all-or-nothing; emptying a list must be explicit (`entries: []` in `-f`) —
+  an entries source that yields nothing is an error. Editing a referenced
+  list re-applies every zone that uses it.
+
 ### cache
 
 Edge cache-override zone (one per project + location), applied at the CDN edge —

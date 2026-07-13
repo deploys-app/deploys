@@ -199,6 +199,17 @@ var commands = []command{
 		},
 	},
 	{
+		name:    "wafList",
+		aliases: []string{"waflist"},
+		short:   "named IP lists referenced from WAF expressions via ipInList",
+		subs: []subcommand{
+			{name: "get", args: "-name <n>", short: "show a named IP list"},
+			{name: "list", short: "list the project's named IP lists"},
+			{name: "set", args: "-name <n> (-entry <e> ... | -entries-file <path> | -f <list.yaml>)", short: "create or replace a named IP list (whole-entries replace)"},
+			{name: "delete", args: "-name <n>", short: "delete a named IP list (refused while a zone references it)"},
+		},
+	},
+	{
 		name:  "cache",
 		short: "edge cache-override zones (separate from the WAF)",
 		subs: []subcommand{
