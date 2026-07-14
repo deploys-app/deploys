@@ -37,17 +37,19 @@ func (rn Runner) waf(args ...string) error {
 		f.Parse(args[1:])
 		resp, err = s.List(context.Background(), &req)
 	case "set":
-		// Set replaces the whole zone (rules and limits) all-or-nothing, so it
-		// takes a spec file rather than per-rule flags. The file is the yaml
-		// form of waf get (description, rules, limits); project and location
-		// flags override values in the file.
+		// Set replaces the whole zone (rules, limits, and managed rules)
+		// all-or-nothing, so it takes a spec file rather than per-rule flags.
+		// The file is the yaml form of waf get (description, rules, limits,
+		// managedRules); project and location flags override values in the
+		// file. Omitting managedRules disables and clears it — always start
+		// from waf get output.
 		var (
 			fn          string
 			project     string
 			location    string
 			description string
 		)
-		f.StringVar(&fn, "f", "", "spec file (yaml: description, rules, limits)")
+		f.StringVar(&fn, "f", "", "spec file (yaml: description, rules, limits, managedRules)")
 		f.StringVar(&project, "project", "", "project id")
 		f.StringVar(&location, "location", "", "location")
 		f.StringVar(&description, "description", "", "zone description")
