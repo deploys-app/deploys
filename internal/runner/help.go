@@ -194,6 +194,7 @@ var commands = []command{
 			{name: "list", short: "list WAF zones in a project"},
 			{name: "set", args: "-f <spec.yaml> [-description]", short: "apply a WAF zone from a YAML spec"},
 			{name: "delete", short: "delete the WAF zone"},
+			{name: "events", args: "[-rule <id>] [-action log|allow|block] [-limit n] [-before <cursor>]", short: "show recent sampled firewall match events"},
 			{name: "metrics", args: "[-time-range 1h|6h|12h|1d|7d|30d]", short: "show WAF request metrics"},
 			{name: "limitmetrics", args: "[-time-range 1h|6h|12h|1d|7d|30d]", short: "show WAF rate-limit metrics"},
 		},
