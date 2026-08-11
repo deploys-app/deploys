@@ -380,6 +380,18 @@ var commands = []command{
 			{name: "pull", args: "-name [-ack -limit -follow -poll -interval]", short: "fetch a pull channel's change events (ack to advance; -follow streams over SSE)"},
 		},
 	},
+	{
+		name:  "alert",
+		short: "metric alert rules on a deployment's CPU, memory, requests, or egress",
+		subs: []subcommand{
+			{name: "create", args: "-name -location -deployment -metric cpu|memory|requests|egress -threshold n -for n [-op gte|lte|'>='|'<=' -renotify n -disabled]", short: "create a metric alert rule"},
+			{name: "get", args: "-name", short: "show an alert rule"},
+			{name: "list", short: "list alert rules"},
+			{name: "update", args: "-name [flags]", short: "update an alert rule (omitted flags are preserved)"},
+			{name: "delete", args: "-name", short: "delete an alert rule"},
+			{name: "events", args: "-name [-limit]", short: "show a rule's recent state transitions"},
+		},
+	},
 }
 
 // lookupCommand finds a group by its canonical name or any alias.
