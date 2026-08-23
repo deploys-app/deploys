@@ -299,8 +299,7 @@ func TestResolveExplicitVsImplicit(t *testing.T) {
 	}
 	// Explicit miss -> hard AuthRequiredError.
 	_, _, err := Resolve("ghost@x", ep, true)
-	var are *AuthRequiredError
-	if !errors.As(err, &are) {
+	if _, ok := errors.AsType[*AuthRequiredError](err); !ok {
 		t.Errorf("explicit miss should be AuthRequiredError, got %v", err)
 	}
 	// Implicit expired active -> account returned with expired=true, no token use.
@@ -316,7 +315,7 @@ func TestResolveExplicitVsImplicit(t *testing.T) {
 	}
 	// Explicit expired -> hard error.
 	_, _, err = Resolve("old@x", ep, true)
-	if !errors.As(err, &are) {
+	if _, ok := errors.AsType[*AuthRequiredError](err); !ok {
 		t.Errorf("explicit expired should be AuthRequiredError, got %v", err)
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"slices"
 	"strings"
 	"text/tabwriter"
 )
@@ -387,10 +388,8 @@ func lookupCommand(name string) *command {
 		if commands[i].name == name {
 			return &commands[i]
 		}
-		for _, a := range commands[i].aliases {
-			if a == name {
-				return &commands[i]
-			}
+		if slices.Contains(commands[i].aliases, name) {
+			return &commands[i]
 		}
 	}
 	return nil
@@ -405,10 +404,8 @@ func (c *command) lookupSub(name string) *subcommand {
 		if c.subs[i].name == name {
 			return &c.subs[i]
 		}
-		for _, a := range c.subs[i].aliases {
-			if a == name {
-				return &c.subs[i]
-			}
+		if slices.Contains(c.subs[i].aliases, name) {
+			return &c.subs[i]
 		}
 	}
 	return nil
