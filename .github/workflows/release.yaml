@@ -15,7 +15,7 @@ jobs:
         fetch-depth: 0
     - uses: actions/setup-go@v6
       with:
-        go-version: "^1.26"
+        go-version: "^1.27"
     - uses: google-github-actions/auth@v3
       id: auth
       with:
