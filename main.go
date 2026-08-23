@@ -78,8 +78,7 @@ func main() {
 // stdout + exit 1 behavior so existing scripts are unaffected.
 func fail(err error) {
 	if exitCode(err) == 4 {
-		var are *auth.AuthRequiredError
-		if errors.As(err, &are) {
+		if _, ok := errors.AsType[*auth.AuthRequiredError](err); ok {
 			fmt.Fprintln(os.Stderr, "Error: "+err.Error())
 		} else {
 			fmt.Fprintln(os.Stderr, "Error: your deploys session has expired.")
@@ -97,8 +96,7 @@ func fail(err error) {
 // lacking a permission) deliberately stays 1 — a permission denial is not a
 // reason to re-login.
 func exitCode(err error) int {
-	var are *auth.AuthRequiredError
-	if errors.As(err, &are) || errors.Is(err, api.ErrUnauthorized) {
+	if _, ok := errors.AsType[*auth.AuthRequiredError](err); ok || errors.Is(err, api.ErrUnauthorized) {
 		return 4
 	}
 	return 1
