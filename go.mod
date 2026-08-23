@@ -1,6 +1,6 @@
 module github.com/deploys-app/deploys
 
-go 1.26
+go 1.27.0
 
 require (
 	github.com/deploys-app/api v0.0.0-20260713024420-a04c48ceccc7
