@@ -227,7 +227,7 @@ func (rn Runner) me(args ...string) error {
 		)
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&permissions, "permissions", "", "permissions (comma separated; any you hold except wildcards and role.*/serviceaccount.key.*/billing.*/pullsecret.get)")
-		f.IntVar(&req.TTLSeconds, "ttl", 0, "token lifetime in seconds (60-3600, default 900)")
+		f.IntVar(&req.TTLSeconds, "ttl", 0, fmt.Sprintf("token lifetime in seconds (%d-%d, default %d)", api.MinGenerateTokenTTLSeconds, api.MaxGenerateTokenTTLSeconds, api.DefaultGenerateTokenTTLSeconds))
 		f.StringVar(&req.Label, "label", "", "optional attribution label for the agent session (e.g. claude-code:pr-42)")
 		f.Parse(args[1:])
 		req.Permissions = splitComma(permissions)
