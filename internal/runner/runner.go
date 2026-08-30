@@ -2,7 +2,8 @@ package runner
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"errors"
 	"flag"
 	"fmt"
@@ -54,9 +55,12 @@ func (rn Runner) print(v any) error {
 	case "yaml":
 		return yaml.NewEncoder(rn.output()).Encode(v)
 	case "json":
-		enc := json.NewEncoder(rn.output())
-		enc.SetIndent("", "    ")
-		return enc.Encode(v)
+		b, err := json.Marshal(v, jsontext.WithIndent("    "))
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintln(rn.output(), string(b))
+		return err
 	case "toon":
 		b, err := toon.Marshal(v)
 		if err != nil {

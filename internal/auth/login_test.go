@@ -4,7 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -24,7 +24,7 @@ func fakeAuthServer(t *testing.T) (*httptest.Server, *authProbe) {
 
 	var base string // set after the server starts
 	mux.HandleFunc("/.well-known/oauth-authorization-server", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(map[string]any{
+		json.MarshalWrite(w, map[string]any{
 			"issuer":                           base,
 			"authorization_endpoint":           base + "/authorize",
 			"token_endpoint":                   base + "/token",
@@ -37,7 +37,7 @@ func fakeAuthServer(t *testing.T) (*httptest.Server, *authProbe) {
 	mux.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
 		probe.registered++
 		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(map[string]any{"client_id": "test-client"})
+		json.MarshalWrite(w, map[string]any{"client_id": "test-client"})
 	})
 	mux.HandleFunc("/authorize", func(w http.ResponseWriter, r *http.Request) {
 		q := r.URL.Query()
@@ -57,7 +57,7 @@ func fakeAuthServer(t *testing.T) (*httptest.Server, *authProbe) {
 		probe.mu.Unlock()
 		if reject != "" && r.Form.Get("client_id") == reject {
 			w.WriteHeader(http.StatusUnauthorized)
-			json.NewEncoder(w).Encode(map[string]string{"error": "invalid_client"})
+			json.MarshalWrite(w, map[string]string{"error": "invalid_client"})
 			return
 		}
 		code := r.Form.Get("code")
@@ -68,11 +68,11 @@ func fakeAuthServer(t *testing.T) (*httptest.Server, *authProbe) {
 		sum := sha256.Sum256([]byte(verifier))
 		if verifier == "" || base64.RawURLEncoding.EncodeToString(sum[:]) != want {
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(map[string]string{"error": "invalid_grant"})
+			json.MarshalWrite(w, map[string]string{"error": "invalid_grant"})
 			return
 		}
 		probe.exchanged = true
-		json.NewEncoder(w).Encode(map[string]any{
+		json.MarshalWrite(w, map[string]any{
 			"access_token": "deploys-api.test",
 			"token_type":   "Bearer",
 			"expires_in":   604800,
@@ -235,7 +235,7 @@ func TestDiscoverMetadataRejectsCrossOrigin(t *testing.T) {
 	// Endpoints that are not same-origin as the issuer must be rejected so a
 	// metadata doc cannot repoint the token endpoint at an exfiltration host.
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(map[string]any{
+		json.MarshalWrite(w, map[string]any{
 			"issuer":                 "http://127.0.0.1:1", // wrong issuer
 			"authorization_endpoint": "https://evil.example/authorize",
 			"token_endpoint":         "https://evil.example/token",
@@ -257,9 +257,9 @@ func TestRevoke(t *testing.T) {
 		var body struct {
 			Token string `json:"token"`
 		}
-		json.NewDecoder(r.Body).Decode(&body)
+		json.UnmarshalRead(r.Body, &body)
 		got = body.Token
-		json.NewEncoder(w).Encode(map[string]any{"ok": true})
+		json.MarshalWrite(w, map[string]any{"ok": true})
 	}))
 	defer srv.Close()
 
