@@ -2,7 +2,7 @@ package runner
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"flag"
 	"fmt"
@@ -165,7 +165,7 @@ func fetchLatestVersion(ctx context.Context, url string) (string, error) {
 	var body struct {
 		TagName string `json:"tag_name"`
 	}
-	if err := json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&body); err != nil {
+	if err := json.UnmarshalRead(io.LimitReader(resp.Body, 1<<20), &body); err != nil {
 		return "", err
 	}
 	if body.TagName == "" {

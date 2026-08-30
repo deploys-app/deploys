@@ -11,7 +11,8 @@ package auth
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"os"
@@ -223,7 +224,7 @@ func (c *Credentials) Save() error {
 	if err := prepareDir(filepath.Dir(path)); err != nil {
 		return err
 	}
-	b, err := json.MarshalIndent(c, "", "  ")
+	b, err := json.Marshal(c, jsontext.WithIndent("  "))
 	if err != nil {
 		return err
 	}
@@ -305,7 +306,7 @@ func SaveClientID(authBase, clientID string) error {
 	}
 	cc.Version = schemaVersion
 	cc.Clients[authBase] = clientID
-	b, err := json.MarshalIndent(&cc, "", "  ")
+	b, err := json.Marshal(&cc, jsontext.WithIndent("  "))
 	if err != nil {
 		return err
 	}

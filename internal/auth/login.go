@@ -6,7 +6,7 @@ import (
 	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/base64"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"io"
@@ -172,7 +172,7 @@ func discoverMetadata(ctx context.Context, authBase string) (metadata, error) {
 	if resp.StatusCode != http.StatusOK {
 		return m, fmt.Errorf("discover auth server: status %d", resp.StatusCode)
 	}
-	if err := json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&m); err != nil {
+	if err := json.UnmarshalRead(io.LimitReader(resp.Body, 1<<20), &m); err != nil {
 		return m, fmt.Errorf("discover auth server: %w", err)
 	}
 
@@ -266,7 +266,7 @@ func registerClient(ctx context.Context, regEndpoint string) (string, error) {
 	var out struct {
 		ClientID string `json:"client_id"`
 	}
-	if err := json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&out); err != nil {
+	if err := json.UnmarshalRead(io.LimitReader(resp.Body, 1<<20), &out); err != nil {
 		return "", fmt.Errorf("register client: %w", err)
 	}
 	if out.ClientID == "" {
