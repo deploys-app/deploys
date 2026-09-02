@@ -128,6 +128,9 @@ func TestRunHelpNeedsNoAPI(t *testing.T) {
 		{[]string{"alert"}, "Subcommands:"},
 		{[]string{"alert", "help"}, "metric alert rules"},
 		{[]string{"alert", "-h"}, "metric alert rules"},
+		{[]string{"metricsource"}, "Subcommands:"},
+		{[]string{"metricsource", "help"}, "Prometheus scrape sources"},
+		{[]string{"metricsource", "-h"}, "Prometheus scrape sources"},
 	}
 	for _, tc := range cases {
 		if err := tmp.Truncate(0); err != nil {

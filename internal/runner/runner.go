@@ -179,6 +179,8 @@ func (rn Runner) Run(args ...string) error {
 		return rn.scheduler(args[1:]...)
 	case "notification":
 		return rn.notification(args[1:]...)
+	case "metricsource":
+		return rn.metricSource(args[1:]...)
 	case "alert":
 		return rn.alert(args[1:]...)
 	case "check-update":

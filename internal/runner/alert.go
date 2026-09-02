@@ -7,7 +7,13 @@ import (
 	"github.com/deploys-app/api"
 )
 
-const alertOpFlagHelp = "comparison operator: >=, <=, gte, or lte (default >=; quote '>=' / '<=' in shells)"
+const (
+	alertOpFlagHelp     = "comparison operator: '>=', '<=', gte, or lte (default '>='; quote '>=' / '<=' in shells)"
+	alertKindFlagHelp   = "target kind: deployment or custom (empty = deployment)"
+	alertMetricFlagHelp = "metric to watch: cpu, memory, requests, or egress (kind=deployment); value or rate (kind=custom)"
+	alertSourceFlagHelp = "metric source name (kind=custom)"
+	alertSeriesFlagHelp = "series key (kind=custom)"
+)
 
 func (rn Runner) alert(args ...string) error {
 	if len(args) == 0 || IsHelpArg(args[0]) {
@@ -43,16 +49,20 @@ func (rn Runner) alert(args ...string) error {
 		var req api.AlertCreate
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Name, "name", "", "alert rule name")
-		f.StringVar(&req.Target.Location, "location", "", "target location")
-		f.StringVar(&req.Target.Deployment, "deployment", "", "target deployment name")
-		f.StringVar(&req.Condition.Metric, "metric", "", "metric to watch: cpu, memory, requests, or egress")
+		f.StringVar(&req.Target.Kind, "kind", "", alertKindFlagHelp)
+		f.StringVar(&req.Target.Location, "location", "", "target location (kind=deployment)")
+		f.StringVar(&req.Target.Deployment, "deployment", "", "target deployment name (kind=deployment)")
+		f.StringVar(&req.Target.Source, "source", "", alertSourceFlagHelp)
+		f.StringVar(&req.Target.Series, "series", "", alertSeriesFlagHelp)
+		f.StringVar(&req.Condition.Metric, "metric", "", alertMetricFlagHelp)
 		f.StringVar(&req.Condition.Op, "op", "", alertOpFlagHelp)
-		f.Float64Var(&req.Condition.Threshold, "threshold", 0, "threshold value (percent 0-100 for cpu/memory, req/min for requests, bytes/min for egress)")
+		f.Float64Var(&req.Condition.Threshold, "threshold", 0, "threshold value (percent 0-100 for cpu/memory, req/min for requests, bytes/min for egress, gauge for value, per-minute increase for rate)")
 		f.IntVar(&req.Condition.ForMinutes, "for", 0, "minutes the condition must hold continuously (1-60)")
 		f.IntVar(&req.RenotifyMinutes, "renotify", 0, "minutes between re-notifications while still firing (0 = disabled)")
 		f.BoolVar(&req.Disabled, "disabled", false, "create the rule disabled")
 		f.Parse(args[1:])
 		req.Condition.Op = normalizeAlertOp(req.Condition.Op)
+		applyAlertTargetKind(&req.Target)
 		resp, err = s.Create(context.Background(), &req)
 
 	case "update":
@@ -62,8 +72,11 @@ func (rn Runner) alert(args ...string) error {
 		// before applying overrides.
 		var (
 			req        api.AlertUpdate
+			kind       string
 			location   string
 			deployment string
+			source     string
+			series     string
 			metric     string
 			op         string
 			threshold  float64
@@ -73,11 +86,14 @@ func (rn Runner) alert(args ...string) error {
 		)
 		f.StringVar(&req.Project, "project", "", "project id")
 		f.StringVar(&req.Name, "name", "", "alert rule name")
-		f.StringVar(&location, "location", "", "target location")
-		f.StringVar(&deployment, "deployment", "", "target deployment name")
-		f.StringVar(&metric, "metric", "", "metric to watch: cpu, memory, requests, or egress")
+		f.StringVar(&kind, "kind", "", alertKindFlagHelp)
+		f.StringVar(&location, "location", "", "target location (kind=deployment)")
+		f.StringVar(&deployment, "deployment", "", "target deployment name (kind=deployment)")
+		f.StringVar(&source, "source", "", alertSourceFlagHelp)
+		f.StringVar(&series, "series", "", alertSeriesFlagHelp)
+		f.StringVar(&metric, "metric", "", alertMetricFlagHelp)
 		f.StringVar(&op, "op", "", alertOpFlagHelp)
-		f.Float64Var(&threshold, "threshold", 0, "threshold value (percent 0-100 for cpu/memory, req/min for requests, bytes/min for egress)")
+		f.Float64Var(&threshold, "threshold", 0, "threshold value (percent 0-100 for cpu/memory, req/min for requests, bytes/min for egress, gauge for value, per-minute increase for rate)")
 		f.IntVar(&forMin, "for", 0, "minutes the condition must hold continuously (1-60)")
 		f.IntVar(&renotify, "renotify", 0, "minutes between re-notifications while still firing (0 = disabled)")
 		f.BoolVar(&disabled, "disabled", false, "disable the rule")
@@ -95,11 +111,20 @@ func (rn Runner) alert(args ...string) error {
 		req.RenotifyMinutes = cur.RenotifyMinutes
 		req.Disabled = cur.Disabled
 
+		if set["kind"] {
+			req.Target.Kind = kind
+		}
 		if set["location"] {
 			req.Target.Location = location
 		}
 		if set["deployment"] {
 			req.Target.Deployment = deployment
+		}
+		if set["source"] {
+			req.Target.Source = source
+		}
+		if set["series"] {
+			req.Target.Series = series
 		}
 		if set["metric"] {
 			req.Condition.Metric = metric
@@ -119,6 +144,7 @@ func (rn Runner) alert(args ...string) error {
 		if set["disabled"] {
 			req.Disabled = disabled
 		}
+		applyAlertTargetKind(&req.Target)
 		resp, err = s.Update(context.Background(), &req)
 
 	case "delete":
@@ -140,6 +166,19 @@ func (rn Runner) alert(args ...string) error {
 		return err
 	}
 	return rn.print(resp)
+}
+
+// applyAlertTargetKind enforces the API shape after flags are applied: kind=custom
+// requires Location/Deployment empty; kind=deployment (or empty) requires Source/
+// Series empty. Empty Kind is left empty (the API treats it as deployment).
+func applyAlertTargetKind(t *api.AlertTarget) {
+	if t.Kind == api.AlertTargetKindCustom {
+		t.Location = ""
+		t.Deployment = ""
+		return
+	}
+	t.Source = ""
+	t.Series = ""
 }
 
 // normalizeAlertOp maps CLI-friendly aliases to the API operators.
