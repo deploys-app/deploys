@@ -125,6 +125,9 @@ func TestRunHelpNeedsNoAPI(t *testing.T) {
 		{[]string{"error"}, "Subcommands:"},
 		{[]string{"error", "help"}, "detected application error issues"},
 		{[]string{"errors", "-h"}, "detected application error issues"},
+		{[]string{"alert"}, "Subcommands:"},
+		{[]string{"alert", "help"}, "metric alert rules"},
+		{[]string{"alert", "-h"}, "metric alert rules"},
 	}
 	for _, tc := range cases {
 		if err := tmp.Truncate(0); err != nil {
