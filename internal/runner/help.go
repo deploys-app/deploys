@@ -381,10 +381,22 @@ var commands = []command{
 		},
 	},
 	{
-		name:  "alert",
-		short: "metric alert rules on a deployment's CPU, memory, requests, or egress",
+		name:  "metricsource",
+		short: "Prometheus scrape sources for custom metrics and alerts",
 		subs: []subcommand{
-			{name: "create", args: "-name -location -deployment -metric cpu|memory|requests|egress -threshold n -for n [-op gte|lte|'>='|'<=' -renotify n -disabled]", short: "create a metric alert rule"},
+			{name: "set", args: "-name -location -deployment -port [-path /metrics -disabled]", short: "create or replace a scrape source"},
+			{name: "get", args: "-name", short: "show a scrape source"},
+			{name: "list", short: "list scrape sources"},
+			{name: "delete", args: "-name", short: "delete a scrape source"},
+			{name: "series", args: "-name", short: "list discovered series for a scrape source"},
+			{name: "query", args: "-name [-series s] [-timerange 1h|6h|12h|1d|7d|30d]", short: "query series for a scrape source"},
+		},
+	},
+	{
+		name:  "alert",
+		short: "metric alert rules on a deployment or a custom metric source",
+		subs: []subcommand{
+			{name: "create", args: "-name [-kind deployment|custom] [-location -deployment | -source -series] -metric cpu|memory|requests|egress|value|rate -threshold n -for n [-op gte|lte|'>='|'<=' -renotify n -disabled]", short: "create a metric alert rule"},
 			{name: "get", args: "-name", short: "show an alert rule"},
 			{name: "list", short: "list alert rules"},
 			{name: "update", args: "-name [flags]", short: "update an alert rule (omitted flags are preserved)"},
